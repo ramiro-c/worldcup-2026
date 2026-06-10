@@ -1,0 +1,33 @@
+meta {
+  name: Get Teams
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:8000/tournament/teams
+}
+
+tests {
+  test("status 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("returns data array", function() {
+    expect(res.body.data).to.be.an("array");
+  });
+  test("has 48+ teams", function() {
+    expect(res.body.data.length).to.be.at.least(48);
+  });
+  test("each team has code, name, flag, group", function() {
+    res.body.data.forEach(function(t) {
+      expect(t.code).to.be.a("string");
+      expect(t.name).to.be.a("string");
+      expect(t.group).to.be.a("string");
+    });
+  });
+  test("Argentina is in the list", function() {
+    var arg = res.body.data.find(function(t) { return t.code === "ARG"; });
+    expect(arg).to.not.be.undefined;
+    expect(arg.name).to.equal("Argentina");
+  });
+}

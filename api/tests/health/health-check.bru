@@ -1,0 +1,21 @@
+meta {
+  name: Health Check
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8000/health
+}
+
+tests {
+  test("status 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("status field is ok", function() {
+    expect(res.body.status).to.equal("ok");
+  });
+  test("version field present", function() {
+    expect(res.body.version).to.contain("0.1");
+  });
+}
