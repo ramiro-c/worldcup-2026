@@ -26,6 +26,11 @@ class ITournamentDataProvider(ABC):
         pass
 
     @abstractmethod
+    async def get_match(self, match_id: str) -> dict | None:
+        """Retorna un partido específico por ID"""
+        pass
+
+    @abstractmethod
     async def get_tv(self) -> list[dict]:
         """Retorna la información de TV"""
         pass

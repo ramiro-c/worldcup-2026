@@ -1,31 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useAsync } from "../lib/useAsync";
 import { getVenues } from "../lib/api";
 import type { Venue } from "../lib/types";
 
 export default function Venues() {
-  const [venues, setVenues] = useState<Venue[]>([]);
+  const { data: venues, loading, error } = useAsync(getVenues, []);
+
   const [regionFilter, setRegionFilter] = useState<string>("all");
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadVenues() {
-      try {
-        const data = await getVenues();
-        setVenues(data);
-      } catch (error) {
-        console.error("Error loading venues:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadVenues();
-  }, []);
-
-  const filteredVenues = venues.filter((venue) => {
+  const filteredVenues = venues?.filter((venue) => {
     if (regionFilter === "all") return true;
     return venue.region === regionFilter;
-  });
+  }) ?? [];
 
   const venuesByCountry = filteredVenues.reduce((acc, venue) => {
     if (!acc[venue.country]) acc[venue.country] = [];
@@ -37,6 +23,10 @@ export default function Venues() {
 
   if (loading) {
     return <div className="text-center text-zinc-400 py-12">Cargando sedes...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-400 py-12">Error: {error.message}</div>;
   }
 
   return (

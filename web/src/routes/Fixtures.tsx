@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useAsync } from "../lib/useAsync";
 import { getMatches, getTeams, getVenues } from "../lib/api";
-import type { Match, Team, Venue } from "../lib/types";
+import type { Match } from "../lib/types";
 
 interface MatchWithDetails extends Match {
   home_team_name?: string;
@@ -9,46 +10,32 @@ interface MatchWithDetails extends Match {
 }
 
 export default function Fixtures() {
-  const [matches, setMatches] = useState<MatchWithDetails[]>([]);
   const [filter, setFilter] = useState<string>("all");
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadMatches() {
-      try {
-        const [matchesData, teamsData, venuesData] = await Promise.all([
-          getMatches(),
-          getTeams(),
-          getVenues(),
-        ]);
+  const { data: matches, loading, error } = useAsync(async () => {
+    const [matchesData, teamsData, venuesData] = await Promise.all([
+      getMatches(),
+      getTeams(),
+      getVenues(),
+    ]);
 
-        const teamMap = new Map(teamsData.map((t) => [t.id, t.name]));
-        const venueMap = new Map(venuesData.map((v) => [v.id, v.name]));
+    const teamMap = new Map(teamsData.map((t) => [t.id, t.name]));
+    const venueMap = new Map(venuesData.map((v) => [v.id, v.name]));
 
-        const matchesWithDetails = matchesData.map((match) => ({
-          ...match,
-          home_team_name: teamMap.get(match.home_team),
-          away_team_name: teamMap.get(match.away_team),
-          venue_name: venueMap.get(match.venue),
-        }));
-
-        setMatches(matchesWithDetails);
-      } catch (error) {
-        console.error("Error loading matches:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadMatches();
+    return matchesData.map((match) => ({
+      ...match,
+      home_team_name: teamMap.get(match.home_team),
+      away_team_name: teamMap.get(match.away_team),
+      venue_name: venueMap.get(match.venue),
+    }));
   }, []);
 
-  const filteredMatches = matches.filter((match) => {
+  const filteredMatches = matches?.filter((match) => {
     if (filter === "all") return true;
     if (filter === "group") return !!match.group;
     if (filter === "knockout") return !!match.round;
     return false;
-  });
+  }) ?? [];
 
   const matchesByGroup = filteredMatches.reduce((acc, match) => {
     const key = match.group || match.round || "other";
@@ -59,6 +46,10 @@ export default function Fixtures() {
 
   if (loading) {
     return <div className="text-center text-zinc-400 py-12">Cargando fixture...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-400 py-12">Error: {error.message}</div>;
   }
 
   return (
