@@ -83,17 +83,41 @@ def get_flag_url(fifa_code: str) -> str:
 
 
 def map_groups(raw: list[dict]) -> list[dict]:
-    return [
-        {
+    # Filtrar equipos duplicados por país (ej: URU y URY para Uruguay)
+    # El código de país puede tener múltiples variantes (URY/URU), usar nombre normalizado
+    result = []
+    for g in raw:
+        seen = set()
+        unique_teams = []
+        for team_code in g["teams"]:
+            # Ya que no tenemos el nombre, asumimos que códigos diferentes son países diferentes
+            # EXCEPTO cuando sabemos que son duplicados (ej: URU/URY)
+            normalized = team_code.upper()
+            if normalized == "URY":
+                normalized = "URU"  # Normalizar a URU
+            
+            if normalized not in seen:
+                seen.add(normalized)
+                unique_teams.append(team_code)
+        
+        result.append({
             "id": g["group"].lower(),
             "name": f"Group {g['group']}",
-            "teams": [t.lower() for t in g["teams"]],
-        }
-        for g in raw
-    ]
+            "teams": [t.lower() for t in unique_teams],
+        })
+    return result
 
 
 def map_teams(raw: list[dict]) -> list[dict]:
+    # Filtrar duplicados por país (ej: URU y URY para Uruguay)
+    seen = set()
+    unique = []
+    for t in raw:
+        country_name = t["name"].lower()
+        if country_name not in seen:
+            seen.add(country_name)
+            unique.append(t)
+    
     return [
         {
             "id": t["code"].lower(),
@@ -102,7 +126,7 @@ def map_teams(raw: list[dict]) -> list[dict]:
             "group": t["group"].lower(),
             "crest": get_flag_url(t["code"]),
         }
-        for t in raw
+        for t in unique
     ]
 
 
