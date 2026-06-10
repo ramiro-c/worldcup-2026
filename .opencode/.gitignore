@@ -1,0 +1,2 @@
+# Ignore skills directory - these are local to each dev's opencode setup
+.opencode/skills/
