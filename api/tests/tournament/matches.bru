@@ -1,0 +1,39 @@
+meta {
+  name: Get Matches
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8000/tournament/matches
+}
+
+tests {
+  test("status 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("returns data array", function() {
+    expect(res.body.data).to.be.an("array");
+  });
+  test("has 104 matches", function() {
+    expect(res.body.data.length).to.equal(104);
+  });
+  test("each match has num, date, phase, slug", function() {
+    res.body.data.forEach(function(m) {
+      expect(m.num).to.be.a("number");
+      expect(m.date).to.be.a("string");
+      expect(m.phase).to.be.a("string");
+      expect(m.slug).to.be.a("string");
+    });
+  });
+  test("first match is Mexico vs South Africa", function() {
+    var first = res.body.data[0];
+    expect(first.home).to.equal("MEX");
+    expect(first.away).to.equal("RSA");
+  });
+  test("final match is on 2026-07-19", function() {
+    var final = res.body.data.find(function(m) { return m.phase === "final"; });
+    expect(final).to.not.be.undefined;
+    expect(final.date).to.equal("2026-07-19");
+  });
+}

@@ -1,0 +1,29 @@
+info:
+  name: Get Groups
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: http://localhost:8000/tournament/groups
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status 200", function() {
+          expect(res.status).to.equal(200);
+        });
+        test("returns data array", function() {
+          expect(res.body.data).to.be.an("array");
+        });
+        test("has 12 groups", function() {
+          expect(res.body.data.length).to.equal(12);
+        });
+        test("each group has group letter and teams array", function() {
+          res.body.data.forEach(function(g) {
+            expect(g.group).to.be.a("string");
+            expect(g.teams).to.be.an("array");
+            expect(g.teams.length).to.be.at.least(4);
+          });
+        });
