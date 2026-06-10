@@ -1,0 +1,85 @@
+import { test, expect } from '@playwright/test';
+
+test.describe('Copa 2026 Web App', () => {
+  test('should load home page', async ({ page }) => {
+    await page.goto('/');
+    await expect(page).toHaveTitle(/Copa Mundial 2026/);
+    await expect(page.locator('h2').first()).toBeVisible();
+  });
+
+  test('should navigate to Groups page', async ({ page }) => {
+    await page.goto('/');
+    await page.click('a[href="/groups"]');
+    await expect(page).toHaveURL('/groups');
+    await expect(page.locator('h2')).toContainText('Fase de Grupos');
+  });
+
+  test('should display groups with teams', async ({ page }) => {
+    await page.goto('/groups');
+    await expect(page.locator('h2')).toContainText('Fase de Grupos');
+    
+    // Check that groups are rendered
+    const groupCards = page.locator('.grid > div');
+    await expect(groupCards.first()).toBeVisible();
+    
+    // Check for group names
+    await expect(page.locator('h3').first()).toHaveText(/Group [A-Z]/);
+    
+    // Check that tables have data
+    const tables = page.locator('table');
+    await expect(tables.first()).toBeVisible();
+    
+    // Check for team rows - groups should have 4 teams each
+    const teamRows = tables.first().locator('tbody tr');
+    const count = await teamRows.count();
+    expect(count).toBeGreaterThanOrEqual(2);
+  });
+
+  test('should navigate to Fixtures page', async ({ page }) => {
+    await page.goto('/');
+    await page.click('a[href="/fixtures"]');
+    await expect(page).toHaveURL('/fixtures');
+    await expect(page.locator('h2')).toContainText(/Fixture/);
+  });
+
+  test('should display matches in Fixtures', async ({ page }) => {
+    await page.goto('/fixtures');
+    
+    // Check for filter buttons
+    const filters = page.locator('button');
+    await expect(filters.first()).toBeVisible();
+    
+    // Check for match cards
+    const matchCards = page.locator('[class*="border"]');
+    await expect(matchCards.first()).toBeVisible();
+  });
+
+  test('should navigate to Venues page', async ({ page }) => {
+    await page.goto('/');
+    await page.click('a[href="/venues"]');
+    await expect(page).toHaveURL('/venues');
+    await expect(page.locator('h2')).toContainText('Sedes');
+  });
+
+  test('should display venues list', async ({ page }) => {
+    await page.goto('/venues');
+    
+    // Check for venue cards or list
+    const venues = page.locator('[class*="border"]');
+    await expect(venues.first()).toBeVisible();
+    const count = await venues.count();
+    expect(count).toBeGreaterThan(0);
+  });
+
+  test('should navigate to Bracket page', async ({ page }) => {
+    await page.goto('/');
+    await page.click('a[href="/bracket"]');
+    await expect(page).toHaveURL('/bracket');
+    await expect(page.locator('h2')).toContainText(/Bracket|Eliminatorias/);
+  });
+
+  test('should handle 404 page', async ({ page }) => {
+    await page.goto('/nonexistent-route');
+    await expect(page.locator('h1').first()).toContainText('404');
+  });
+});

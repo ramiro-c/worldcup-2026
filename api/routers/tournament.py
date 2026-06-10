@@ -30,7 +30,7 @@ def map_groups(raw: list[dict]) -> list[dict]:
         {
             "id": g["group"].lower(),
             "name": f"Group {g['group']}",
-            "teams": g["teams"],
+            "teams": [t.lower() for t in g["teams"]],
         }
         for g in raw
     ]
@@ -42,7 +42,7 @@ def map_teams(raw: list[dict]) -> list[dict]:
             "id": t["code"].lower(),
             "name": t["name"],
             "code": t["code"],
-            "group": t["group"],
+            "group": t["group"].lower(),
             "crest": f"https://wheniskickoff.com/data/v1/teams/{t['code']}/crest.svg",
         }
         for t in raw
