@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from routers.tournament import router as tournament_router
 
 app = FastAPI(
     title="Copa 2026 API",
@@ -15,6 +16,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(tournament_router)
 
 
 @app.get("/health")
