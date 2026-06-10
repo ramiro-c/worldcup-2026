@@ -16,65 +16,47 @@
 - [x] Endpoints: /tournament/{groups,teams,venues,matches,tv}
 - [x] Tests Bruno: 6 endpoints, 25 tests
 
-### openfootball — Historical fixtures ⏳
+### openfootball — Historical fixtures ✅
 
-#### A. Repo exploration
-- [ ] Fetch repo tree de openfootball/worldcup (años disponibles)
-- [ ] Identificar formato de cup.txt, cup_finals.txt
-- [ ] Mapear estructura de datos a modelos Pydantic
+- [x] Repo exploration completa (23 mundiales, 1930–2026)
+- [x] `OpenfootballParser` — parsea Football.TXT a dicts estructurados
+  - [x] Grupos, partidos de grupo,淘汰, penales, goleadores
+  - [x] Edge cases: golden goal, own goals, replays, HT scores
+- [x] `OpenfootballProvider` con cache-Aside TTL 5 min
+- [x] `GET /historical/tournaments`
+- [x] `GET /historical/tournaments/{year}`
+- [x] `GET /historical/head-to-head?team1=X&team2=Y`
+- [x] Tests Bruno (3 files, 12 tests)
 
-#### B. Parser
-- [ ] `OpenfootballParser` — parsea TXT a dicts estructurados
-  - [ ] Parsear header del torneo (año, nombre)
-  - [ ] Parsear grupos
-  - [ ] Parsear partidos de grupo (fecha, equipos, resultado)
-  - [ ] Parsear partidos de淘汰 (fase, equipos, resultado, penales)
-- [ ] Manejar edge cases: goles, penales, alineaciones, tarjetas
+### StatsBomb — Historical events ✅
 
-#### C. Provider + Cache
-- [ ] `OpenfootballProvider` — fetchea raw de GitHub URLs
-- [ ] Cache-Aside con TTL (mismo patrón que wheniskickoff)
-- [ ] Fallback a cache si falla fetch
+- [x] Repo exploration: 8 mundiales disponibles (1958–2022)
+- [x] `StatsBombProvider` con cache-Aside TTL 5 min
+  - [x] GET competitions, matches, events, lineups
+- [x] `GET /historical/competitions`
+- [x] `GET /historical/matches?competition=X&season=Y`
+- [x] `GET /historical/matches/{match_id}/events`
+- [x] `GET /historical/matches/{match_id}/lineups`
+- [x] Tests Bruno (1 file, 3 tests)
 
-#### D. Endpoints
-- [ ] `GET /historical/tournaments` — lista de mundiales disponibles
-- [ ] `GET /historical/tournaments/{year}` — fixture completo de ese año
-- [ ] `GET /historical/head-to-head?team1=X&team2=Y` — historial entre 2 selecciones
-- [ ] Tests Bruno
+### Docker ✅
+- [x] docker-compose builds y corre api + web
+- [x] CI=true para evitar pnpm TTY prompt en web
 
-### StatsBomb — Historical events ⏳
+## Phase 3 — Web: Core views ✅
 
-#### A. Repo exploration
-- [ ] Fetch competitions.json → filtrar World Cups
-- [ ] Identificar match_ids de mundiales
-- [ ] Mapear estructura de matches, events, lineups
+- [x] Home page with nav cards
+- [x] Groups view (tabla de posiciones con puntos, DG, clasificación)
+- [x] Fixtures view (filtro grupos/eliminatorias, VS, EN VIVO)
+- [x] Bracket placeholder (listo para D3 cuando arranquen eliminatorias)
 
-#### B. Provider
-- [ ] `StatsBombProvider` — fetchea raw de GitHub URLs
-  - [ ] GET competitions
-  - [ ] GET matches por competición
-  - [ ] GET events por match_id
-  - [ ] GET lineups por match_id
-- [ ] Cache-Aside con TTL
+## Phase 4 — Web: Extended views ✅
 
-#### C. Endpoints
-- [ ] `GET /historical/competitions` — competiciones disponibles
-- [ ] `GET /historical/matches?competition=X&season=Y` — partidos
-- [ ] `GET /historical/matches/{match_id}/events` — eventos de un partido
-- [ ] `GET /historical/matches/{match_id}/lineups` — alineaciones
-- [ ] Tests Bruno
+- [x] Venues view (filtro por región, agrupado por país, Google Maps link)
 
-## Phase 3 — Web: Core views ⏳
+## Phase 5 — Live data ⏳
 
-- [ ] Groups view (tabla de posiciones)
-- [ ] Fixtures view (lista de partidos por fecha)
-- [ ] Bracket eliminatorio (D3)
-
-## Phase 4 — Web: Extended views ⏳
-
-- [ ] Mapa de sedes (Leaflet)
-- [ ] Match detail + historial de enfrentamientos
-- [ ] Group state calculator
+- [ ] Polling wheniskickoff durante el torneo
 
 ## Phase 5 — Live data ⏳
 
