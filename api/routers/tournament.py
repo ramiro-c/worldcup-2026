@@ -24,6 +24,63 @@ VENUE_REGIONS: dict[str, str] = {
     "calgary": "Western",
 }
 
+FIFA_TO_CCA2: dict[str, str] = {
+    "ARG": "ar",
+    "AUS": "au",
+    "AUT": "at",
+    "BEL": "be",
+    "BIH": "ba",
+    "BRA": "br",
+    "CAN": "ca",
+    "CIV": "ci",
+    "COD": "cd",
+    "COL": "co",
+    "CPV": "cv",
+    "CRO": "hr",
+    "CUW": "cw",
+    "CZE": "cz",
+    "DZA": "dz",
+    "ECU": "ec",
+    "EGY": "eg",
+    "ENG": "gb-eng",
+    "ESP": "es",
+    "FRA": "fr",
+    "GER": "de",
+    "GHA": "gh",
+    "HAI": "ht",
+    "IRN": "ir",
+    "IRQ": "iq",
+    "JOR": "jo",
+    "JPN": "jp",
+    "KOR": "kr",
+    "KSA": "sa",
+    "MAR": "ma",
+    "MEX": "mx",
+    "NED": "nl",
+    "NOR": "no",
+    "NZL": "nz",
+    "PAN": "pa",
+    "PAR": "py",
+    "POR": "pt",
+    "QAT": "qa",
+    "RSA": "za",
+    "SCO": "gb-sct",
+    "SEN": "sn",
+    "SUI": "ch",
+    "SWE": "se",
+    "TUN": "tn",
+    "TUR": "tr",
+    "URU": "uy",
+    "URY": "uy",
+    "USA": "us",
+    "UZB": "uz",
+}
+
+
+def get_flag_url(fifa_code: str) -> str:
+    cca2 = FIFA_TO_CCA2.get(fifa_code, "xx")
+    return f"https://flagcdn.com/{cca2}.svg"
+
 
 def map_groups(raw: list[dict]) -> list[dict]:
     return [
@@ -43,7 +100,7 @@ def map_teams(raw: list[dict]) -> list[dict]:
             "name": t["name"],
             "code": t["code"],
             "group": t["group"].lower(),
-            "crest": f"https://wheniskickoff.com/data/v1/teams/{t['code']}/crest.svg",
+            "crest": get_flag_url(t["code"]),
         }
         for t in raw
     ]
