@@ -1,12 +1,13 @@
 import time
 from typing import Any
 import httpx
+from providers.interfaces import IEventDataProvider
 
 BASE_URL = "https://raw.githubusercontent.com/statsbomb/open-data/master"
 CACHE_TTL = 300
 
 
-class StatsBombProvider:
+class StatsBombProvider(IEventDataProvider):
     def __init__(self):
         self._cache: dict[str, tuple[float, Any]] = {}
 
