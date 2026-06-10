@@ -1,0 +1,34 @@
+meta {
+  name: Historical Tournament by Year
+  type: http
+  seq: 11
+}
+
+get {
+  url: http://localhost:8000/historical/tournaments/2022
+}
+
+tests {
+  test("status 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("returns tournament data", function() {
+    expect(res.body.data.year).to.equal(2022);
+  });
+  test("has matches array", function() {
+    expect(res.body.data.matches).to.be.an("array");
+  });
+  test("has groups array", function() {
+    expect(res.body.data.groups).to.be.an("array");
+  });
+  test("has 64 matches", function() {
+    expect(res.body.data.matches.length).to.equal(64);
+  });
+  test("each match has teams and score", function() {
+    res.body.data.matches.forEach(function(m) {
+      expect(m.team1.name).to.be.a("string");
+      expect(m.team2.name).to.be.a("string");
+      expect(m.score).to.match(/^\d+-\d+$/);
+    });
+  });
+}

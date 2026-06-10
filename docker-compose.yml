@@ -21,7 +21,7 @@ services:
         FROM node:24-alpine
         WORKDIR /app
         COPY package.json pnpm-lock.yaml ./
-        RUN corepack enable && pnpm install --frozen-lockfile
+        RUN corepack enable && pnpm install --frozen-lockfile --config.confirmModulesPurge=false
         COPY . .
         CMD ["pnpm", "dev", "--host", "0.0.0.0"]
     ports:
@@ -31,3 +31,4 @@ services:
       - api
     environment:
       - API_PROXY_TARGET=http://api:8000
+      - CI=true
