@@ -27,6 +27,10 @@ export async function getMatches(): Promise<Match[]> {
   return fetchApi<Match[]>("/matches");
 }
 
+export async function getMatch(id: string): Promise<Match | null> {
+  return fetchApi<Match | null>(`/matches/${id}`);
+}
+
 export async function getTv(): Promise<TvChannel[]> {
   return fetchApi<TvChannel[]>("/tv");
 }
