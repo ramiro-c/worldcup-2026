@@ -1,12 +1,13 @@
 import time
 from typing import Any
 import httpx
+from providers.interfaces import ITournamentDataProvider
 
 BASE_URL = "https://wheniskickoff.com/data/v1"
 CACHE_TTL = 300  # 5 minutes
 
 
-class WheniskickoffProvider:
+class WheniskickoffProvider(ITournamentDataProvider):
     def __init__(self):
         self._cache: dict[str, tuple[float, list[dict]]] = {}
 

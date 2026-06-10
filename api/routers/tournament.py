@@ -1,8 +1,13 @@
 from fastapi import APIRouter
-from providers.wheniskickoff import WheniskickoffProvider
+from providers.interfaces import ITournamentDataProvider
 
 router = APIRouter(prefix="/tournament", tags=["tournament"])
-provider = WheniskickoffProvider()
+provider: ITournamentDataProvider
+
+
+def init_router(tournament_provider: ITournamentDataProvider):
+    global provider
+    provider = tournament_provider
 
 
 @router.get("/groups")

@@ -24,6 +24,15 @@ api/
 
 - **Routers** en `routers/`, cada fuente o dominio tiene el suyo
 - **Providers** encapsulan la lógica de fetch + parse de cada fuente externa
+- **Interfaces** en `providers/interfaces.py` — todos los providers implementan interfaces ABC
+- Inyección de dependencias desde `main.py` — routers reciben providers vía `init_router()`
 - Errores de fuentes externas se cachean con TTL, no se rompe el endpoint
 - Usar `httpx.AsyncClient` para requests externas
 - Pydantic v2 para validación de schemas
+
+## Docker
+
+```bash
+docker compose up --build    # inicia API + Web
+docker compose restart api   # rebuild hot si cambiaste la API
+```

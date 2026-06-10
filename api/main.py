@@ -1,8 +1,22 @@
+from __future__ import annotations
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers.tournament import router as tournament_router
-from routers.historical import router as historical_router
+import routers.tournament as tournament_module
+import routers.historical as historical_module
+from providers.interfaces import (
+    ITournamentDataProvider,
+    IHistoricalDataProvider,
+    IHeadToHeadProvider,
+    IEventDataProvider,
+)
+from providers.wheniskickoff import WheniskickoffProvider
+from providers.openfootball import OpenfootballProvider
+from providers.statsbomb import StatsBombProvider
+
+tournament_provider: ITournamentDataProvider = WheniskickoffProvider()
+historical_provider: IHistoricalDataProvider & IHeadToHeadProvider = OpenfootballProvider()
+event_provider: IEventDataProvider = StatsBombProvider()
 
 app = FastAPI(
     title="Copa 2026 API",
@@ -18,8 +32,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(tournament_router)
-app.include_router(historical_router)
+tournament_module.init_router(tournament_provider)
+historical_module.init_router(historical_provider, event_provider)
+
+app.include_router(tournament_module.router)
+app.include_router(historical_module.router)
 
 
 @app.get("/health")

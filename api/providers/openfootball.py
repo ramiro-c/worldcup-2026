@@ -2,6 +2,7 @@ import re
 import time
 from typing import Any
 import httpx
+from providers.interfaces import IHistoricalDataProvider, IHeadToHeadProvider
 
 CACHE_TTL = 300
 
@@ -334,7 +335,7 @@ class OpenfootballParser:
         return result
 
 
-class OpenfootballProvider:
+class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider):
     def __init__(self):
         self._cache: dict[str, tuple[float, str]] = {}
         self._parser = OpenfootballParser()
