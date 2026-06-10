@@ -1,0 +1,23 @@
+meta {
+  name: Historical Tournaments
+  type: http
+  seq: 10
+}
+
+get {
+  url: http://localhost:8000/historical/tournaments
+}
+
+tests {
+  test("status 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("returns data array", function() {
+    expect(res.body.data).to.be.an("array");
+  });
+  test("includes 1930 and 2022", function() {
+    var years = res.body.data.map(function(t) { return t.year; });
+    expect(years).to.contain(1930);
+    expect(years).to.contain(2022);
+  });
+}

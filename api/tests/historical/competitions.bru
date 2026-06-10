@@ -1,0 +1,22 @@
+meta {
+  name: StatsBomb Competitions
+  type: http
+  seq: 13
+}
+
+get {
+  url: http://localhost:8000/historical/competitions
+}
+
+tests {
+  test("status 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("returns data array", function() {
+    expect(res.body.data).to.be.an("array");
+  });
+  test("includes FIFA World Cup", function() {
+    var names = res.body.data.map(function(c) { return c.competition_name; });
+    expect(names).to.contain("FIFA World Cup");
+  });
+}
