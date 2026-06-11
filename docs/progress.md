@@ -61,13 +61,28 @@
 - [x] Scroll-to-top automático en navegación
 - [x] Empty state para torneos sin grupos (1930–1938)
 
+## Architecture ✅
+
+- [x] Migración a createBrowserRouter (React Router v6.4+)
+- [x] useNavigation() para loading bar en tiempo real
+- [x] Estructura de rutas anidadas con layout + Outlet
+
 ## UX ✅
 
 - [x] Eliminado PageTransition (causaba flash de contenido)
-- [x] LoadingBar animada en el tope del viewport
+- [x] LoadingBar animada en el tope del viewport (conectada a navegación real)
 - [x] Footer sticky con atribuciones de fuentes
 - [x] Match cards históricos linkeables a detalle
 - [x] Nombres de equipo linkean a su página
+- [x] RetryButton compartido en todos los errores
+- [x] Responsive match cards en mobile (< 640px: layout vertical)
+- [x] i18n: toda la UI en español (TKT-004)
+
+## Documentation ✅
+
+- [x] 10 tickets en docs/tickets/ (TKT-001 a TKT-010)
+- [x] INDEX.md como tablero de estado
+- [x] improvements.md con mejoras priorizadas
 
 ## Live data ⏳
 
