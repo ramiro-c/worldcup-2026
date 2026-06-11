@@ -31,6 +31,7 @@ Toda la data se consume dinámicamente sin commitear nada al repo:
 
 ## Convenciones
 
-- Monorepo: cambios en API y web dentro del mismo PR cuando se tocan ambos
+- Commits directamente a main (desarrollo rápido, sin feature branches ni PRs)
+- Monorepo: cambios en API y web dentro del mismo commit cuando se tocan ambos
 - Commits en español
 - Sin data commiteada — todo fetch dinámico
