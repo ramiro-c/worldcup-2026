@@ -105,7 +105,7 @@ export default function Match() {
         </Link>
       </div>
 
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-8">
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-8">
         <div className="text-center mb-6">
           {match.group ? (
             <span className="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 text-sm font-medium rounded-full">
@@ -118,11 +118,11 @@ export default function Match() {
           )}
         </div>
 
-        <div className="flex items-center justify-center gap-8 mb-8">
-          <div className="flex-1 text-right">
-            <div className="flex items-center justify-end gap-4">
+        <div className="flex items-center justify-center gap-4 sm:gap-8 mb-8 flex-col sm:flex-row">
+          <div className="w-full sm:flex-1 text-center sm:text-right">
+            <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4">
               <div>
-                <h3 className="text-2xl font-bold">{match.home_team_name}</h3>
+                <h3 className="text-xl sm:text-2xl font-bold">{match.home_team_name}</h3>
                 {match.status !== "scheduled" && (
                   <p className="text-zinc-400">Local</p>
                 )}
@@ -131,19 +131,19 @@ export default function Match() {
                 <img
                   src={match.home_crest}
                   alt={match.home_team_name}
-                  className="w-20 h-20 object-contain"
+                  className="w-14 h-14 sm:w-20 sm:h-20 object-contain"
                 />
               )}
             </div>
           </div>
 
-          <div className="text-center px-8">
+          <div className="text-center px-4 sm:px-8">
             {match.status === "finished" || match.status === "live" ? (
-              <div className="text-5xl font-bold tabular-nums">
+              <div className="text-3xl sm:text-5xl font-bold tabular-nums">
                 {match.home_score ?? "-"} - {match.away_score ?? "-"}
               </div>
             ) : (
-              <div className="text-2xl text-zinc-500">VS</div>
+              <div className="text-xl sm:text-2xl text-zinc-500">VS</div>
             )}
             {match.status === "live" && (
               <span className="inline-block mt-2 px-3 py-1 bg-red-500/20 text-red-400 text-sm font-medium rounded-full animate-pulse">
@@ -152,17 +152,17 @@ export default function Match() {
             )}
           </div>
 
-          <div className="flex-1">
-            <div className="flex items-center gap-4">
+          <div className="w-full sm:flex-1 text-center sm:text-left">
+            <div className="flex items-center justify-center sm:justify-start gap-3 sm:gap-4">
               {match.away_crest && (
                 <img
                   src={match.away_crest}
                   alt={match.away_team_name}
-                  className="w-20 h-20 object-contain"
+                  className="w-14 h-14 sm:w-20 sm:h-20 object-contain"
                 />
               )}
               <div>
-                <h3 className="text-2xl font-bold">{match.away_team_name}</h3>
+                <h3 className="text-xl sm:text-2xl font-bold">{match.away_team_name}</h3>
                 {match.status !== "scheduled" && (
                   <p className="text-zinc-400">Visitante</p>
                 )}
@@ -172,7 +172,7 @@ export default function Match() {
         </div>
 
         <div className="border-t border-zinc-800 pt-6">
-          <dl className="grid grid-cols-2 gap-6 text-sm">
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 text-sm">
             <div>
               <dt className="text-zinc-500 mb-1">Fecha</dt>
               <dd className="text-zinc-100 font-medium">

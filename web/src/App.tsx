@@ -21,7 +21,7 @@ export default function App() {
       <LoadingBar />
       <PageTitle />
       <Navigation />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-6 py-8">
         <Breadcrumbs />
         <Routes>
           <Route path="/" element={<Home />} />
