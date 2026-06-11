@@ -1,48 +1,43 @@
-# Mejoras pendientes
+# Mejoras — Copa 2026
+
+> Cada mejora tiene su ticket individual en `docs/tickets/` con archivos mapeados y tracking de estado. Usar `docs/tickets/INDEX.md` como tablero.
 
 ## Alta ✅
 
 - [x] **Skeleton loading states** — reemplazados todos los `"Cargando..."` de texto plano por esqueletos CSS con `animate-pulse` que mantienen el layout estable mientras carga. Componente compartido en `web/src/components/Skeleton.tsx` con `Skeleton`, `SkeletonText`, `SkeletonCard`, `SkeletonTable`.
 - [x] **Match cards linkeables** — cada partido histórico linkea a `/historical/{year}/{matchId}` con una vista detalle dedicada (`HistoricalMatchDetail.tsx`). El ID se computa en el frontend como `{year}-{team1-slug}-vs-{team2-slug}`.
 
-## Media
+## Media ✅ (ya en código)
 
-### Página de equipo (`/team/:id`)
-Mostrar todos los partidos de una selección a través de los torneos (1930–2026).
+- [x] **Página de equipo (`/team/:teamName`)** — Ruta, componente y endpoint `GET /historical/teams/{teamName}/matches` funcionando.
+- [x] **Torneos sin grupos (1930–1938)** — `HistoricalTournament.tsx:148` ya muestra "Sin datos de grupos para este torneo".
 
-**Endpoint existente:** `GET /historical/head-to-head?team1=X&team2=Y`
+## Pendientes
 
-### Botón de reintentar en errores
-Hoy las páginas muestran el error y se quedan estáticas. Agregar un botón "Reintentar" que re-ejecute la llamada.
+### TKT-001 — RetryButton compartido
+Crear componente `<RetryButton />` y reemplazar el patrón duplicado en todas las rutas.
+→ [Ver ticket](tickets/TKT-001-retry-button.md)
 
-**Archivos a modificar:** todos los `routes/*.tsx` con manejo de error.
+### TKT-002 — Responsive match cards
+Ajustar breakpoints en match cards para mobile.
+→ [Ver ticket](tickets/TKT-002-responsive-cards.md)
 
-### Torneos sin grupos (1930–1938)
-Cuando el API devuelve `groups: []`, la página se ve vacía de grupos. Agregar mensaje "Sin datos de grupos para este torneo" en lugar de no renderizar nada.
+### TKT-003 — LoadingBar timing
+Conectar la barra de carga al estado real en vez de timer fijo.
+→ [Ver ticket](tickets/TKT-003-loadingbar-timing.md)
 
-**Archivo:** `web/src/routes/HistoricalTournament.tsx:70-94`
+### TKT-004 — i18n parcial
+Unificar español/inglés en labels de UI.
+→ [Ver ticket](tickets/TKT-004-i18n.md)
 
-## Baja / Quality of life
+### TKT-005 — Migrar a createBrowserRouter
+Refactor a data router de React Router v6.4+.
+→ [Ver ticket](tickets/TKT-005-router-migration.md)
 
-### i18n parcial
-Mezcla de español/inglés en labels. Ej: el historical usa `round_of_16` del API pero traduce a "Octavos". Unificar criterio.
+### TKT-006 — Tests flaky
+Fix race condition en tests de historical.
+→ [Ver ticket](tickets/TKT-006-flaky-tests.md)
 
-### Responsive
-Los match cards en mobile se apiñan con `justify-between`. Revisar breakpoints.
+## Hecho (no requiere ticket)
 
-### Scroll position on navigation
-Navegar a un torneo histórico largo (ej. 1930) no resetea scroll al tope. React Router no hace scroll-to-top por defecto. Agregar `ScrollRestoration` o un useEffect en `App.tsx`.
-
-### LoadingBar timing
-La `LoadingBar` actual (300ms) asume que el contenido carga rápido. Si una página tarda más (API lenta), la barra se completa antes de que termine. Ideal: conectar la barra al estado de carga real de la página (ej. vía un contexto global o `useNavigation` de React Router data APIs).
-
-## Arquitectura / Deuda técnica
-
-### Migrar a createBrowserRouter
-Usar el data router de React Router v6.4+ permitiría:
-- `useNavigation()` para tracking global de navegación (mejor loading bar)
-- Carga de datos via loaders (menos boilerplate en cada ruta)
-- Manejo de errores centralizado via errorElement
-
-### Tests flaky
-Los tests de Historical (`should navigate to Historical page`, `should display tournaments list`) fallan intermitentemente cuando corren en paralelo — race condition con el cache de la API. Solución: wrapper de fixture que precargue el cache, o test con retry.
+- [x] **Scroll position on navigation** — `App.tsx` ya hace `window.scrollTo(0, 0)` en cada ruta

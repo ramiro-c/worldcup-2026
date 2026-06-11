@@ -82,6 +82,11 @@ export interface HistoricalGroup {
   teams: string[];
 }
 
+export interface HistoricalTeamMatch extends HistoricalMatch {
+  tournament_year: number;
+  tournament_name: string;
+}
+
 export interface HistoricalTournament {
   year: number;
   host: string;

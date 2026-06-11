@@ -58,7 +58,7 @@ function computeStandings(teams: Team[], matches: Match[], groupId: string): Tea
 }
 
 export default function Groups() {
-  const { data: groups, loading, error } = useAsync(async () => {
+  const { data: groups, loading, error, refetch } = useAsync(async () => {
     const [groupsData, teamsData, matchesData] = await Promise.all([
       getGroups(),
       getTeams(),
@@ -101,7 +101,17 @@ export default function Groups() {
   }
 
   if (error) {
-    return <div className="text-center text-red-400 py-12">Error: {error.message}</div>;
+    return (
+      <div className="text-center py-20 space-y-4">
+        <p className="text-red-400">Error: {error.message}</p>
+        <button
+          onClick={refetch}
+          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-medium rounded-lg transition-colors"
+        >
+          Reintentar
+        </button>
+      </div>
+    );
   }
 
   return (

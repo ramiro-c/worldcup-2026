@@ -1,7 +1,7 @@
 import re
 from typing import Any
 import httpx
-from providers.interfaces import IHistoricalDataProvider, IHeadToHeadProvider
+from providers.interfaces import IHistoricalDataProvider, IHeadToHeadProvider, ITeamDataProvider
 from providers.cache import MemoryCache
 
 # Limpiar comentarios de YAML/txt (# al final)
@@ -360,7 +360,7 @@ class OpenfootballParser:
         return result
 
 
-class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider):
+class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider, ITeamDataProvider):
     def __init__(self):
         self._fetch_cache = MemoryCache(default_ttl=300)
         self._parsed_cache = MemoryCache(default_ttl=300)
@@ -434,6 +434,24 @@ class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider):
                         mt1 == t2_lower and mt2 == t1_lower
                     ):
                         matches.append(match)
+            except Exception:
+                continue
+        return matches
+
+    async def get_team_matches(self, team_name: str) -> list[dict]:
+        matches: list[dict] = []
+        team_lower = team_name.lower().strip()
+        for year in YEAR_DIR_MAP:
+            try:
+                tournament = await self.get_tournament(year)
+                for match in tournament.get("matches", []):
+                    mt1 = match["team1"]["name"].lower()
+                    mt2 = match["team2"]["name"].lower()
+                    if mt1 == team_lower or mt2 == team_lower:
+                        enriched = dict(match)
+                        enriched["tournament_year"] = year
+                        enriched["tournament_name"] = tournament.get("name", "")
+                        matches.append(enriched)
             except Exception:
                 continue
         return matches

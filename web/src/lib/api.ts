@@ -1,4 +1,4 @@
-import type { Group, Team, Venue, Match, TvChannel, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch } from "./types";
+import type { Group, Team, Venue, Match, TvChannel, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch } from "./types";
 
 const API_BASE = "/api/tournament";
 
@@ -59,6 +59,12 @@ export async function getHistoricalTournament(year: number): Promise<HistoricalT
       id: `${year}-${m.team1.name.toLowerCase().replace(/\s+/g, "-")}-vs-${m.team2.name.toLowerCase().replace(/\s+/g, "-")}`,
     })),
   };
+}
+
+export async function getTeamMatches(teamName: string): Promise<HistoricalTeamMatch[]> {
+  return fetchHistorical<HistoricalTeamMatch[]>(
+    `/teams/${encodeURIComponent(teamName)}/matches`
+  );
 }
 
 export async function getHeadToHead(team1: string, team2: string): Promise<HistoricalMatch[]> {

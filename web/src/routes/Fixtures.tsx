@@ -15,7 +15,7 @@ interface MatchWithDetails extends Match {
 export default function Fixtures() {
   const [filter, setFilter] = useState<string>("all");
 
-  const { data: matches, loading, error } = useAsync(async () => {
+  const { data: matches, loading, error, refetch } = useAsync(async () => {
     const [matchesData, teamsData, venuesData] = await Promise.all([
       getMatches(),
       getTeams(),
@@ -94,7 +94,17 @@ export default function Fixtures() {
   }
 
   if (error) {
-    return <div className="text-center text-red-400 py-12">Error: {error.message}</div>;
+    return (
+      <div className="text-center py-20 space-y-4">
+        <p className="text-red-400">Error: {error.message}</p>
+        <button
+          onClick={refetch}
+          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-medium rounded-lg transition-colors"
+        >
+          Reintentar
+        </button>
+      </div>
+    );
   }
 
   return (

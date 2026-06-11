@@ -15,7 +15,7 @@ const STAGE_LABELS: Record<string, string> = {
 
 export default function HistoricalMatchDetail() {
   const { year, matchId } = useParams<{ year: string; matchId: string }>();
-  const { data: tournament, loading, error } = useAsync(
+  const { data: tournament, loading, error, refetch } = useAsync(
     () => getHistoricalTournament(Number(year)),
     [year]
   );
@@ -36,6 +36,14 @@ export default function HistoricalMatchDetail() {
       <div className="text-center py-20 space-y-6">
         <h1 className="text-4xl font-bold text-zinc-700">Partido no encontrado</h1>
         <p className="text-zinc-500">Este partido no existe o el torneo no está disponible.</p>
+        {error && (
+          <button
+            onClick={refetch}
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-medium rounded-lg transition-colors"
+          >
+            Reintentar
+          </button>
+        )}
         <Link
           to={`/historical/${year}`}
           className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors"
@@ -75,9 +83,9 @@ export default function HistoricalMatchDetail() {
 
         <div className="flex items-center justify-center gap-4 sm:gap-8 mb-8">
           <div className="flex-1 text-right">
-            <h3 className={`text-xl sm:text-2xl font-bold ${match.team1.is_winner ? "text-emerald-400" : ""}`}>
+            <Link to={`/team/${encodeURIComponent(match.team1.name)}`} className={`text-xl sm:text-2xl font-bold ${match.team1.is_winner ? "text-emerald-400" : ""} hover:text-emerald-400 transition-colors`}>
               {match.team1.name}
-            </h3>
+            </Link>
             {match.team1.is_winner && <p className="text-emerald-500 text-sm font-medium">Campeón</p>}
           </div>
 
@@ -99,9 +107,9 @@ export default function HistoricalMatchDetail() {
           </div>
 
           <div className="flex-1 text-left">
-            <h3 className={`text-xl sm:text-2xl font-bold ${match.team2.is_winner ? "text-emerald-400" : ""}`}>
+            <Link to={`/team/${encodeURIComponent(match.team2.name)}`} className={`text-xl sm:text-2xl font-bold ${match.team2.is_winner ? "text-emerald-400" : ""} hover:text-emerald-400 transition-colors`}>
               {match.team2.name}
-            </h3>
+            </Link>
             {match.team2.is_winner && <p className="text-emerald-500 text-sm font-medium">Campeón</p>}
           </div>
         </div>

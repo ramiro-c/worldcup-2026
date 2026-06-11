@@ -13,7 +13,7 @@ const FLAGS: Record<number, string> = {
 };
 
 export default function Historical() {
-  const { data: tournaments, loading, error } = useAsync(getHistoricalTournaments, []);
+  const { data: tournaments, loading, error, refetch } = useAsync(getHistoricalTournaments, []);
 
   if (loading) {
     return (
@@ -42,7 +42,17 @@ export default function Historical() {
   }
 
   if (error) {
-    return <div className="text-center text-red-400 py-12">Error: {error.message}</div>;
+    return (
+      <div className="text-center py-20 space-y-4">
+        <p className="text-red-400">Error: {error.message}</p>
+        <button
+          onClick={refetch}
+          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-medium rounded-lg transition-colors"
+        >
+          Reintentar
+        </button>
+      </div>
+    );
   }
 
   const byDecade = tournaments!.reduce((acc, t) => {

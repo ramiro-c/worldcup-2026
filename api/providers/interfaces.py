@@ -59,6 +59,15 @@ class IHeadToHeadProvider(ABC):
         pass
 
 
+class ITeamDataProvider(ABC):
+    """Interfaz para datos de un equipo histórico"""
+
+    @abstractmethod
+    async def get_team_matches(self, team_name: str) -> list[dict]:
+        """Retorna todos los partidos históricos de un equipo"""
+        pass
+
+
 class IEventDataProvider(ABC):
     """Interfaz para proveedores de eventos y estadísticas detalladas"""
 

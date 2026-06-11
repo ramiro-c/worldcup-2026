@@ -1,4 +1,5 @@
-import { Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { Route, Routes, useLocation } from "react-router-dom";
 import Navigation from "./components/Navigation";
 import Breadcrumbs from "./components/Breadcrumbs";
 import PageTitle from "./components/PageTitle";
@@ -13,10 +14,17 @@ import Match from "./routes/Match";
 import Historical from "./routes/Historical";
 import HistoricalTournament from "./routes/HistoricalTournament";
 import HistoricalMatchDetail from "./routes/HistoricalMatchDetail";
+import Team from "./routes/Team";
 import NotFound from "./routes/NotFound";
 import Attribution from "./components/Attribution";
 
 export default function App() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   return (
     <div className="min-h-screen flex flex-col bg-zinc-950 text-zinc-100">
       <LoadingBar />
@@ -34,6 +42,7 @@ export default function App() {
           <Route path="/historical" element={<Historical />} />
           <Route path="/historical/:year" element={<HistoricalTournament />} />
           <Route path="/historical/:year/:matchId" element={<HistoricalMatchDetail />} />
+          <Route path="/team/:teamName" element={<Team />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

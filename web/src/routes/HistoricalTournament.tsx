@@ -25,7 +25,7 @@ const FLAGS: Record<number, string> = {
 
 export default function HistoricalTournament() {
   const { year } = useParams<{ year: string }>();
-  const { data: tournament, loading, error } = useAsync(
+  const { data: tournament, loading, error, refetch } = useAsync(
     () => getHistoricalTournament(Number(year)),
     [year]
   );
@@ -84,6 +84,14 @@ export default function HistoricalTournament() {
     return (
       <div className="text-center py-20 space-y-6">
         <h1 className="text-4xl font-bold text-zinc-700">Torneo no encontrado</h1>
+        {error && (
+          <button
+            onClick={refetch}
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-medium rounded-lg transition-colors"
+          >
+            Reintentar
+          </button>
+        )}
         <Link
           to="/historical"
           className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors"
@@ -114,31 +122,33 @@ export default function HistoricalTournament() {
         </div>
       </div>
 
-      {tournament.groups.length > 0 && (
         <section className="space-y-4">
           <h3 className="text-xl font-semibold">Grupos</h3>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {tournament.groups.map((g) => (
-              <div
-                key={g.name}
-                className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
-              >
-                <h4 className="font-semibold text-emerald-400 mb-2">
-                  Grupo {g.name}
-                </h4>
-                <ol className="space-y-1">
-                  {g.teams.map((team, i) => (
-                    <li key={team} className="text-sm text-zinc-300 flex items-center gap-2">
-                      <span className="text-zinc-600 w-5 tabular-nums">{i + 1}.</span>
-                      {team}
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            ))}
-          </div>
+          {tournament.groups.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {tournament.groups.map((g) => (
+                <div
+                  key={g.name}
+                  className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
+                >
+                  <h4 className="font-semibold text-emerald-400 mb-2">
+                    Grupo {g.name}
+                  </h4>
+                  <ol className="space-y-1">
+                    {g.teams.map((team, i) => (
+                      <li key={team} className="text-sm text-zinc-300 flex items-center gap-2">
+                        <span className="text-zinc-600 w-5 tabular-nums">{i + 1}.</span>
+                        {team}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-zinc-500 italic">Sin datos de grupos para este torneo</p>
+          )}
         </section>
-      )}
 
       <section className="space-y-4">
         <h3 className="text-xl font-semibold">Partidos</h3>
@@ -194,9 +204,9 @@ function MatchCard({ match }: { match: HistoricalMatch }) {
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 text-right">
-          <span className={`text-sm ${winnerClass(match.team1.is_winner)}`}>
+          <Link to={`/team/${encodeURIComponent(match.team1.name)}`} className={`text-sm ${winnerClass(match.team1.is_winner)} hover:text-emerald-400 transition-colors`}>
             {match.team1.name}
-          </span>
+          </Link>
         </div>
 
         <div className="text-center">
@@ -217,9 +227,9 @@ function MatchCard({ match }: { match: HistoricalMatch }) {
         </div>
 
         <div className="flex-1">
-          <span className={`text-sm ${winnerClass(match.team2.is_winner)}`}>
+          <Link to={`/team/${encodeURIComponent(match.team2.name)}`} className={`text-sm ${winnerClass(match.team2.is_winner)} hover:text-emerald-400 transition-colors`}>
             {match.team2.name}
-          </span>
+          </Link>
         </div>
       </div>
 

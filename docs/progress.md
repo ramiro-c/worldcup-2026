@@ -53,11 +53,22 @@
 ## Phase 4 — Web: Extended views ✅
 
 - [x] Venues view (filtro por región, agrupado por país, Google Maps link)
+- [x] Historical list + detail views (grupos + partidos por etapa)
+- [x] Historical match detail page
+- [x] Team page (`/team/:name`) con todos los partidos históricos
+- [x] Skeleton loading states en todas las rutas
+- [x] Retry button en todos los estados de error
+- [x] Scroll-to-top automático en navegación
+- [x] Empty state para torneos sin grupos (1930–1938)
 
-## Phase 5 — Live data ⏳
+## UX ✅
 
-- [ ] Polling wheniskickoff durante el torneo
+- [x] Eliminado PageTransition (causaba flash de contenido)
+- [x] LoadingBar animada en el tope del viewport
+- [x] Footer sticky con atribuciones de fuentes
+- [x] Match cards históricos linkeables a detalle
+- [x] Nombres de equipo linkean a su página
 
-## Phase 5 — Live data ⏳
+## Live data ⏳
 
 - [ ] Polling wheniskickoff durante el torneo
