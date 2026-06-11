@@ -51,7 +51,14 @@ export async function getHistoricalTournaments(): Promise<HistoricalTournamentSu
 }
 
 export async function getHistoricalTournament(year: number): Promise<HistoricalTournament> {
-  return fetchHistorical<HistoricalTournament>(`/tournaments/${year}`);
+  const data = await fetchHistorical<HistoricalTournament>(`/tournaments/${year}`);
+  return {
+    ...data,
+    matches: data.matches.map((m) => ({
+      ...m,
+      id: `${year}-${m.team1.name.toLowerCase().replace(/\s+/g, "-")}-vs-${m.team2.name.toLowerCase().replace(/\s+/g, "-")}`,
+    })),
+  };
 }
 
 export async function getHeadToHead(team1: string, team2: string): Promise<HistoricalMatch[]> {

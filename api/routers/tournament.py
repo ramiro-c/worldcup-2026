@@ -13,15 +13,15 @@ VENUE_REGIONS: dict[str, str] = {
     "mercedes": "Eastern",
     "nrg": "Central",
     "lincoln": "Eastern",
-    "statefarm": "Western",
-    "bank_of_america": "Western",
+    "lumen": "Western",
+    "levis": "Western",
     "arrowhead": "Central",
-    "levi": "Western",
-    "geodis_park": "Central",
-    "bc_place": "Western",
+    "gillette": "Eastern",
     "azteca": "Central",
-    "bbva_bancomer": "Central",
-    "calgary": "Western",
+    "akron": "Central",
+    "bbva": "Central",
+    "bmo": "Eastern",
+    "bcplace": "Western",
 }
 
 FIFA_TO_CCA2: dict[str, str] = {

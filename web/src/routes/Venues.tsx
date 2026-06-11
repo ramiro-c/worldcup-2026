@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAsync } from "../lib/useAsync";
 import { getVenues } from "../lib/api";
 import type { Venue } from "../lib/types";
+import { Skeleton, SkeletonCard } from "../components/Skeleton";
 
 export default function Venues() {
   const { data: venues, loading, error } = useAsync(getVenues, []);
@@ -28,7 +29,48 @@ export default function Venues() {
   const regions = Object.keys(regionLabels);
 
   if (loading) {
-    return <div className="text-center text-zinc-400 py-12">Cargando sedes...</div>;
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <Skeleton className="h-8 w-24" />
+          <div className="flex gap-2">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-9 w-20 rounded-lg" />
+            ))}
+          </div>
+        </div>
+        <div className="space-y-8">
+          {[1, 2, 3].map((country) => (
+            <div key={country} className="space-y-3">
+              <Skeleton className="h-6 w-32" />
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map((venue) => (
+                  <SkeletonCard key={venue} className="p-4 space-y-3">
+                    <div>
+                      <Skeleton className="h-5 w-40" />
+                      <Skeleton className="h-4 w-32 mt-1" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                      <div className="flex justify-between">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-4 w-20" />
+                      </div>
+                    </div>
+                    <div className="pt-3 border-t border-zinc-800">
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </SkeletonCard>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (error) {
@@ -37,9 +79,9 @@ export default function Venues() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
         <h2 className="text-2xl font-bold">Sedes</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {regions.map((region) => (
             <button
               key={region}
@@ -83,7 +125,7 @@ export default function Venues() {
                     </div>
                     <div className="flex justify-between">
                       <span>Región:</span>
-                      <span className="text-zinc-300">{venue.region}</span>
+                      <span className="text-zinc-300">{regionLabels[venue.region] || venue.region}</span>
                     </div>
                   </div>
 

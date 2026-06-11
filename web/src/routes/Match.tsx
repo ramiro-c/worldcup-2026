@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getMatch, getTeams, getVenues } from "../lib/api";
 import type { Match } from "../lib/types";
+import { Skeleton, SkeletonCard } from "../components/Skeleton";
 
 interface MatchDetails extends Match {
   home_team_name?: string;
@@ -60,7 +61,47 @@ export default function Match() {
 
   if (loading) {
     return (
-      <div className="text-center text-zinc-400 py-12">Cargando partido...</div>
+      <div className="space-y-8">
+        <Skeleton className="h-5 w-32" />
+        <SkeletonCard className="p-4 sm:p-8">
+          <div className="text-center mb-6">
+            <Skeleton className="h-6 w-24 mx-auto rounded-full" />
+          </div>
+          <div className="flex items-center justify-center gap-4 sm:gap-8 mb-8 flex-col sm:flex-row">
+            <div className="w-full sm:flex-1 text-center sm:text-right">
+              <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4">
+                <div className="space-y-2 text-right">
+                  <Skeleton className="h-6 w-28 ml-auto" />
+                  <Skeleton className="h-4 w-16 ml-auto" />
+                </div>
+                <Skeleton className="h-14 w-14 sm:h-20 sm:w-20 rounded-full" />
+              </div>
+            </div>
+            <div className="text-center px-4 sm:px-8">
+              <Skeleton className="h-10 w-20 sm:h-14 sm:w-28" />
+            </div>
+            <div className="w-full sm:flex-1 text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-3 sm:gap-4">
+                <Skeleton className="h-14 w-14 sm:h-20 sm:w-20 rounded-full" />
+                <div className="space-y-2 text-left">
+                  <Skeleton className="h-6 w-28" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-zinc-800 pt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i}>
+                  <Skeleton className="h-4 w-16 mb-1" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </SkeletonCard>
+      </div>
     );
   }
 

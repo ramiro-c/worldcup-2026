@@ -62,6 +62,7 @@ export interface HistoricalScorer {
 }
 
 export interface HistoricalMatch {
+  id: string;
   date: string | null;
   time: string | null;
   team1: HistoricalTeam;

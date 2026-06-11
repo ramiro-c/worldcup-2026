@@ -46,8 +46,7 @@ test.describe('Copa 2026 Web App', () => {
     await page.goto('/fixtures');
     
     // Check for filter buttons
-    const filters = page.locator('button');
-    await expect(filters.first()).toBeVisible();
+    await expect(page.locator('button:has-text("Todos")')).toBeVisible();
     
     // Check for match cards
     const matchCards = page.locator('[class*="border"]');

@@ -1,6 +1,7 @@
 import { useAsync } from "../lib/useAsync";
 import { getGroups, getTeams, getMatches } from "../lib/api";
 import type { Team, Match } from "../lib/types";
+import { Skeleton, SkeletonCard, SkeletonTable } from "../components/Skeleton";
 
 interface TeamStanding {
   team: Team;
@@ -80,7 +81,23 @@ export default function Groups() {
   }, []);
 
   if (loading) {
-    return <div className="text-center text-zinc-400 py-12">Cargando grupos...</div>;
+    return (
+      <div className="space-y-8">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid gap-6 lg:grid-cols-2">
+          {[1, 2, 3, 4, 5, 6].map((g) => (
+            <SkeletonCard key={g}>
+              <div className="border-b border-zinc-800 px-4 py-3">
+                <Skeleton className="h-5 w-32" />
+              </div>
+              <div className="p-4">
+                <SkeletonTable rows={4} columns={6} />
+              </div>
+            </SkeletonCard>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (error) {

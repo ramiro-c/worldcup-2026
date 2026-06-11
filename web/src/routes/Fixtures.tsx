@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAsync } from "../lib/useAsync";
 import { getMatches, getTeams, getVenues } from "../lib/api";
 import type { Match } from "../lib/types";
+import { Skeleton, SkeletonCard } from "../components/Skeleton";
 
 interface MatchWithDetails extends Match {
   home_team_name?: string;
@@ -53,7 +54,43 @@ export default function Fixtures() {
   }, {} as Record<string, MatchWithDetails[]>);
 
   if (loading) {
-    return <div className="text-center text-zinc-400 py-12">Cargando fixture...</div>;
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <Skeleton className="h-8 w-24" />
+          <div className="flex gap-2">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-9 w-24 rounded-lg" />
+            ))}
+          </div>
+        </div>
+        <div className="space-y-8">
+          {[1, 2, 3].map((group) => (
+            <div key={group} className="space-y-3">
+              <Skeleton className="h-6 w-32" />
+              <div className="space-y-2">
+                {[1, 2, 3].map((match) => (
+                  <SkeletonCard key={match} className="p-4 flex items-center gap-4">
+                    <div className="flex-1 flex items-center justify-end gap-3">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                    </div>
+                    <div className="text-center px-4">
+                      <Skeleton className="h-7 w-12 mx-auto" />
+                      <Skeleton className="h-3 w-20 mx-auto mt-1" />
+                    </div>
+                    <div className="flex-1 flex items-center gap-3">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  </SkeletonCard>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (error) {
@@ -62,9 +99,9 @@ export default function Fixtures() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
         <h2 className="text-2xl font-bold">Fixture</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setFilter("all")}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${

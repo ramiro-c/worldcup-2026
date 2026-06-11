@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getHistoricalTournament } from "../lib/api";
 import type { HistoricalMatch } from "../lib/types";
+import { Skeleton, SkeletonCard } from "../components/Skeleton";
 
 const STAGE_LABELS: Record<string, string> = {
   group: "Fase de Grupos",
@@ -30,7 +31,53 @@ export default function HistoricalTournament() {
   );
 
   if (loading) {
-    return <div className="text-center text-zinc-400 py-12">Cargando torneo...</div>;
+    return (
+      <div className="space-y-8">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-10 w-10" />
+          <div>
+            <Skeleton className="h-7 w-64" />
+            <Skeleton className="h-4 w-48 mt-1" />
+          </div>
+        </div>
+        <section className="space-y-4">
+          <Skeleton className="h-6 w-24" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((g) => (
+              <SkeletonCard key={g} className="p-4">
+                <Skeleton className="h-5 w-24 mb-2" />
+                <div className="space-y-1">
+                  {[1, 2, 3, 4].map((t) => (
+                    <Skeleton key={t} className="h-4 w-32" />
+                  ))}
+                </div>
+              </SkeletonCard>
+            ))}
+          </div>
+        </section>
+        <section className="space-y-4">
+          <Skeleton className="h-6 w-24" />
+          <div className="space-y-3">
+            <Skeleton className="h-5 w-40" />
+            <div className="space-y-2">
+              {[1, 2, 3].map((m) => (
+                <SkeletonCard key={m} className="p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 text-right">
+                      <Skeleton className="h-4 w-32 ml-auto" />
+                    </div>
+                    <Skeleton className="h-6 w-16" />
+                    <div className="flex-1">
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  </div>
+                </SkeletonCard>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
+    );
   }
 
   if (error || !tournament || !tournament.year) {
@@ -136,11 +183,15 @@ export default function HistoricalTournament() {
 }
 
 function MatchCard({ match }: { match: HistoricalMatch }) {
+  const { year } = useParams<{ year: string }>();
   const winnerClass = (isWinner: boolean) =>
     isWinner ? "font-bold text-emerald-400" : "text-zinc-400";
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+    <Link
+      to={`/historical/${year}/${match.id}`}
+      className="block rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-colors cursor-pointer"
+    >
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 text-right">
           <span className={`text-sm ${winnerClass(match.team1.is_winner)}`}>
@@ -186,6 +237,6 @@ function MatchCard({ match }: { match: HistoricalMatch }) {
           ))}
         </div>
       )}
-    </div>
+    </Link>
   );
 }

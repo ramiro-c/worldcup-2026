@@ -12,6 +12,7 @@ import Venues from "./routes/Venues";
 import Match from "./routes/Match";
 import Historical from "./routes/Historical";
 import HistoricalTournament from "./routes/HistoricalTournament";
+import HistoricalMatchDetail from "./routes/HistoricalMatchDetail";
 import NotFound from "./routes/NotFound";
 import Attribution from "./components/Attribution";
 
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/match/:id" element={<Match />} />
           <Route path="/historical" element={<Historical />} />
           <Route path="/historical/:year" element={<HistoricalTournament />} />
+          <Route path="/historical/:year/:matchId" element={<HistoricalMatchDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

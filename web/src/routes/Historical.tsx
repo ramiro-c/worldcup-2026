@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getHistoricalTournaments } from "../lib/api";
+import { Skeleton, SkeletonCard } from "../components/Skeleton";
 
 const FLAGS: Record<number, string> = {
   1930: "🇺🇾", 1934: "🇮🇹", 1938: "🇫🇷", 1950: "🇧🇷",
@@ -15,7 +16,29 @@ export default function Historical() {
   const { data: tournaments, loading, error } = useAsync(getHistoricalTournaments, []);
 
   if (loading) {
-    return <div className="text-center text-zinc-400 py-12">Cargando historial...</div>;
+    return (
+      <div className="space-y-8">
+        <Skeleton className="h-8 w-56" />
+        <Skeleton className="h-4 w-96" />
+        {[1, 2].map((decade) => (
+          <div key={decade} className="space-y-3">
+            <Skeleton className="h-6 w-24" />
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3].map((t) => (
+                <SkeletonCard key={t} className="p-5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-7 w-16" />
+                  </div>
+                  <Skeleton className="h-4 w-48 mt-1" />
+                  <Skeleton className="h-3 w-32 mt-2" />
+                </SkeletonCard>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   }
 
   if (error) {
