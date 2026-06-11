@@ -40,9 +40,9 @@ export default function Home() {
           to="/bracket"
           className="group rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-colors"
         >
-          <h3 className="font-semibold text-lg mb-2">Bracket</h3>
+          <h3 className="font-semibold text-lg mb-2">Eliminatorias</h3>
           <p className="text-sm text-zinc-400">
-            Eliminatorias desde octavos hasta la final
+            Cuadro desde octavos hasta la final
           </p>
         </Link>
 

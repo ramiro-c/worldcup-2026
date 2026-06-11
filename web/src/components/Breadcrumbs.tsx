@@ -76,7 +76,7 @@ function getSegmentLabel(segment: string): string {
   const labels: Record<string, string> = {
     groups: "Grupos",
     fixtures: "Fixture",
-    bracket: "Bracket",
+    bracket: "Eliminatorias",
     venues: "Sedes",
     historical: "Historial",
   };

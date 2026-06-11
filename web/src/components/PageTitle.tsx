@@ -5,7 +5,7 @@ const pageTitles: Record<string, string> = {
   "/": "Inicio",
   "/groups": "Grupos",
   "/fixtures": "Fixture",
-  "/bracket": "Bracket",
+  "/bracket": "Eliminatorias",
   "/venues": "Sedes",
   "/historical": "Historial",
 };

@@ -4,7 +4,7 @@ const navItems = [
   { to: "/", label: "Inicio" },
   { to: "/groups", label: "Grupos" },
   { to: "/fixtures", label: "Fixture" },
-  { to: "/bracket", label: "Bracket" },
+  { to: "/bracket", label: "Eliminatorias" },
   { to: "/venues", label: "Sedes" },
   { to: "/historical", label: "Historial" },
 ];

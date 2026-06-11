@@ -75,7 +75,7 @@ test.describe('Copa 2026 Web App', () => {
     await page.goto('/');
     await page.click('a[href="/bracket"]');
     await expect(page).toHaveURL('/bracket');
-    await expect(page.locator('h2')).toContainText(/Bracket|Eliminatorias/);
+    await expect(page.locator('h2')).toContainText('Eliminatorias');
   });
 
   test('should handle 404 page', async ({ page }) => {

@@ -59,6 +59,23 @@ MONTH_NAMES = (
 
 
 class OpenfootballParser:
+    DATE_SUFFIX = re.compile(
+        r"(?:,\s*)?"
+        r"(?:"
+        r"\d{1,2}\s*[-–]\s*\d{1,2}\s+"
+        r"|"
+        r"\d{1,2}\s+"
+        r")?"
+        r"(?:"
+        r"Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|"
+        r"Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|"
+        r"Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?"
+        r").*$",
+    )
+
+    def _strip_dates(self, text: str) -> str:
+        return self.DATE_SUFFIX.sub("", text).strip()
+
     def parse(self, text: str) -> dict:
         lines = text.split("\n")
 
@@ -72,10 +89,11 @@ class OpenfootballParser:
                 year_match = re.search(r"= World Cup (\d{4})", stripped)
                 if year_match:
                     year = int(year_match.group(1))
-                    name = stripped.replace("= ", "").strip()
-                    host_match = re.search(r"# in (.+?)(?:,| – | — |$)", stripped)
+                    full = stripped.replace("= ", "").strip()
+                    name = re.sub(r"\s*#.*$", "", full).strip()
+                    host_match = re.search(r"# in (.+)", full)
                     if host_match:
-                        host = host_match.group(1).strip()
+                        host = self._strip_dates(host_match.group(1).strip())
                 break
 
         groups: list[dict] = []

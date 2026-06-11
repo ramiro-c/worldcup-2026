@@ -158,7 +158,7 @@ function MatchCard({ match }: { match: HistoricalMatch }) {
             </div>
           )}
           {match.ht_score && (
-            <div className="text-xs text-zinc-600">HT {match.ht_score}</div>
+            <div className="text-xs text-zinc-600">PT {match.ht_score}</div>
           )}
           {match.has_extra_time && (
             <div className="text-xs text-zinc-600">t.e.</div>

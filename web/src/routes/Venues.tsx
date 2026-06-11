@@ -19,7 +19,13 @@ export default function Venues() {
     return acc;
   }, {} as Record<string, Venue[]>);
 
-  const regions = ["all", "Western", "Central", "Eastern"];
+  const regionLabels: Record<string, string> = {
+    all: "Todas",
+    Western: "Oeste",
+    Central: "Centro",
+    Eastern: "Este",
+  };
+  const regions = Object.keys(regionLabels);
 
   if (loading) {
     return <div className="text-center text-zinc-400 py-12">Cargando sedes...</div>;
@@ -44,7 +50,7 @@ export default function Venues() {
                   : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
               }`}
             >
-              {region === "all" ? "Todas" : region}
+              {regionLabels[region] || region}
             </button>
           ))}
         </div>

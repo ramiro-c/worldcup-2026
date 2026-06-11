@@ -48,7 +48,7 @@
 - [x] Home page with nav cards
 - [x] Groups view (tabla de posiciones con puntos, DG, clasificación)
 - [x] Fixtures view (filtro grupos/eliminatorias, VS, EN VIVO)
-- [x] Bracket placeholder (listo para D3 cuando arranquen eliminatorias)
+- [x] Placeholder de eliminatorias (listo para D3 cuando arranquen)
 
 ## Phase 4 — Web: Extended views ✅
 

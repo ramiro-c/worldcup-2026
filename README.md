@@ -1,59 +1,44 @@
 # Copa 2026 — World Cup Companion
 
-Web app companion para explorar la Copa del Mundo 2026 con fixture, grupos, bracket, sedes y contexto histórico.
+Seguí el Mundial 2026 en vivo: grupos, fixture, cuadro eliminatorio, mapa de sedes y contexto histórico de cada selección.
 
-## Datos
+## Funcionalidades
 
-No se commitea data al repo. Todo se consume dinámicamente desde sus fuentes originales respetando cada licencia.
+**Explorador del torneo** — Grupos con tabla actualizable, fixture completo con hora local, cuadro eliminatorio Round of 32 → Final, y resultados en vivo.
 
-| Fuente | Licencia | Consumo |
-|--------|----------|---------|
-| [wheniskickoff.com API](https://wheniskickoff.com/data/v1/matches.json) | Fair use / propietaria permisiva. Atribución appreciated. Prohíbe scrapear para republicación masiva | API REST pública, CORS abierto, sin auth — fixture, grupos, sedes, TV |
-| [openfootball/worldcup](https://github.com/openfootball/worldcup) | CC0 1.0 — permite todo, sin restricciones | GitHub raw URLs → parser en API |
-| [StatsBomb Open Data](https://github.com/statsbomb/open-data) | Propietaria permisiva. **Requiere atribución + logo de StatsBomb** al publicar o distribuir análisis basados en sus datos | GitHub raw URLs → API |
-| [Reep Register](https://github.com/withqwerty/reep) | CC0 1.0 | API vía RapidAPI o CSVs |
+**Mapa de sedes** — Las 16 sedes en México, USA y Canadá sobre mapa, con filtro por región y detalle de cada estadio (capacidad, huso, partidos).
 
-Todas las atribuciones requeridas se muestran en el footer de la app. StatsBomb aparece con su logo y enlace en cada página.
+**Contexto histórico** — Al ver un partido, mostramos los últimos enfrentamientos en Mundiales pasados. Performance histórica de cada selección: mejor resultado, goles, estadísticas globales. "Este partido en la historia de los Mundiales" con línea de tiempo de encuentros previos.
 
-Logos de selecciones: crestas servidas por wheniskickoff (hotlink), banderas por flagcdn.com. Sin bundling de assets ajenos.
-
-## Core features
-
-### 1. Explorador del torneo
-- Grupos con tabla de posiciones actualizable
-- Fixture completo con fecha, hora, sede (convertida a huso local)
-- Bracket eliminatorio interactivo: Round of 32 → Final
-- Resultados en vivo durante el torneo
-
-### 2. Mapa de sedes
-- Las 16 sedes en México, USA y Canadá sobre mapa
-- Filtro por región (Western / Central / Eastern)
-- Info de cada estadio: capacidad, huso horario, partidos que alberga
-
-### 3. Contexto histórico
-- Al ver un partido: mostrar últimos enfrentamientos entre ambas selecciones en Mundiales pasados (StatsBomb)
-- Performance histórica de cada selección: mejor resultado, goles, estadísticas globales
-- "This fixture in World Cup history" — línea de tiempo de encuentros previos
-
-### 4. Group state calculator
-- Qué necesita cada equipo para clasificar según resultados actuales
-- Posibles cruces de octavos según posiciones de grupo
+**Calculadora de clasificación** — Qué necesita cada equipo para clasificar según resultados actuales, y posibles cruces de octavos.
 
 ## Stack
 
 | Capa | Tecnología |
 |------|-----------|
-| **API** | FastAPI — sirve fixture, grupos, bracket, datos históricos |
-| **Frontend** | React + TypeScript |
-| **Visualizaciones** | Campos (cancha, mapas de tiro) + Leaflet/Mapbox (mapa sedes) + D3 (bracket) |
-| **Live data** | wheniskickoff API + polling |
-| **Identidad** | Reep Register para resolver team/player IDs |
+| API | FastAPI |
+| Frontend | React + TypeScript + Vite |
+| CSS | Tailwind CSS v4 |
+| Mapas | Leaflet |
+| Bracket | D3 |
 
-## Estructura del proyecto
+## Atribuciones
+
+Toda la data se consume dinámicamente sin commitear nada al repo. Las atribuciones requeridas se muestran en el footer de la app.
+
+| Fuente | Licencia |
+|--------|----------|
+| [wheniskickoff API](https://wheniskickoff.com/data/v1/matches.json) — fixture, grupos, sedes, TV | Fair use. Atribución appreciated. |
+| [OpenFootball World Cup](https://github.com/openfootball/worldcup) — datos históricos | CC0 1.0 |
+| [StatsBomb Open Data](https://github.com/statsbomb/open-data) — eventos históricos | Propietaria permisiva. Requiere atribución + logo al publicar análisis. |
+| [Reep Register](https://github.com/withqwerty/reep) | CC0 1.0 |
+
+Crestas de selecciones servidas por wheniskickoff, banderas por flagcdn.com.
+
+## Desarrollo
 
 ```
-06-copa-2026/
-├── api/                  # FastAPI
-├── web/                  # React + Vite
-└── README.md
+/
+├── api/    → FastAPI
+└── web/    → React + Vite
 ```
