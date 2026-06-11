@@ -1,12 +1,6 @@
 import { useAsync } from "../lib/useAsync";
 import { getGroups, getTeams, getMatches } from "../lib/api";
-import type { Group, Team } from "../lib/types";
-
-interface GroupWithTeams {
-  group: Group;
-  teams: Team[];
-  standings: TeamStanding[];
-}
+import type { Team, Match } from "../lib/types";
 
 interface TeamStanding {
   team: Team;

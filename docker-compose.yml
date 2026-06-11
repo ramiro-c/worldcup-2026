@@ -9,9 +9,11 @@ services:
         COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
         RUN uv sync --frozen
         COPY . .
-        CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+        CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
       - "8000:8000"
+    volumes:
+      - ./api:/app
     restart: unless-stopped
 
   web:
@@ -26,6 +28,9 @@ services:
         CMD ["pnpm", "dev", "--host", "0.0.0.0"]
     ports:
       - "5173:5173"
+    volumes:
+      - ./web:/app
+      - /app/node_modules
     restart: unless-stopped
     depends_on:
       - api

@@ -1,33 +1,30 @@
-import time
 from typing import Any
 import httpx
 from providers.interfaces import ITournamentDataProvider
+from providers.cache import MemoryCache
 
 BASE_URL = "https://wheniskickoff.com/data/v1"
-CACHE_TTL = 300  # 5 minutes
 
 
 class WheniskickoffProvider(ITournamentDataProvider):
     def __init__(self):
-        self._cache: dict[str, tuple[float, list[dict]]] = {}
+        self._cache = MemoryCache(default_ttl=300)
 
     async def _fetch(self, endpoint: str) -> list[dict]:
-        now = time.time()
-        if endpoint in self._cache:
-            ts, data = self._cache[endpoint]
-            if now - ts < CACHE_TTL:
-                return data
+        is_fresh, cached = self._cache.get(endpoint)
+        if is_fresh:
+            return cached
 
         async with httpx.AsyncClient() as client:
             try:
                 resp = await client.get(f"{BASE_URL}/{endpoint}", timeout=10)
                 resp.raise_for_status()
                 data = resp.json()["data"]
-                self._cache[endpoint] = (now, data)
+                self._cache.set(endpoint, data)
                 return data
             except Exception:
-                if endpoint in self._cache:
-                    return self._cache[endpoint][1]
+                if cached is not None:
+                    return cached
                 return []
 
     async def get_groups(self) -> list[dict]:

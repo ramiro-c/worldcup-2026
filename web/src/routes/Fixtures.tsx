@@ -5,7 +5,9 @@ import type { Match } from "../lib/types";
 
 interface MatchWithDetails extends Match {
   home_team_name?: string;
+  home_team_crest?: string;
   away_team_name?: string;
+  away_team_crest?: string;
   venue_name?: string;
 }
 
@@ -19,15 +21,21 @@ export default function Fixtures() {
       getVenues(),
     ]);
 
-    const teamMap = new Map(teamsData.map((t) => [t.id, t.name]));
+    const teamMap = new Map(teamsData.map((t) => [t.id, t]));
     const venueMap = new Map(venuesData.map((v) => [v.id, v.name]));
 
-    return matchesData.map((match) => ({
-      ...match,
-      home_team_name: teamMap.get(match.home_team),
-      away_team_name: teamMap.get(match.away_team),
-      venue_name: venueMap.get(match.venue),
-    }));
+    return matchesData.map((match) => {
+      const home = teamMap.get(match.home_team);
+      const away = teamMap.get(match.away_team);
+      return {
+        ...match,
+        home_team_name: home?.name,
+        home_team_crest: home?.crest,
+        away_team_name: away?.name,
+        away_team_crest: away?.crest,
+        venue_name: venueMap.get(match.venue),
+      };
+    });
   }, []);
 
   const filteredMatches = matches?.filter((match) => {
@@ -91,6 +99,20 @@ export default function Fixtures() {
       </div>
 
       <div className="space-y-8">
+        {filteredMatches.length === 0 && (
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-12 text-center">
+            <p className="text-zinc-400 text-lg">
+              {filter === "knockout"
+                ? "No hay partidos de eliminatoria disponibles aún"
+                : "No hay partidos disponibles"}
+            </p>
+            {filter === "knockout" && (
+              <p className="text-zinc-500 mt-2 text-sm">
+                Los cruces se definirán cuando termine la fase de grupos
+              </p>
+            )}
+          </div>
+        )}
         {Object.entries(matchesByGroup).map(([group, groupMatches]) => (
           <div key={group} className="space-y-3">
             <h3 className="text-lg font-semibold text-zinc-300">
@@ -109,7 +131,7 @@ export default function Fixtures() {
                         {match.home_team_name}
                       </span>
                       <img
-                        src={getTeamCrest(match.home_team)}
+                        src={match.home_team_crest}
                         alt={match.home_team_name}
                         className="w-8 h-8 object-contain"
                       />
@@ -135,7 +157,7 @@ export default function Fixtures() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3">
                       <img
-                        src={getTeamCrest(match.away_team)}
+                        src={match.away_team_crest}
                         alt={match.away_team_name}
                         className="w-8 h-8 object-contain"
                       />
@@ -152,8 +174,4 @@ export default function Fixtures() {
       </div>
     </div>
   );
-}
-
-function getTeamCrest(teamId: string) {
-  return `https://wheniskickoff.com/data/v1/teams/${teamId}/crest.svg`;
 }

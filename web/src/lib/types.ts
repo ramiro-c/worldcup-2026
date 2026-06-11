@@ -42,3 +42,49 @@ export interface TvChannel {
   name: string;
   country: string;
 }
+
+export interface HistoricalTournamentSummary {
+  year: number;
+  name: string;
+  host: string;
+}
+
+export interface HistoricalTeam {
+  name: string;
+  is_winner: boolean;
+}
+
+export interface HistoricalScorer {
+  player: string;
+  minute: number;
+  penalty: boolean;
+  team: string;
+}
+
+export interface HistoricalMatch {
+  date: string | null;
+  time: string | null;
+  team1: HistoricalTeam;
+  team2: HistoricalTeam;
+  score: string;
+  ht_score: string | null;
+  has_extra_time: boolean;
+  penalty_score: string | null;
+  venue: string;
+  scorers: HistoricalScorer[];
+  stage: string;
+  group_name: string | null;
+}
+
+export interface HistoricalGroup {
+  name: string;
+  teams: string[];
+}
+
+export interface HistoricalTournament {
+  year: number;
+  host: string;
+  name: string;
+  groups: HistoricalGroup[];
+  matches: HistoricalMatch[];
+}

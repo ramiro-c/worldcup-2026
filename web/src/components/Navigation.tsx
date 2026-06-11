@@ -6,6 +6,7 @@ const navItems = [
   { to: "/fixtures", label: "Fixture" },
   { to: "/bracket", label: "Bracket" },
   { to: "/venues", label: "Sedes" },
+  { to: "/historical", label: "Historial" },
 ];
 
 export default function Navigation() {

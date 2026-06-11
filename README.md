@@ -10,10 +10,12 @@ No se commitea data al repo. Todo se consume dinámicamente desde sus fuentes or
 |--------|----------|---------|
 | [wheniskickoff.com API](https://wheniskickoff.com/data/v1/matches.json) | Fair use / propietaria permisiva. Atribución appreciated. Prohíbe scrapear para republicación masiva | API REST pública, CORS abierto, sin auth — fixture, grupos, sedes, TV |
 | [openfootball/worldcup](https://github.com/openfootball/worldcup) | CC0 1.0 — permite todo, sin restricciones | GitHub raw URLs → parser en API |
-| [StatsBomb Open Data](https://github.com/statsbomb/open-data) | Propietaria permisiva. Requiere atribución | GitHub raw URLs → API |
+| [StatsBomb Open Data](https://github.com/statsbomb/open-data) | Propietaria permisiva. **Requiere atribución + logo de StatsBomb** al publicar o distribuir análisis basados en sus datos | GitHub raw URLs → API |
 | [Reep Register](https://github.com/withqwerty/reep) | CC0 1.0 | API vía RapidAPI o CSVs |
 
-Logos: se usan las crestas que provee wheniskickoff y flagcdn.com. Sin bundling de assets ajenos.
+Todas las atribuciones requeridas se muestran en el footer de la app. StatsBomb aparece con su logo y enlace en cada página.
+
+Logos de selecciones: crestas servidas por wheniskickoff (hotlink), banderas por flagcdn.com. Sin bundling de assets ajenos.
 
 ## Core features
 

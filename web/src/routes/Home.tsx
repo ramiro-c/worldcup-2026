@@ -55,6 +55,16 @@ export default function Home() {
             Los 16 estadios en 3 países
           </p>
         </Link>
+
+        <Link
+          to="/historical"
+          className="group rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-colors"
+        >
+          <h3 className="font-semibold text-lg mb-2">Historial</h3>
+          <p className="text-sm text-zinc-400">
+            Todos los mundiales desde 1930
+          </p>
+        </Link>
       </nav>
     </div>
   );

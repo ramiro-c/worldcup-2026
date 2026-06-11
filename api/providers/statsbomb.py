@@ -1,40 +1,37 @@
-import time
 from typing import Any
 import httpx
 from providers.interfaces import IEventDataProvider
+from providers.cache import MemoryCache
 
 BASE_URL = "https://raw.githubusercontent.com/statsbomb/open-data/master"
-CACHE_TTL = 300
 
 
 class StatsBombProvider(IEventDataProvider):
     def __init__(self):
-        self._cache: dict[str, tuple[float, Any]] = {}
+        self._cache = MemoryCache(default_ttl=300)
 
     async def _fetch(self, path: str) -> Any:
-        now = time.time()
-        if path in self._cache:
-            ts, data = self._cache[path]
-            if now - ts < CACHE_TTL:
-                return data
+        is_fresh, cached = self._cache.get(path)
+        if is_fresh:
+            return cached
 
         async with httpx.AsyncClient() as client:
             try:
                 resp = await client.get(f"{BASE_URL}/{path}", timeout=10)
                 resp.raise_for_status()
                 data = resp.json()
-                self._cache[path] = (now, data)
+                self._cache.set(path, data)
                 return data
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == 404:
-                    self._cache[path] = (now, [])
+                    self._cache.set(path, [])
                     return []
-                if path in self._cache:
-                    return self._cache[path][1]
+                if cached is not None:
+                    return cached
                 return []
             except Exception:
-                if path in self._cache:
-                    return self._cache[path][1]
+                if cached is not None:
+                    return cached
                 return []
 
     async def get_competitions(self) -> list[dict]:

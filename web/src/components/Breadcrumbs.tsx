@@ -78,6 +78,7 @@ function getSegmentLabel(segment: string): string {
     fixtures: "Fixture",
     bracket: "Bracket",
     venues: "Sedes",
+    historical: "Historial",
   };
 
   if (labels[segment]) {
@@ -86,6 +87,10 @@ function getSegmentLabel(segment: string): string {
 
   if (segment === "match") {
     return "Partido";
+  }
+
+  if (/^\d{4}$/.test(segment)) {
+    return `Mundial ${segment}`;
   }
 
   return segment.charAt(0).toUpperCase() + segment.slice(1);

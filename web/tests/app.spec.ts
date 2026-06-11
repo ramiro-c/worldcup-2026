@@ -82,4 +82,32 @@ test.describe('Copa 2026 Web App', () => {
     await page.goto('/nonexistent-route');
     await expect(page.locator('h1').first()).toContainText('404');
   });
+
+  test('should navigate to Historical page', async ({ page }) => {
+    await page.goto('/');
+    await page.click('a[href="/historical"]');
+    await expect(page).toHaveURL('/historical');
+    await expect(page.locator('h2')).toContainText('Historial');
+  });
+
+  test('should display tournaments list', async ({ page }) => {
+    await page.goto('/historical');
+
+    // Check that tournament cards are rendered
+    await expect(page.locator('h2')).toContainText('Historial de Mundiales');
+
+    // Should show at least one decade group
+    const decadeHeadings = page.locator('h3');
+    await expect(decadeHeadings.first()).toBeVisible();
+
+    // Should have tournament links
+    const links = page.locator('a[href^="/historical/"]');
+    await expect(links.first()).toBeVisible();
+  });
+
+  test('should navigate to tournament detail', async ({ page }) => {
+    await page.goto('/historical');
+    await page.locator('a[href^="/historical/"]').first().click();
+    await expect(page.locator('h2')).toBeVisible();
+  });
 });

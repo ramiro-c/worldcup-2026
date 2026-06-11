@@ -1,10 +1,17 @@
 import re
-import time
 from typing import Any
 import httpx
 from providers.interfaces import IHistoricalDataProvider, IHeadToHeadProvider
+from providers.cache import MemoryCache
 
-CACHE_TTL = 300
+# Limpiar comentarios de YAML/txt (# al final)
+COMMENT_RE = re.compile(r'\s*#.*$')
+
+def clean_yaml_text(text: str) -> str:
+    """Eliminar comentarios inline de archivos YAML/txt"""
+    lines = text.split('\n')
+    cleaned = [COMMENT_RE.sub('', line).rstrip() for line in lines]
+    return '\n'.join(cleaned)
 
 YEAR_DIR_MAP: dict[int, str] = {
     1930: "1930--uruguay",
@@ -337,26 +344,25 @@ class OpenfootballParser:
 
 class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider):
     def __init__(self):
-        self._cache: dict[str, tuple[float, str]] = {}
+        self._fetch_cache = MemoryCache(default_ttl=300)
+        self._parsed_cache = MemoryCache(default_ttl=300)
         self._parser = OpenfootballParser()
 
     async def _fetch(self, url: str) -> str | None:
-        now = time.time()
-        if url in self._cache:
-            ts, data = self._cache[url]
-            if now - ts < CACHE_TTL:
-                return data
+        is_fresh, cached = self._fetch_cache.get(url)
+        if is_fresh:
+            return cached
 
         async with httpx.AsyncClient() as client:
             try:
                 resp = await client.get(url, timeout=15)
                 resp.raise_for_status()
                 text = resp.text
-                self._cache[url] = (now, text)
+                self._fetch_cache.set(url, text)
                 return text
             except Exception:
-                if url in self._cache:
-                    return self._cache[url][1]
+                if cached is not None:
+                    return cached
                 return None
 
     async def get_tournaments(self) -> list[dict[str, Any]]:
@@ -372,6 +378,11 @@ class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider):
         return tournaments
 
     async def get_tournament(self, year: int) -> dict[str, Any]:
+        cache_key = f"tournament:{year}"
+        is_fresh, cached = self._parsed_cache.get(cache_key)
+        if is_fresh:
+            return cached
+
         directory = YEAR_DIR_MAP.get(year)
         if not directory:
             return {}
@@ -388,6 +399,7 @@ class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider):
             finals_data = self._parser.parse(finals_text)
             result["matches"].extend(finals_data["matches"])
 
+        self._parsed_cache.set(cache_key, result)
         return result
 
     async def get_head_to_head(self, team1: str, team2: str) -> list[dict]:

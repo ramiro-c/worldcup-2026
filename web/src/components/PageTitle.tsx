@@ -7,6 +7,7 @@ const pageTitles: Record<string, string> = {
   "/fixtures": "Fixture",
   "/bracket": "Bracket",
   "/venues": "Sedes",
+  "/historical": "Historial",
 };
 
 export default function PageTitle() {
