@@ -1,7 +1,7 @@
 # TKT-002 — Responsive match cards en mobile
 
 **Prioridad:** Baja
-**Status:** 🟡 Pendiente
+**Status:** ✅ Done
 **Dependencias:** Ninguna
 **Colisiones:** Ninguna
 
@@ -11,14 +11,14 @@ Los match cards en mobile se apiñan con `justify-between`. Revisar breakpoints 
 
 ## Files
 
-| Archivo | Cambio |
+| Archivo | Estado |
 |---------|--------|
-| `web/src/routes/HistoricalTournament.tsx` | CSS/tailwind en `MatchCard` interno (función local) |
-| `web/src/routes/Team.tsx` | CSS/tailwind en `MatchCard` interno |
-| `web/src/routes/HistoricalMatchDetail.tsx` | CSS/tailwind en MatchDetail |
+| `web/src/routes/HistoricalTournament.tsx` | ✅ `flex-col sm:flex-row`, gap responsive |
+| `web/src/routes/Team.tsx` | ✅ `flex-col sm:flex-row`, gap responsive |
+| `web/src/routes/HistoricalMatchDetail.tsx` | ✅ `flex-col sm:flex-row`, layout vertical en mobile |
 
 ## Notas
 
-- Solo tocar clases CSS/Tailwind, no estructura ni lógica
-- Testear en viewport < 640px
-- No modificar componentes compartidos
+- Mobile (< 640px): equipos se stackean verticalmente con score centrado
+- Desktop: layout horizontal original
+- Score con `min-w-[80px]` para evitar colapso

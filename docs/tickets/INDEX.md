@@ -6,12 +6,12 @@ Tablero de seguimiento para mejoras. Cada ticket es independiente por archivo, d
 
 | Ticket | Título | Prioridad | Fileset | Estado |
 |--------|--------|-----------|---------|--------|
-| TKT-001 | Componente RetryButton compartido | Media | `components/`, `routes/*` | ✅ Done |
-| TKT-002 | Responsive match cards en mobile | Baja | `routes/` (MatchCard internos) | 🟡 Pendiente |
-| TKT-003 | LoadingBar conectada a carga real | Baja | `LoadingBar.tsx`, `App.tsx`, `useAsync.ts` | ✅ Done |
-| TKT-004 | i18n parcial — unificar español/inglés | Baja | `routes/*.tsx` (labels) | 🟡 Pendiente |
-| TKT-005 | Migrar a createBrowserRouter | Deuda | App.tsx, main.tsx | ✅ Done |
-| TKT-006 | Tests flaky — race condition en historical | Deuda | `tests/app.spec.ts` | ✅ Done |
+| TKT-001 | Componente RetryButton compartido | Media | `components/`, `routes/` | 🟡 Pendiente |
+| TKT-002 | Responsive match cards en mobile | Baja | `routes/` (MatchCard internos) | ✅ Done |
+| TKT-003 | LoadingBar conectada a carga real | Baja | `LoadingBar.tsx`, `App.tsx` | 🟡 Pendiente |
+| TKT-004 | i18n parcial — unificar español/inglés | Baja | `routes/*.tsx` (labels) | ✅ Done |
+| TKT-005 | Migrar a createBrowserRouter | Deuda | `App.tsx`, `main.tsx` | 🟡 Pendiente |
+| TKT-006 | Tests flaky — race condition en historical | Deuda | `tests/app.spec.ts` | 🟡 Pendiente |
 | TKT-007 | Skeleton + RetryButton en Match.tsx | Media | `routes/Match.tsx` | 🟡 Pendiente |
 | TKT-008 | Breadcrumbs en páginas anidadas | Baja | `components/`, `routes/` | 🟡 Pendiente |
 | TKT-009 | Meta tags dinámicos por ruta | Baja | `routes/*.tsx`, `index.html` | 🟡 Pendiente |

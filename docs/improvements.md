@@ -11,6 +11,7 @@
 
 - [x] **Página de equipo (`/team/:teamName`)** — Ruta, componente y endpoint `GET /historical/teams/{teamName}/matches` funcionando.
 - [x] **Torneos sin grupos (1930–1938)** — `HistoricalTournament.tsx:148` ya muestra "Sin datos de grupos para este torneo".
+- [x] **Responsive match cards en mobile** — Layout vertical en < 640px, horizontal en sm+.
 
 ## Pendientes
 
