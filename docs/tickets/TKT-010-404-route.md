@@ -1,7 +1,7 @@
 # TKT-010 — Ruta 404 para URLs inválidas
 
 **Prioridad:** Media
-**Status:** 🟡 Pendiente
+**Status:** ✅ Completado
 **Dependencias:** Ninguna
 **Colisiones:** Ninguna
 
@@ -14,7 +14,13 @@ No hay manejo de rutas inválidas. Si el usuario va a `/foobar` o `/historical/9
 | Archivo | Cambio |
 |---------|--------|
 | `web/src/routes/NotFound.tsx` | **Crear** — página 404 con link a Home |
-| `web/src/App.tsx` | Agregar ruta `*` al final del router |
+| `web/src/main.tsx` | Agregar ruta `*` al final del router |
+
+## Implementación
+
+- ✅ `NotFound.tsx` creado con diseño simple (404, mensaje, link a Home)
+- ✅ Ruta `*` configurada en `main.tsx:33`
+- ✅ Maneja URLs inválidas como `/foobar` o `/historical/9999`
 
 ## Notas
 
