@@ -12,7 +12,7 @@ Tablero de seguimiento para mejoras. Cada ticket es independiente por archivo, d
 | TKT-004 | i18n parcial — unificar español/inglés | Baja | `routes/*.tsx` (labels) | ✅ Done |
 | TKT-005 | Migrar a createBrowserRouter | Deuda | `App.tsx`, `main.tsx` | ✅ Done |
 | TKT-006 | Tests flaky — race condition en historical | Deuda | `tests/app.spec.ts` | ✅ Done |
-| TKT-007 | Skeleton + RetryButton en Match.tsx | Media | `routes/Match.tsx` | 🟡 Pendiente |
+| TKT-007 | Skeleton + RetryButton en Match.tsx | Media | `routes/Match.tsx` | ✅ Done |
 | TKT-008 | Breadcrumbs en páginas anidadas | Baja | `components/`, `routes/` | ✅ Done |
 | TKT-009 | Meta tags dinámicos por ruta | Baja | `routes/*.tsx`, `index.html` | 🟡 Pendiente |
 | TKT-010 | Ruta 404 para URLs inválidas | Media | `routes/NotFound.tsx`, `App.tsx` | ✅ Done |
