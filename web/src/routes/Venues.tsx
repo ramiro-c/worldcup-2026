@@ -3,6 +3,7 @@ import { useAsync } from "../lib/useAsync";
 import { getVenues } from "../lib/api";
 import type { Venue } from "../lib/types";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
+import RetryButton from "../components/RetryButton";
 
 export default function Venues() {
   const { data: venues, loading, error, refetch } = useAsync(getVenues, []);
@@ -74,17 +75,7 @@ export default function Venues() {
   }
 
   if (error) {
-    return (
-      <div className="text-center py-20 space-y-4">
-        <p className="text-red-400">Error: {error.message}</p>
-        <button
-          onClick={refetch}
-          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-medium rounded-lg transition-colors"
-        >
-          Reintentar
-        </button>
-      </div>
-    );
+    return <RetryButton onRetry={refetch} message={error.message} />;
   }
 
   return (

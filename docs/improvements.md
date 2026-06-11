@@ -26,8 +26,8 @@ Ajustar breakpoints en match cards para mobile.
 Conectar la barra de carga al estado real en vez de timer fijo.
 → [Ver ticket](tickets/TKT-003-loadingbar-timing.md)
 
-### TKT-004 — i18n parcial
-Unificar español/inglés en labels de UI.
+### TKT-004 — i18n parcial ✅
+Unificar español/inglés en labels de UI. **Verificado: todo en español**.
 → [Ver ticket](tickets/TKT-004-i18n.md)
 
 ### TKT-005 — Migrar a createBrowserRouter
@@ -37,6 +37,22 @@ Refactor a data router de React Router v6.4+.
 ### TKT-006 — Tests flaky
 Fix race condition en tests de historical.
 → [Ver ticket](tickets/TKT-006-flaky-tests.md)
+
+### TKT-007 — Skeleton + RetryButton en Match.tsx
+Agregar loading states y retry button a la ruta de partidos en vivo.
+→ [Ver ticket](tickets/TKT-007-match-skeleton.md)
+
+### TKT-008 — Breadcrumbs
+Navegación jerárquica en páginas anidadas (Historial › 2022 › Final).
+→ [Ver ticket](tickets/TKT-008-breadcrumbs.md)
+
+### TKT-009 — Meta tags dinámicos
+SEO y social sharing con `<title>` y `<meta description>` por ruta.
+→ [Ver ticket](tickets/TKT-009-meta-tags.md)
+
+### TKT-010 — Ruta 404
+Manejo amigable de URLs inválidas.
+→ [Ver ticket](tickets/TKT-010-404-route.md)
 
 ## Hecho (no requiere ticket)
 

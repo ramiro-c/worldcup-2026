@@ -86,7 +86,7 @@ export default function HistoricalMatchDetail() {
             <Link to={`/team/${encodeURIComponent(match.team1.name)}`} className={`text-xl sm:text-2xl font-bold ${match.team1.is_winner ? "text-emerald-400" : ""} hover:text-emerald-400 transition-colors`}>
               {match.team1.name}
             </Link>
-            {match.team1.is_winner && <p className="text-emerald-500 text-sm font-medium">Campeón</p>}
+            {match.team1.is_winner && <p className="text-emerald-500 text-sm font-medium">Ganador</p>}
           </div>
 
           <div className="text-center px-4 sm:px-8">
@@ -110,7 +110,7 @@ export default function HistoricalMatchDetail() {
             <Link to={`/team/${encodeURIComponent(match.team2.name)}`} className={`text-xl sm:text-2xl font-bold ${match.team2.is_winner ? "text-emerald-400" : ""} hover:text-emerald-400 transition-colors`}>
               {match.team2.name}
             </Link>
-            {match.team2.is_winner && <p className="text-emerald-500 text-sm font-medium">Campeón</p>}
+            {match.team2.is_winner && <p className="text-emerald-500 text-sm font-medium">Ganador</p>}
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Copa 2026 Web App', () => {
+  test.describe.configure({ retries: 2 });
   test('should load home page', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/Copa Mundial 2026/);

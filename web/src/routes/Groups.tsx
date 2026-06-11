@@ -2,6 +2,7 @@ import { useAsync } from "../lib/useAsync";
 import { getGroups, getTeams, getMatches } from "../lib/api";
 import type { Team, Match } from "../lib/types";
 import { Skeleton, SkeletonCard, SkeletonTable } from "../components/Skeleton";
+import RetryButton from "../components/RetryButton";
 
 interface TeamStanding {
   team: Team;
@@ -101,17 +102,7 @@ export default function Groups() {
   }
 
   if (error) {
-    return (
-      <div className="text-center py-20 space-y-4">
-        <p className="text-red-400">Error: {error.message}</p>
-        <button
-          onClick={refetch}
-          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-medium rounded-lg transition-colors"
-        >
-          Reintentar
-        </button>
-      </div>
-    );
+    return <RetryButton onRetry={refetch} message={error.message} />;
   }
 
   return (

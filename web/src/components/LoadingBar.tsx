@@ -1,31 +1,27 @@
 import { useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLoading } from "../lib/LoadingContext";
 
 export default function LoadingBar() {
-  const location = useLocation();
+  const { isLoading } = useLoading();
   const ref = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    if (timerRef.current) clearTimeout(timerRef.current);
-
-    el.style.width = "0%";
-    el.style.opacity = "1";
-
-    requestAnimationFrame(() => {
-      el!.style.width = "70%";
-    });
-
-    timerRef.current = setTimeout(() => {
-      el!.style.width = "100%";
-      el!.style.opacity = "0";
-    }, 350);
-
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [location.pathname]);
+    if (isLoading) {
+      el.style.width = "0%";
+      el.style.opacity = "1";
+      requestAnimationFrame(() => {
+        el!.style.width = "70%";
+      });
+    } else {
+      el.style.width = "100%";
+      setTimeout(() => {
+        if (el) el.style.opacity = "0";
+      }, 200);
+    }
+  }, [isLoading]);
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 h-0.5">

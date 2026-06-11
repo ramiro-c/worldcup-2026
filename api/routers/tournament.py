@@ -176,11 +176,19 @@ def map_matches(raw: list[dict]) -> list[dict]:
         away = m.get("away") or m.get("away_code", "")
         if not home or not away:
             continue
+        
+        home_normalized = home.upper()
+        away_normalized = away.upper()
+        if home_normalized == "URY":
+            home_normalized = "URU"
+        if away_normalized == "URY":
+            away_normalized = "URU"
+        
         mapped.append(
             {
                 "id": m.get("slug", str(m.get("num", ""))),
-                "home_team": home.lower(),
-                "away_team": away.lower(),
+                "home_team": home_normalized.lower(),
+                "away_team": away_normalized.lower(),
                 "home_team_name": m.get("home_name", home),
                 "away_team_name": m.get("away_name", away),
                 "venue": m.get("venue", ""),

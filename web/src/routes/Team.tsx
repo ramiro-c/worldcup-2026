@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getTeamMatches } from "../lib/api";
 import type { HistoricalTeamMatch } from "../lib/types";
+import RetryButton from "../components/RetryButton";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 
 const STAGE_LABELS: Record<string, string> = {
@@ -49,12 +50,7 @@ export default function Team() {
       <div className="text-center py-20 space-y-6">
         <h1 className="text-4xl font-bold text-zinc-700">Error al cargar</h1>
         <p className="text-zinc-500">{error.message}</p>
-        <button
-          onClick={refetch}
-          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-medium rounded-lg transition-colors"
-        >
-          Reintentar
-        </button>
+        <RetryButton onRetry={refetch} message={error.message} />
         <div>
           <Link
             to="/historical"
