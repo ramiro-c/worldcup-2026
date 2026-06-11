@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getMatches, getTeams, getVenues } from "../lib/api";
 import type { Match } from "../lib/types";
@@ -165,9 +166,12 @@ export default function Fixtures() {
                 >
                   <div className="text-right flex-1 min-w-0">
                     <div className="flex items-center justify-end gap-3">
-                      <span className="font-medium truncate">
+                      <Link
+                        to={`/team/${encodeURIComponent(match.home_team_name!)}`}
+                        className="font-medium truncate hover:text-emerald-400 transition-colors"
+                      >
                         {match.home_team_name}
-                      </span>
+                      </Link>
                       <img
                         src={match.home_team_crest}
                         alt={match.home_team_name}
@@ -199,9 +203,12 @@ export default function Fixtures() {
                         alt={match.away_team_name}
                         className="w-8 h-8 object-contain"
                       />
-                      <span className="font-medium truncate">
+                      <Link
+                        to={`/team/${encodeURIComponent(match.away_team_name!)}`}
+                        className="font-medium truncate hover:text-emerald-400 transition-colors"
+                      >
                         {match.away_team_name}
-                      </span>
+                      </Link>
                     </div>
                   </div>
                 </div>

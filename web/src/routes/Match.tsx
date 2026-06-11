@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useAsync } from "../lib/useAsync";
 import { getMatch, getTeams, getVenues } from "../lib/api";
 import type { Match } from "../lib/types";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
+import RetryButton from "../components/RetryButton";
 
 interface MatchDetails extends Match {
   home_team_name?: string;
@@ -14,49 +15,33 @@ interface MatchDetails extends Match {
 
 export default function Match() {
   const { id } = useParams<{ id: string }>();
-  const [match, setMatch] = useState<MatchDetails | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadMatch() {
-      if (!id) return;
+  const { data: match, loading, error, refetch } = useAsync(async () => {
+    if (!id) return null;
 
-      try {
-        const [matchData, teamsData, venuesData] = await Promise.all([
-          getMatch(id),
-          getTeams(),
-          getVenues(),
-        ]);
+    const [matchData, teamsData, venuesData] = await Promise.all([
+      getMatch(id),
+      getTeams(),
+      getVenues(),
+    ]);
 
-        if (!matchData) {
-          setMatch(null);
-          return;
-        }
+    if (!matchData) return null;
 
-        const teamMap = new Map(teamsData.map((t) => [t.id, t]));
-        const venueMap = new Map(venuesData.map((v) => [v.id, v]));
+    const teamMap = new Map(teamsData.map((t) => [t.id, t]));
+    const venueMap = new Map(venuesData.map((v) => [v.id, v]));
 
-        const homeTeam = teamMap.get(matchData.home_team);
-        const awayTeam = teamMap.get(matchData.away_team);
-        const venue = venueMap.get(matchData.venue);
+    const homeTeam = teamMap.get(matchData.home_team);
+    const awayTeam = teamMap.get(matchData.away_team);
+    const venue = venueMap.get(matchData.venue);
 
-        setMatch({
-          ...matchData,
-          home_team_name: homeTeam?.name,
-          away_team_name: awayTeam?.name,
-          venue_name: venue?.name,
-          home_crest: homeTeam?.crest,
-          away_crest: awayTeam?.crest,
-        });
-      } catch (error) {
-        console.error("Error loading match:", error);
-        setMatch(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadMatch();
+    return {
+      ...matchData,
+      home_team_name: homeTeam?.name,
+      away_team_name: awayTeam?.name,
+      venue_name: venue?.name,
+      home_crest: homeTeam?.crest,
+      away_crest: awayTeam?.crest,
+    } as MatchDetails;
   }, [id]);
 
   if (loading) {
@@ -101,6 +86,24 @@ export default function Match() {
             </div>
           </div>
         </SkeletonCard>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20 space-y-6">
+        <h1 className="text-4xl font-bold text-zinc-700">Error al cargar</h1>
+        <p className="text-zinc-500">No se pudo cargar la información del partido.</p>
+        <RetryButton onRetry={refetch} />
+        <div>
+          <Link
+            to="/fixtures"
+            className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors"
+          >
+            Volver al fixture
+          </Link>
+        </div>
       </div>
     );
   }
@@ -163,7 +166,12 @@ export default function Match() {
           <div className="w-full sm:flex-1 text-center sm:text-right">
             <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4">
               <div>
-                <h3 className="text-xl sm:text-2xl font-bold">{match.home_team_name}</h3>
+                <Link
+                  to={`/team/${encodeURIComponent(match.home_team_name!)}`}
+                  className="text-xl sm:text-2xl font-bold hover:text-emerald-400 transition-colors"
+                >
+                  {match.home_team_name}
+                </Link>
                 {match.status !== "scheduled" && (
                   <p className="text-zinc-400">Local</p>
                 )}
@@ -203,7 +211,12 @@ export default function Match() {
                 />
               )}
               <div>
-                <h3 className="text-xl sm:text-2xl font-bold">{match.away_team_name}</h3>
+                <Link
+                  to={`/team/${encodeURIComponent(match.away_team_name!)}`}
+                  className="text-xl sm:text-2xl font-bold hover:text-emerald-400 transition-colors"
+                >
+                  {match.away_team_name}
+                </Link>
                 {match.status !== "scheduled" && (
                   <p className="text-zinc-400">Visitante</p>
                 )}

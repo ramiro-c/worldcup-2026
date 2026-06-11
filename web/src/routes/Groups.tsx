@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getGroups, getTeams, getMatches } from "../lib/api";
 import type { Team, Match } from "../lib/types";
@@ -155,7 +156,12 @@ export default function Groups() {
                             alt={standing.team.name}
                             className="w-6 h-6 object-contain"
                           />
-                          <span className="font-medium">{standing.team.name}</span>
+                          <Link
+                            to={`/team/${encodeURIComponent(standing.team.name)}`}
+                            className="font-medium hover:text-emerald-400 transition-colors"
+                          >
+                            {standing.team.name}
+                          </Link>
                         </div>
                       </td>
                       <td className="text-center py-3 text-zinc-400">{standing.played}</td>
