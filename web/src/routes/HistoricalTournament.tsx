@@ -202,14 +202,14 @@ function MatchCard({ match }: { match: HistoricalMatch }) {
       to={`/historical/${year}/${match.id}`}
       className="block rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-colors cursor-pointer"
     >
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1 text-right">
-          <Link to={`/team/${encodeURIComponent(match.team1.name)}`} className={`text-sm ${winnerClass(match.team1.is_winner)} hover:text-emerald-400 transition-colors`}>
+      <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-3 w-full sm:w-auto sm:justify-end">
+          <Link to={`/team/${encodeURIComponent(match.team1.name)}`} className={`text-sm sm:text-base ${winnerClass(match.team1.is_winner)} hover:text-emerald-400 transition-colors flex-1 sm:flex-none text-right`}>
             {match.team1.name}
           </Link>
         </div>
 
-        <div className="text-center">
+        <div className="text-center min-w-[80px]">
           <div className="text-xl font-bold tabular-nums text-zinc-100">
             {match.score}
           </div>
@@ -226,8 +226,8 @@ function MatchCard({ match }: { match: HistoricalMatch }) {
           )}
         </div>
 
-        <div className="flex-1">
-          <Link to={`/team/${encodeURIComponent(match.team2.name)}`} className={`text-sm ${winnerClass(match.team2.is_winner)} hover:text-emerald-400 transition-colors`}>
+        <div className="flex items-center gap-3 w-full sm:w-auto sm:justify-start">
+          <Link to={`/team/${encodeURIComponent(match.team2.name)}`} className={`text-sm sm:text-base ${winnerClass(match.team2.is_winner)} hover:text-emerald-400 transition-colors flex-1 sm:flex-none text-left`}>
             {match.team2.name}
           </Link>
         </div>

@@ -1,15 +1,16 @@
 import { useEffect, useRef } from "react";
-import { useLoading } from "../lib/LoadingContext";
+import { useNavigation } from "react-router-dom";
 
 export default function LoadingBar() {
-  const { isLoading } = useLoading();
+  const navigation = useNavigation();
   const ref = useRef<HTMLDivElement>(null);
+  const isNavigating = navigation.state !== "idle";
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    if (isLoading) {
+    if (isNavigating) {
       el.style.width = "0%";
       el.style.opacity = "1";
       requestAnimationFrame(() => {
@@ -21,7 +22,7 @@ export default function LoadingBar() {
         if (el) el.style.opacity = "0";
       }, 200);
     }
-  }, [isLoading]);
+  }, [isNavigating]);
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 h-0.5">

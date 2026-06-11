@@ -130,14 +130,14 @@ function MatchCard({ match }: { match: HistoricalTeamMatch }) {
       to={`/historical/${match.tournament_year}/${match.id}`}
       className="block rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-colors cursor-pointer"
     >
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1 text-right">
-          <span className={`text-sm ${isWinner ? "font-bold text-emerald-400" : "text-zinc-400"}`}>
+      <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-3 w-full sm:w-auto sm:justify-end">
+          <span className={`text-sm sm:text-base ${isWinner ? "font-bold text-emerald-400" : "text-zinc-400"} flex-1 sm:flex-none text-right`}>
             {match.team1.name}
           </span>
         </div>
 
-        <div className="text-center">
+        <div className="text-center min-w-[80px]">
           <div className="text-xl font-bold tabular-nums text-zinc-100">
             {match.score}
           </div>
@@ -154,8 +154,8 @@ function MatchCard({ match }: { match: HistoricalTeamMatch }) {
           )}
         </div>
 
-        <div className="flex-1">
-          <span className={`text-sm ${!isTeam1 ? (match.team2.is_winner ? "font-bold text-emerald-400" : "text-zinc-400") : "text-zinc-400"}`}>
+        <div className="flex items-center gap-3 w-full sm:w-auto sm:justify-start">
+          <span className={`text-sm sm:text-base ${!isTeam1 ? (match.team2.is_winner ? "font-bold text-emerald-400" : "text-zinc-400") : "text-zinc-400"} flex-1 sm:flex-none text-left`}>
             {match.team2.name}
           </span>
         </div>
