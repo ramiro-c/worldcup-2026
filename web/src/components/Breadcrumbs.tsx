@@ -59,10 +59,21 @@ function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
   const paths = pathname.split("/").filter(Boolean);
   const breadcrumbs: BreadcrumbItem[] = [];
 
+  // Routes where the first segment is a parameter container (no standalone page)
+  // e.g., /team/:name, /venues/:id, /match/:id
+  const paramContainers = new Set(["team", "venues", "match"]);
+
   let currentPath = "";
-  for (const segment of paths) {
+  for (let i = 0; i < paths.length; i++) {
+    const segment = paths[i];
     currentPath += `/${segment}`;
-    const label = getSegmentLabel(segment);
+
+    // Skip intermediate breadcrumb for param containers when followed by a param
+    if (paramContainers.has(segment) && i < paths.length - 1) {
+      continue;
+    }
+
+    const label = getSegmentLabel(segment, paths[i - 1]);
     breadcrumbs.push({
       label,
       to: currentPath,
@@ -72,7 +83,7 @@ function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
   return breadcrumbs;
 }
 
-function getSegmentLabel(segment: string): string {
+function getSegmentLabel(segment: string, parentSegment?: string): string {
   const labels: Record<string, string> = {
     groups: "Grupos",
     fixtures: "Fixture",
@@ -80,18 +91,23 @@ function getSegmentLabel(segment: string): string {
     venues: "Sedes",
     historical: "Historial",
     tv: "TV",
+    team: "Equipo",
+    match: "Partido",
+    "head-to-head": "Cara a cara",
   };
 
   if (labels[segment]) {
     return labels[segment];
   }
 
-  if (segment === "match") {
-    return "Partido";
-  }
-
   if (/^\d{4}$/.test(segment)) {
     return `Mundial ${segment}`;
+  }
+
+  // If parent is a param container, this segment is the actual value (team name, venue name, etc.)
+  const paramContainers = new Set(["team", "venues", "match"]);
+  if (parentSegment && paramContainers.has(parentSegment)) {
+    return decodeURIComponent(segment);
   }
 
   return segment.charAt(0).toUpperCase() + segment.slice(1);
