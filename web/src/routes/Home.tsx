@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
-import { getUpcomingMatches, getFeaturedVenues, getTv } from "../lib/api";
-import type { Match, Venue, TvChannel } from "../lib/types";
+import { getUpcomingMatches, getFeaturedVenues } from "../lib/api";
+import type { Match, Venue } from "../lib/types";
 import { trackPageView } from "../lib/analytics";
 import { useTimezone } from "../lib/useTimezone";
 import { formatMatchTime } from "../lib/formatTime";
 import LiveWidget from "../components/LiveWidget";
+import NavGrid from "../components/NavGrid";
+import type { NavGridItem } from "../components/NavGrid";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 import ErrorState from "../components/ErrorState";
 
@@ -146,80 +148,6 @@ function FeaturedVenuesSection({
   );
 }
 
-function TvChannelsSection({
-  channels,
-  loading,
-  error,
-  onRetry,
-}: {
-  channels: TvChannel[] | null;
-  loading: boolean;
-  error: Error | null;
-  onRetry: () => void;
-}) {
-  if (loading) {
-    return (
-      <section className="space-y-4">
-        <Skeleton className="h-7 w-36" />
-        <SkeletonCard className="p-4 space-y-2">
-          <Skeleton className="h-4 w-24" />
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-4 w-full" />
-          ))}
-        </SkeletonCard>
-        <SkeletonCard className="p-4 space-y-2">
-          <Skeleton className="h-4 w-20" />
-          {[1, 2].map((i) => (
-            <Skeleton key={i} className="h-4 w-full" />
-          ))}
-        </SkeletonCard>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section className="space-y-4">
-        <h2 className="text-2xl font-bold">Canales de TV</h2>
-        <ErrorState message={error.message} onRetry={onRetry} />
-      </section>
-    );
-  }
-
-  if (!channels || channels.length === 0) return null;
-
-  const byCountry = channels.reduce((acc, ch) => {
-    if (!acc[ch.country]) acc[ch.country] = [];
-    acc[ch.country].push(ch.name);
-    return acc;
-  }, {} as Record<string, string[]>);
-
-  return (
-    <section className="space-y-4">
-      <h2 className="text-2xl font-bold">Canales de TV</h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {Object.entries(byCountry).map(([country, names]) => (
-          <div
-            key={country}
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
-          >
-            <h3 className="font-semibold text-sm text-zinc-400 mb-2">
-              {country}
-            </h3>
-            <ul className="space-y-1">
-              {names.map((name) => (
-                <li key={name} className="text-zinc-300 text-sm">
-                  {name}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 export default function Home() {
   useEffect(() => {
     trackPageView("/");
@@ -230,30 +158,29 @@ export default function Home() {
     loading: matchesLoading,
     error: matchesError,
     refetch: refetchMatches,
-  } = useAsync(() => getUpcomingMatches(5), []);
+  } = useAsync(() => getUpcomingMatches(3), []);
 
   const {
     data: venues,
     loading: venuesLoading,
     error: venuesError,
     refetch: refetchVenues,
-  } = useAsync(() => getFeaturedVenues(4), []);
+  } = useAsync(() => getFeaturedVenues(3), []);
 
-  const {
-    data: channels,
-    loading: channelsLoading,
-    error: channelsError,
-    refetch: refetchChannels,
-  } = useAsync(() => getTv(), []);
+  const hasAnyPreviewData =
+    matches || venues ||
+    matchesLoading || venuesLoading;
 
-  const hasAnyData =
-    matches || venues || channels ||
-    matchesLoading || venuesLoading || channelsLoading;
+  const navItems: NavGridItem[] = [
+    { label: "Grupos", to: "/groups", description: "Tabla de posiciones y fixtures de cada grupo" },
+    { label: "Fixture", to: "/fixtures", description: "Todos los partidos del torneo" },
+    { label: "Eliminatorias", to: "/bracket", description: "Cuadro desde octavos hasta la final" },
+    { label: "Sedes", to: "/venues", description: "Los 16 estadios en 3 países" },
+    { label: "Historial", to: "/historical", description: "Todos los mundiales desde 1930" },
+  ];
 
   return (
     <div className="space-y-8">
-      <LiveWidget />
-
       <section className="text-center space-y-4">
         <h2 className="text-4xl font-bold tracking-tight">
           Copa Mundial de la FIFA 2026
@@ -266,7 +193,11 @@ export default function Home() {
         </p>
       </section>
 
-      {hasAnyData && (
+      <NavGrid items={navItems} />
+
+      <LiveWidget />
+
+      {hasAnyPreviewData && (
         <UpcomingMatchesSection
           matches={matches}
           loading={matchesLoading}
@@ -275,7 +206,7 @@ export default function Home() {
         />
       )}
 
-      {hasAnyData && (
+      {hasAnyPreviewData && (
         <FeaturedVenuesSection
           venues={venues}
           loading={venuesLoading}
@@ -283,67 +214,6 @@ export default function Home() {
           onRetry={refetchVenues}
         />
       )}
-
-      {hasAnyData && (
-        <TvChannelsSection
-          channels={channels}
-          loading={channelsLoading}
-          error={channelsError}
-          onRetry={refetchChannels}
-        />
-      )}
-
-      <nav className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Link
-          to="/groups"
-          className="group rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-colors"
-        >
-          <h3 className="font-semibold text-lg mb-2">Grupos</h3>
-          <p className="text-sm text-zinc-400">
-            Tabla de posiciones y fixtures de cada grupo
-          </p>
-        </Link>
-
-        <Link
-          to="/fixtures"
-          className="group rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-colors"
-        >
-          <h3 className="font-semibold text-lg mb-2">Fixture</h3>
-          <p className="text-sm text-zinc-400">
-            Todos los partidos del torneo
-          </p>
-        </Link>
-
-        <Link
-          to="/bracket"
-          className="group rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-colors"
-        >
-          <h3 className="font-semibold text-lg mb-2">Eliminatorias</h3>
-          <p className="text-sm text-zinc-400">
-            Cuadro desde octavos hasta la final
-          </p>
-        </Link>
-
-        <Link
-          to="/venues"
-          className="group rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-colors"
-        >
-          <h3 className="font-semibold text-lg mb-2">Sedes</h3>
-          <p className="text-sm text-zinc-400">
-            Los 16 estadios en 3 países
-          </p>
-        </Link>
-
-        <Link
-          to="/historical"
-          className="group rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-colors"
-        >
-          <h3 className="font-semibold text-lg mb-2">Historial</h3>
-          <p className="text-sm text-zinc-400">
-            Todos los mundiales desde 1930
-          </p>
-        </Link>
-      </nav>
     </div>
   );
 }

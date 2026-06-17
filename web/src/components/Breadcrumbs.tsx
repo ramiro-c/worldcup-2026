@@ -79,6 +79,7 @@ function getSegmentLabel(segment: string): string {
     bracket: "Eliminatorias",
     venues: "Sedes",
     historical: "Historial",
+    tv: "TV",
   };
 
   if (labels[segment]) {
