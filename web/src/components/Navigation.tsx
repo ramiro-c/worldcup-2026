@@ -3,12 +3,12 @@ import { NavLink } from "react-router-dom";
 
 const navItems = [
   { to: "/", label: "Inicio" },
-  { to: "/tv", label: "TV" },
   { to: "/groups", label: "Grupos" },
   { to: "/fixtures", label: "Fixture" },
   { to: "/bracket", label: "Eliminatorias" },
   { to: "/venues", label: "Sedes" },
   { to: "/historical", label: "Historial" },
+  { to: "/tv", label: "TV" },
 ];
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
