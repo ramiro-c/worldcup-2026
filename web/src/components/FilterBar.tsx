@@ -36,10 +36,10 @@ export default function FilterBar({
   const hasActiveFilters = teamFilter || dateFilter || venueFilter || statusFilter.length > 0;
 
   return (
-    <div className="flex flex-wrap items-end gap-3">
+    <div className="flex flex-wrap items-center gap-3">
       {/* Team dropdown */}
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-zinc-500 font-medium">Equipo</label>
+        <label className="text-xs text-zinc-500 font-medium h-4">Equipo</label>
         <div className="relative">
           <select
             value={teamFilter}
@@ -71,7 +71,7 @@ export default function FilterBar({
 
       {/* Date picker */}
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-zinc-500 font-medium">Fecha</label>
+        <label className="text-xs text-zinc-500 font-medium h-4">Fecha</label>
         <input
           type="date"
           value={dateFilter}
@@ -82,7 +82,7 @@ export default function FilterBar({
 
       {/* Venue dropdown */}
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-zinc-500 font-medium">Sede</label>
+        <label className="text-xs text-zinc-500 font-medium h-4">Sede</label>
         <div className="relative">
           <select
             value={venueFilter}
@@ -114,8 +114,8 @@ export default function FilterBar({
 
       {/* Status toggles */}
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-zinc-500 font-medium">Estado</label>
-        <div className="flex gap-1.5">
+        <label className="text-xs text-zinc-500 font-medium h-4">Estado</label>
+        <div className="flex gap-1.5 items-center">
           {STATUS_OPTIONS.map((opt) => {
             const active = statusFilter.includes(opt.value);
             return (
@@ -137,12 +137,15 @@ export default function FilterBar({
 
       {/* Clear button */}
       {hasActiveFilters && (
-        <button
-          onClick={onClear}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
-        >
-          Limpiar filtros
-        </button>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-zinc-500 font-medium h-4">&nbsp;</label>
+          <button
+            onClick={onClear}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
+          >
+            Limpiar
+          </button>
+        </div>
       )}
     </div>
   );
