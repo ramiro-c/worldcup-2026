@@ -1,6 +1,7 @@
 import re
 from typing import Any
 import httpx
+from providers.aliases import resolve_team_name
 from providers.interfaces import IHistoricalDataProvider, IHeadToHeadProvider, ITeamDataProvider
 from providers.cache import MemoryCache
 
@@ -422,14 +423,16 @@ class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider, ITeamDa
 
     async def get_head_to_head(self, team1: str, team2: str) -> list[dict]:
         matches: list[dict] = []
-        t1_lower = team1.lower().strip()
-        t2_lower = team2.lower().strip()
+        t1_canon = resolve_team_name(team1)
+        t2_canon = resolve_team_name(team2)
+        t1_lower = t1_canon.lower()
+        t2_lower = t2_canon.lower()
         for year in YEAR_DIR_MAP:
             try:
                 tournament = await self.get_tournament(year)
                 for match in tournament.get("matches", []):
-                    mt1 = match["team1"]["name"].lower()
-                    mt2 = match["team2"]["name"].lower()
+                    mt1 = resolve_team_name(match["team1"]["name"]).lower()
+                    mt2 = resolve_team_name(match["team2"]["name"]).lower()
                     if (mt1 == t1_lower and mt2 == t2_lower) or (
                         mt1 == t2_lower and mt2 == t1_lower
                     ):
@@ -440,13 +443,14 @@ class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider, ITeamDa
 
     async def get_team_matches(self, team_name: str) -> list[dict]:
         matches: list[dict] = []
-        team_lower = team_name.lower().strip()
+        team_canon = resolve_team_name(team_name)
+        team_lower = team_canon.lower()
         for year in YEAR_DIR_MAP:
             try:
                 tournament = await self.get_tournament(year)
                 for match in tournament.get("matches", []):
-                    mt1 = match["team1"]["name"].lower()
-                    mt2 = match["team2"]["name"].lower()
+                    mt1 = resolve_team_name(match["team1"]["name"]).lower()
+                    mt2 = resolve_team_name(match["team2"]["name"]).lower()
                     if mt1 == team_lower or mt2 == team_lower:
                         enriched = dict(match)
                         enriched["tournament_year"] = year
