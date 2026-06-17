@@ -3,6 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getHeadToHead } from "../lib/api";
 import type { HistoricalMatch } from "../lib/types";
+import { formatMatchTime } from "../lib/formatTime";
+import { useTimezone } from "../lib/useTimezone";
 import RetryButton from "../components/RetryButton";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 
@@ -37,20 +39,17 @@ function computeSummary(matches: HistoricalMatch[], team1Name: string): WDLSumma
   return { team1Wins, team2Wins, draws, total: matches.length };
 }
 
-function formatDate(dateStr: string | null): string {
+function formatDate(dateStr: string | null, timezone: string): string {
   if (!dateStr) return "";
-  // dates from API look like "1930-07-30"
-  const parts = dateStr.split("-");
-  if (parts.length === 3) {
-    return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  }
-  return dateStr;
+  // Historical matches have no time, formatMatchTime returns date as-is
+  return formatMatchTime(dateStr, null, timezone);
 }
 
 export default function HeadToHead() {
   const { team1, team2 } = useParams<{ team1: string; team2: string }>();
   const team1Name = decodeURIComponent(team1 ?? "");
   const team2Name = decodeURIComponent(team2 ?? "");
+  const { timezone } = useTimezone();
 
   const { data: matches, loading, error, refetch } = useAsync(
     () => getHeadToHead(team1Name, team2Name),
@@ -199,7 +198,7 @@ export default function HeadToHead() {
           <h3 className="text-lg font-semibold text-zinc-300">Últimos 5 enfrentamientos</h3>
           <div className="space-y-2">
             {last5.map((match, i) => (
-              <MatchResultRow key={i} match={match} />
+              <MatchResultRow key={i} match={match} timezone={timezone} />
             ))}
           </div>
         </section>
@@ -210,7 +209,7 @@ export default function HeadToHead() {
         <h3 className="text-lg font-semibold text-zinc-300">Todos los resultados</h3>
         <div className="space-y-2">
           {results.map((match, i) => (
-            <MatchResultRow key={i} match={match} />
+            <MatchResultRow key={i} match={match} timezone={timezone} />
           ))}
         </div>
       </section>
@@ -218,7 +217,7 @@ export default function HeadToHead() {
   );
 }
 
-function MatchResultRow({ match }: { match: HistoricalMatch }) {
+function MatchResultRow({ match, timezone }: { match: HistoricalMatch; timezone: string }) {
   const isTeam1Winner = match.team1.is_winner;
   const isTeam2Winner = match.team2.is_winner;
 
@@ -261,7 +260,7 @@ function MatchResultRow({ match }: { match: HistoricalMatch }) {
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-600">
-        {match.date && <span>{formatDate(match.date)}</span>}
+        {match.date && <span>{formatDate(match.date, timezone)}</span>}
         {match.stage !== "group" && (
           <span className="text-zinc-500 capitalize">{match.stage.replace(/_/g, " ")}</span>
         )}

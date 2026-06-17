@@ -4,6 +4,8 @@ import { useAsync } from "../lib/useAsync";
 import { usePolling } from "../lib/usePolling";
 import { getMatches, getTeams } from "../lib/api";
 import type { Match } from "../lib/types";
+import { formatMatchTime } from "../lib/formatTime";
+import { useTimezone } from "../lib/useTimezone";
 
 interface LiveMatchDisplay {
   id: string;
@@ -68,6 +70,7 @@ function LiveMatchCard({
 
 export default function LiveWidget() {
   const [shouldPoll, setShouldPoll] = useState(false);
+  const { timezone } = useTimezone();
   const { data: teamsData } = useAsync(() => getTeams(), []);
 
   const { data: matches } = usePolling(
@@ -106,10 +109,10 @@ export default function LiveWidget() {
         awayCrest: away?.crest,
         homeScore: m.home_score,
         awayScore: m.away_score,
-        matchTime: `${m.date} ${m.time}`,
+        matchTime: formatMatchTime(m.date, m.time, timezone),
       };
     });
-  }, [matches, teamMap]);
+  }, [matches, teamMap, timezone]);
 
   // Don't render anything while loading or when no live matches
   if (!liveMatches || liveMatches.length === 0) return null;

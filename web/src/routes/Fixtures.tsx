@@ -4,6 +4,8 @@ import { useAsync } from "../lib/useAsync";
 import { usePolling } from "../lib/usePolling";
 import { getMatches, getTeams, getVenues } from "../lib/api";
 import type { Match } from "../lib/types";
+import { formatMatchTime } from "../lib/formatTime";
+import { useTimezone } from "../lib/useTimezone";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 import RetryButton from "../components/RetryButton";
 
@@ -18,6 +20,7 @@ interface MatchWithDetails extends Match {
 export default function Fixtures() {
   const [filter, setFilter] = useState<string>("all");
   const [shouldPoll, setShouldPoll] = useState(false);
+  const { timezone } = useTimezone();
 
   // Static data: fetch once on mount
   const { data: teamsData } = useAsync(() => getTeams(), []);
@@ -206,7 +209,7 @@ export default function Fixtures() {
                         : "VS"}
                     </div>
                     <div className="text-xs text-zinc-500 mt-1">
-                      {match.date} {match.time}
+                      {formatMatchTime(match.date, match.time, timezone)}
                     </div>
                     {match.status === "live" && (
                       <span className="inline-block mt-1 px-2 py-0.5 bg-red-500/20 text-red-400 text-xs font-medium rounded-full">
