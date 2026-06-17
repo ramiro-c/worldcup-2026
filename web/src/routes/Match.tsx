@@ -10,6 +10,8 @@ import { useTimezone } from "../lib/useTimezone";
 import { trackPageView } from "../lib/analytics";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 import RetryButton from "../components/RetryButton";
+import { isValidMatchId } from "../lib/validation";
+import { useNavigateBack } from "../lib/navigation";
 
 interface MatchDetails extends Match {
   home_team_name?: string;
@@ -73,6 +75,7 @@ function Countdown({ datetimeUtc, status }: { datetimeUtc?: string; status: stri
 
 export default function Match() {
   const { id } = useParams<{ id: string }>();
+  const goBack = useNavigateBack("/fixtures");
   const [shouldPoll, setShouldPoll] = useState(true);
   const { timezone } = useTimezone();
 
@@ -204,6 +207,27 @@ export default function Match() {
 
   const isLoading = !enrichedMatch && (loading || !teamsData || !venuesData);
 
+  // Invalid ID — show immediately without fetching
+  if (id && !isValidMatchId(id)) {
+    return (
+      <div className="text-center py-20 space-y-6">
+        <h1 className="text-4xl font-bold text-zinc-700">Error</h1>
+        <h2 className="text-2xl font-semibold text-zinc-300">
+          ID de partido inválido
+        </h2>
+        <p className="text-zinc-500">
+          El identificador del partido no es válido.
+        </p>
+        <button
+          onClick={goBack}
+          className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors cursor-pointer"
+        >
+          Volver
+        </button>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-8">
@@ -251,18 +275,40 @@ export default function Match() {
   }
 
   if (error) {
+    const is404 = (error as unknown as Record<string, unknown>).status === 404;
+
+    if (is404) {
+      return (
+        <div className="text-center py-20 space-y-6">
+          <h1 className="text-4xl font-bold text-zinc-700">404</h1>
+          <h2 className="text-2xl font-semibold text-zinc-300">
+            Partido no encontrado
+          </h2>
+          <p className="text-zinc-500">
+            No encontramos el partido que estás buscando.
+          </p>
+          <button
+            onClick={goBack}
+            className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors cursor-pointer"
+          >
+            Volver
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="text-center py-20 space-y-6">
         <h1 className="text-4xl font-bold text-zinc-700">Error al cargar</h1>
         <p className="text-zinc-500">No se pudo cargar la información del partido.</p>
         <RetryButton onRetry={() => window.location.reload()} message={error.message} />
         <div>
-          <Link
-            to="/fixtures"
-            className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors"
+          <button
+            onClick={goBack}
+            className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors cursor-pointer"
           >
-            Volver al fixture
-          </Link>
+            Volver
+          </button>
         </div>
       </div>
     );
@@ -275,12 +321,15 @@ export default function Match() {
         <h2 className="text-2xl font-semibold text-zinc-300">
           Partido no encontrado
         </h2>
-        <Link
-          to="/fixtures"
-          className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors"
+        <p className="text-zinc-500">
+          No encontramos el partido que estás buscando.
+        </p>
+        <button
+          onClick={goBack}
+          className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors cursor-pointer"
         >
-          Volver al fixture
-        </Link>
+          Volver
+        </button>
       </div>
     );
   }
@@ -292,9 +341,9 @@ export default function Match() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <Link
-          to="/fixtures"
-          className="text-zinc-500 hover:text-emerald-400 transition-colors flex items-center gap-2"
+        <button
+          onClick={goBack}
+          className="text-zinc-500 hover:text-emerald-400 transition-colors flex items-center gap-2 cursor-pointer"
         >
           <svg
             className="w-5 h-5"
@@ -309,8 +358,8 @@ export default function Match() {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          Volver al fixture
-        </Link>
+          Volver
+        </button>
         <div className="flex items-center gap-3">
           <button
             onClick={handleShare}

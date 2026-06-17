@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 from providers.interfaces import ITournamentDataProvider
 from typing import Any
 
@@ -298,6 +299,11 @@ async def get_matches():
 @router.get("/matches/{match_id}")
 async def get_match(match_id: str):
     match = await provider.get_match(match_id)
+    if match is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": "Match not found", "match_id": match_id},
+        )
     return {"data": map_match(match)}
 
 

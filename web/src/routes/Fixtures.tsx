@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { usePolling } from "../lib/usePolling";
 import { getMatches, getTeams, getVenues } from "../lib/api";
@@ -21,6 +21,7 @@ interface MatchWithDetails extends Match {
 
 export default function Fixtures() {
   useEffect(() => { trackPageView("/fixtures"); }, []);
+  const navigate = useNavigate();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [shouldPoll, setShouldPoll] = useState(false);
@@ -259,12 +260,22 @@ export default function Fixtures() {
               {groupMatches.map((match) => (
                 <div
                   key={match.id}
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 flex items-center gap-4"
+                  onClick={() => navigate(`/match/${match.id}`)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      navigate(`/match/${match.id}`);
+                    }
+                  }}
+                  className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 flex items-center gap-4 hover:border-emerald-700 transition-colors cursor-pointer"
                 >
                   <div className="text-right flex-1 min-w-0">
                     <div className="flex items-center justify-end gap-3">
                       <Link
                         to={`/team/${encodeURIComponent(match.home_team_name!)}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="font-medium truncate hover:text-emerald-400 transition-colors"
                       >
                         {match.home_team_name}
@@ -302,6 +313,7 @@ export default function Fixtures() {
                       />
                       <Link
                         to={`/team/${encodeURIComponent(match.away_team_name!)}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="font-medium truncate hover:text-emerald-400 transition-colors"
                       >
                         {match.away_team_name}

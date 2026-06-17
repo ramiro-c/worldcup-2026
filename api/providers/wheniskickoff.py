@@ -59,6 +59,8 @@ class WheniskickoffProvider(ITournamentDataProvider):
         return await self._fetch_matches("matches.json")
 
     async def get_match(self, match_id: str) -> dict | None:
+        if not match_id or not match_id.strip():
+            return None
         matches = await self.get_matches()
         for match in matches:
             if (match.get("slug") == match_id or

@@ -7,7 +7,15 @@ const API_BASE = import.meta.env.VITE_API_URL
 async function fetchApi<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
   const response = await fetch(`${API_BASE}${endpoint}`, { signal });
   if (!response.ok) {
-    throw new Error(`API error: ${response.statusText}`);
+    const body = await response.json().catch(() => ({}));
+    const err = new Error(
+      (body as Record<string, unknown>).error
+        ? String((body as Record<string, unknown>).error)
+        : `API error: ${response.statusText}`,
+    );
+    (err as unknown as Record<string, unknown>).status = response.status;
+    (err as unknown as Record<string, unknown>).body = body;
+    throw err;
   }
   const data = await response.json();
   return data.data;
