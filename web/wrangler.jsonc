@@ -14,7 +14,7 @@
   "kv_namespaces": [
     {
       "binding": "ANALYTICS_KV",
-      "id": "d16618faeb9e4fa99c2cd8a73e80a4c4"
+      "id": "{env:ANALYTICS_KV_ID}"
     }
   ]
 }
