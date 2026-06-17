@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { usePolling } from "../lib/usePolling";
 import { getMatches, getTeams, getVenues } from "../lib/api";
 import type { Match } from "../lib/types";
 import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";
+import FilterBar from "../components/FilterBar";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 import RetryButton from "../components/RetryButton";
 
@@ -18,9 +19,16 @@ interface MatchWithDetails extends Match {
 }
 
 export default function Fixtures() {
-  const [filter, setFilter] = useState<string>("all");
+  const [searchParams, setSearchParams] = useSearchParams();
   const [shouldPoll, setShouldPoll] = useState(false);
   const { timezone } = useTimezone();
+
+  // Filter state from URL search params
+  const roundFilter = searchParams.get("round") || "all";
+  const teamFilter = searchParams.get("team") || "";
+  const dateFilter = searchParams.get("date") || "";
+  const venueFilter = searchParams.get("venue") || "";
+  const statusFilter = searchParams.getAll("status");
 
   // Static data: fetch once on mount
   const { data: teamsData } = useAsync(() => getTeams(), []);
@@ -62,10 +70,31 @@ export default function Fixtures() {
   }, [matches, teamsData, venuesData]);
 
   const filteredMatches = enrichedMatches?.filter((match) => {
-    if (filter === "all") return true;
-    if (filter === "group") return !!match.group;
-    if (filter === "knockout") return !!match.round;
-    return false;
+    // Round filter (existing all/group/knockout)
+    if (roundFilter === "group" && !match.group) return false;
+    if (roundFilter === "knockout" && !match.round) return false;
+
+    // Team filter
+    if (teamFilter) {
+      const teamName = teamFilter.toLowerCase();
+      const home = match.home_team_name?.toLowerCase() ?? "";
+      const away = match.away_team_name?.toLowerCase() ?? "";
+      if (home !== teamName && away !== teamName) return false;
+    }
+
+    // Date filter
+    if (dateFilter && match.date !== dateFilter) return false;
+
+    // Venue filter
+    if (venueFilter) {
+      const venueName = match.venue_name?.toLowerCase() ?? "";
+      if (venueName !== venueFilter.toLowerCase()) return false;
+    }
+
+    // Status filter (OR within status, AND with other filters)
+    if (statusFilter.length > 0 && !statusFilter.includes(match.status)) return false;
+
+    return true;
   }) ?? [];
 
   const matchesByGroup = filteredMatches.reduce((acc, match) => {
@@ -121,56 +150,99 @@ export default function Fixtures() {
     return <RetryButton onRetry={() => window.location.reload()} message={error.message} />;
   }
 
+  // Helper to update a single search param
+  const updateParam = (key: string, value: string) => {
+    setSearchParams((prev) => {
+      if (value) {
+        prev.set(key, value);
+      } else {
+        prev.delete(key);
+      }
+      return prev;
+    }, { replace: true });
+  };
+
+  const handleStatusToggle = (status: string) => {
+    setSearchParams((prev) => {
+      const current = prev.getAll("status");
+      if (current.includes(status)) {
+        // Remove status
+        const next = current.filter((s) => s !== status);
+        prev.delete("status");
+        next.forEach((s) => prev.append("status", s));
+      } else {
+        prev.append("status", status);
+      }
+      return prev;
+    }, { replace: true });
+  };
+
+  const clearFilters = () => {
+    setSearchParams({}, { replace: true });
+  };
+
+  const setRoundFilter = (value: string) => {
+    updateParam("round", value === "all" ? "" : value);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-        <h2 className="text-2xl font-bold">Fixture</h2>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              filter === "all"
-                ? "bg-emerald-500/20 text-emerald-400"
-                : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-            }`}
-          >
-            Todos
-          </button>
-          <button
-            onClick={() => setFilter("group")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              filter === "group"
-                ? "bg-emerald-500/20 text-emerald-400"
-                : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-            }`}
-          >
-            Grupos
-          </button>
-          <button
-            onClick={() => setFilter("knockout")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              filter === "knockout"
-                ? "bg-emerald-500/20 text-emerald-400"
-                : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-            }`}
-          >
-            Eliminatorias
-          </button>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <h2 className="text-2xl font-bold">Fixture</h2>
+          <div className="flex flex-wrap gap-2">
+            {(["all", "group", "knockout"] as const).map((r) => (
+              <button
+                key={r}
+                onClick={() => setRoundFilter(r)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  roundFilter === r
+                    ? "bg-emerald-500/20 text-emerald-400"
+                    : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                }`}
+              >
+                {r === "all" ? "Todos" : r === "group" ? "Grupos" : "Eliminatorias"}
+              </button>
+            ))}
+          </div>
         </div>
+        {(teamsData && venuesData) && (
+          <FilterBar
+            teams={teamsData}
+            venues={venuesData}
+            teamFilter={teamFilter}
+            dateFilter={dateFilter}
+            venueFilter={venueFilter}
+            statusFilter={statusFilter}
+            onTeamChange={(v) => updateParam("team", v)}
+            onDateChange={(v) => updateParam("date", v)}
+            onVenueChange={(v) => updateParam("venue", v)}
+            onStatusToggle={handleStatusToggle}
+            onClear={clearFilters}
+          />
+        )}
       </div>
 
       <div className="space-y-8">
         {filteredMatches.length === 0 && (
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-12 text-center">
             <p className="text-zinc-400 text-lg">
-              {filter === "knockout"
+              {roundFilter === "knockout" && !teamFilter && !dateFilter && !venueFilter && statusFilter.length === 0
                 ? "No hay partidos de eliminatoria disponibles aún"
-                : "No hay partidos disponibles"}
+                : "No hay partidos que coincidan con los filtros"}
             </p>
-            {filter === "knockout" && (
+            {(roundFilter === "knockout" && !teamFilter && !dateFilter && !venueFilter && statusFilter.length === 0) && (
               <p className="text-zinc-500 mt-2 text-sm">
                 Los cruces se definirán cuando termine la fase de grupos
               </p>
+            )}
+            {(teamFilter || dateFilter || venueFilter || statusFilter.length > 0) && (
+              <button
+                onClick={clearFilters}
+                className="mt-4 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium rounded-lg transition-colors"
+              >
+                Limpiar filtros
+              </button>
             )}
           </div>
         )}
