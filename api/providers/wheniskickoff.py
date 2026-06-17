@@ -70,4 +70,15 @@ class WheniskickoffProvider(ITournamentDataProvider):
         return None
 
     async def get_tv(self) -> list[dict]:
-        return await self._fetch("tv.json")
+        """Aplana la estructura de países+canales a lista plana de canales."""
+        countries = await self._fetch("tv.json")
+        channels = []
+        for country in countries:
+            country_name = country.get("name", "")
+            for channel in country.get("channels", []):
+                channels.append({
+                    "id": f"{country.get('code', '')}-{channel.get('name', '').lower().replace(' ', '-')}",
+                    "name": channel.get("name", ""),
+                    "country": country_name,
+                })
+        return channels
