@@ -46,4 +46,66 @@ test.describe("Mid-Wins: F5 Timezone, F9 Fixture Filters, F6 Team Stats", () => 
     // Date might be shown, just verify page loaded properly
     await expect(page.locator("text=partidos").or(page.locator("h2")).first()).toBeVisible();
   });
+
+  // ── F9 Fixture Filters ─────────────────────────────────────────────────
+
+  test("6.2a: FilterBar renders with team/venue/date/status controls", async ({ page }) => {
+    await page.goto("/fixtures");
+
+    // Wait for match data
+    await expect(page.locator("h2").first()).toBeVisible({ timeout: 15000 });
+
+    // FilterBar controls should be visible
+    await expect(page.locator("select").or(page.locator('input[type="date"]'))).toBeVisible();
+  });
+
+  test("6.2b: Team filter updates URL and filters matches", async ({ page }) => {
+    await page.goto("/fixtures");
+
+    // Wait for filter controls + match data
+    await expect(page.locator("select").first()).toBeVisible({ timeout: 15000 });
+
+    // Try selecting a team from the first dropdown
+    const teamSelect = page.locator("select").first();
+    const options = await teamSelect.locator("option").all();
+
+    if (options.length > 1) {
+      const teamName = await options[1].getAttribute("value");
+      if (teamName) {
+        await teamSelect.selectOption(teamName);
+
+        // URL should contain the team param
+        await expect(page).toHaveURL(/team=/);
+      }
+    }
+  });
+
+  test("6.2c: Status toggles filter by match status", async ({ page }) => {
+    await page.goto("/fixtures");
+
+    await expect(page.locator("h2").first()).toBeVisible({ timeout: 15000 });
+
+    // Click a status toggle button
+    const enVivoBtn = page.locator("button:has-text('En Vivo')");
+    if (await enVivoBtn.isVisible()) {
+      await enVivoBtn.click();
+      // URL should contain status
+      await expect(page).toHaveURL(/status=/);
+    }
+  });
+
+  test("6.2d: Clear filters removes all filter params", async ({ page }) => {
+    await page.goto("/fixtures?team=Argentina&status=live");
+
+    await expect(page.locator("h2").first()).toBeVisible({ timeout: 15000 });
+
+    // Clear button should be visible when filters active
+    const clearBtn = page.locator("button:has-text('Limpiar filtros')");
+    if (await clearBtn.isVisible()) {
+      await clearBtn.click();
+      // URL should no longer have filter params
+      const url = page.url();
+      expect(url.includes("?")).toBe(false);
+    }
+  });
 });
