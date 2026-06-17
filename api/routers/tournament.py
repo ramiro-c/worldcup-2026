@@ -204,6 +204,8 @@ def map_matches(raw: list[dict]) -> list[dict]:
                 "away_team_name": m.get("away_name", away),
                 "venue": m.get("venue", ""),
                 "venue_name": m.get("venue_name", ""),
+                "venue_city": m.get("venue_city", ""),
+                "datetime_utc": m.get("datetime_utc", ""),
                 "date": m.get("date", ""),
                 "time": m.get("time_utc", ""),
                 "status": (m.get("status") or "scheduled").lower(),
@@ -220,7 +222,48 @@ def map_matches(raw: list[dict]) -> list[dict]:
 def map_match(raw: dict | None) -> dict | None:
     if not raw:
         return None
-    return map_matches([raw])[0]
+
+    home = raw.get("home") or raw.get("home_code", "")
+    away = raw.get("away") or raw.get("away_code", "")
+
+    # Normalize codes (preserve empty string for TBD)
+    home_normalized = home.upper() if home else ""
+    away_normalized = away.upper() if away else ""
+    if home_normalized == "URY":
+        home_normalized = "URU"
+    if away_normalized == "URY":
+        away_normalized = "URU"
+
+    score_home_raw = raw.get("score_home")
+    score_away_raw = raw.get("score_away")
+    try:
+        home_score = int(score_home_raw) if score_home_raw is not None else None
+    except (ValueError, TypeError):
+        home_score = None
+    try:
+        away_score = int(score_away_raw) if score_away_raw is not None else None
+    except (ValueError, TypeError):
+        away_score = None
+
+    return {
+        "id": raw.get("slug", str(raw.get("num", ""))),
+        "home_team": home_normalized.lower() if home else "",
+        "away_team": away_normalized.lower() if away else "",
+        "home_team_name": raw.get("home_name", home) if home else "",
+        "away_team_name": raw.get("away_name", away) if away else "",
+        "venue": raw.get("venue", ""),
+        "venue_name": raw.get("venue_name", ""),
+        "venue_city": raw.get("venue_city", ""),
+        "datetime_utc": raw.get("datetime_utc", ""),
+        "date": raw.get("date", ""),
+        "time": raw.get("time_utc", ""),
+        "status": (raw.get("status") or "scheduled").lower(),
+        "home_score": home_score,
+        "away_score": away_score,
+        "phase": raw.get("phase"),
+        "group": raw.get("group"),
+        "round": raw.get("round"),
+    }
 
 
 def init_router(tournament_provider: ITournamentDataProvider):
@@ -254,11 +297,8 @@ async def get_matches():
 
 @router.get("/matches/{match_id}")
 async def get_match(match_id: str):
-    matches = await provider.get_matches()
-    for match in matches:
-        if match.get("slug") == match_id or str(match.get("num")) == match_id:
-            return {"data": map_match(match)}
-    return {"data": None}
+    match = await provider.get_match(match_id)
+    return {"data": map_match(match)}
 
 
 @router.get("/tv")

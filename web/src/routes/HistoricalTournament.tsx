@@ -2,18 +2,9 @@ import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getHistoricalTournament } from "../lib/api";
 import type { HistoricalMatch } from "../lib/types";
+import { STAGE_LABELS } from "../lib/constants";
 import RetryButton from "../components/RetryButton";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
-
-const STAGE_LABELS: Record<string, string> = {
-  group: "Fase de Grupos",
-  round_of_16: "Octavos de Final",
-  round_of_32: "Dieciseisavos de Final",
-  quarter_final: "Cuartos de Final",
-  semi_final: "Semifinales",
-  third_place: "Tercer Puesto",
-  final: "Final",
-};
 
 const FLAGS: Record<number, string> = {
   1930: "🇺🇾", 1934: "🇮🇹", 1938: "🇫🇷", 1950: "🇧🇷",

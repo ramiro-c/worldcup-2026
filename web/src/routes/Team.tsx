@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getTeamMatches } from "../lib/api";
 import type { HistoricalTeamMatch } from "../lib/types";
+import { STAGE_LABELS } from "../lib/constants";
 import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";
 import RetryButton from "../components/RetryButton";
@@ -16,16 +17,6 @@ interface TeamStats {
   ga: number;
   total: number;
 }
-
-const STAGE_LABELS: Record<string, string> = {
-  group: "Fase de Grupos",
-  round_of_16: "Octavos de Final",
-  round_of_32: "Dieciseisavos de Final",
-  quarter_final: "Cuartos de Final",
-  semi_final: "Semifinales",
-  third_place: "Tercer Puesto",
-  final: "Final",
-};
 
 function computeTeamStats(matches: HistoricalTeamMatch[], teamName: string): TeamStats {
   let wins = 0;

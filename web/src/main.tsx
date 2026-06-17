@@ -8,6 +8,7 @@ import Groups from "./routes/Groups"
 import Fixtures from "./routes/Fixtures"
 import Bracket from "./routes/Bracket"
 import Venues from "./routes/Venues"
+import VenueDetail from "./routes/VenueDetail"
 import Match from "./routes/Match"
 import Historical from "./routes/Historical"
 import HistoricalTournament from "./routes/HistoricalTournament"
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
       { path: "fixtures", element: <Fixtures /> },
       { path: "bracket", element: <Bracket /> },
       { path: "venues", element: <Venues /> },
+      { path: "venues/:venueId", element: <VenueDetail /> },
       { path: "match/:id", element: <Match /> },
       { path: "historical", element: <Historical /> },
       { path: "historical/:year", element: <HistoricalTournament /> },

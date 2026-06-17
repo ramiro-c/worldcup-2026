@@ -35,6 +35,14 @@ export interface Match {
   away_score?: number;
   group?: string;
   round?: string;
+  phase?: string;
+  venue_city?: string;
+  datetime_utc?: string;
+  home_team_name?: string;
+  away_team_name?: string;
+  venue_name?: string;
+  home_crest?: string;
+  away_crest?: string;
 }
 
 export interface TvChannel {

@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { usePolling } from "../lib/usePolling";
-import { getMatch, getTeams, getVenues, getTv } from "../lib/api";
+import { getMatch, getTeams, getVenues } from "../lib/api";
 import type { Match } from "../lib/types";
+import { PHASE_LABELS } from "../lib/constants";
 import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
@@ -17,6 +18,58 @@ interface MatchDetails extends Match {
   away_crest?: string;
 }
 
+function Countdown({ datetimeUtc, status }: { datetimeUtc?: string; status: string }) {
+  const [display, setDisplay] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!datetimeUtc) return;
+    if (status === "finished") {
+      setDisplay("Finalizado");
+      return;
+    }
+    if (status === "live") {
+      setDisplay("En Vivo");
+      return;
+    }
+
+    const update = () => {
+      const diff = new Date(datetimeUtc).getTime() - Date.now();
+      if (diff <= 0) {
+        setDisplay("En Vivo");
+        return;
+      }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setDisplay(`${d}d ${h}h ${m}m ${s}s`);
+    };
+
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, [datetimeUtc, status]);
+
+  if (!display) return null;
+
+  const isCountdown =
+    status === "scheduled" && display !== "En Vivo" && display !== "Finalizado";
+
+  return (
+    <span
+      className={`inline-block mt-2 px-3 py-1 text-sm font-medium rounded-full tabular-nums ${
+        isCountdown
+          ? "bg-amber-500/20 text-amber-400"
+          : display === "En Vivo"
+            ? "bg-red-500/20 text-red-400 animate-pulse"
+            : "bg-zinc-700/50 text-zinc-400"
+      }`}
+    >
+      {display}
+    </span>
+  );
+}
+
 export default function Match() {
   const { id } = useParams<{ id: string }>();
   const [shouldPoll, setShouldPoll] = useState(true);
@@ -25,12 +78,11 @@ export default function Match() {
   // Static data: fetch once on mount
   const { data: teamsData } = useAsync(() => getTeams(), []);
   const { data: venuesData } = useAsync(() => getVenues(), []);
-  const { data: tvData } = useAsync(() => getTv(), []);
 
   // Dynamic data: poll while match is live
   const { data: match, loading, error } = usePolling(
     (signal) => getMatch(id!, signal),
-    30000,
+    60000,
     shouldPoll,
     [id]
   );
@@ -49,14 +101,14 @@ export default function Match() {
     const teamMap = new Map(teamsData.map((t) => [t.id, t]));
     const venueMap = new Map(venuesData.map((v) => [v.id, v]));
 
-    const homeTeam = teamMap.get(match.home_team);
-    const awayTeam = teamMap.get(match.away_team);
-    const venue = venueMap.get(match.venue);
+    const homeTeam = match.home_team ? teamMap.get(match.home_team) : null;
+    const awayTeam = match.away_team ? teamMap.get(match.away_team) : null;
+    const venue = match.venue ? venueMap.get(match.venue) : null;
 
     return {
       ...match,
-      home_team_name: homeTeam?.name,
-      away_team_name: awayTeam?.name,
+      home_team_name: homeTeam?.name || "A definir",
+      away_team_name: awayTeam?.name || "A definir",
       venue_name: venue?.name,
       home_crest: homeTeam?.crest,
       away_crest: awayTeam?.crest,
@@ -146,6 +198,10 @@ export default function Match() {
     );
   }
 
+  const phaseLabel = enrichedMatch.phase
+    ? PHASE_LABELS[enrichedMatch.phase]
+    : null;
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -172,28 +228,38 @@ export default function Match() {
 
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-8">
         <div className="text-center mb-6">
-          {enrichedMatch.group ? (
+          {phaseLabel ? (
+            <span className="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 text-sm font-medium rounded-full">
+              {phaseLabel}
+            </span>
+          ) : enrichedMatch.group ? (
             <span className="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 text-sm font-medium rounded-full">
               Grupo {enrichedMatch.group}
             </span>
-          ) : (
+          ) : enrichedMatch.round ? (
             <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 text-sm font-medium rounded-full">
               {enrichedMatch.round}
             </span>
-          )}
+          ) : null}
         </div>
 
         <div className="flex items-center justify-center gap-4 sm:gap-8 mb-8 flex-col sm:flex-row">
           <div className="w-full sm:flex-1 text-center sm:text-right">
             <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4">
               <div>
-                <Link
-                  to={`/team/${encodeURIComponent(enrichedMatch.home_team_name!)}`}
-                  className="text-xl sm:text-2xl font-bold hover:text-emerald-400 transition-colors"
-                >
-                  {enrichedMatch.home_team_name}
-                </Link>
-                {enrichedMatch.status !== "scheduled" && (
+                {enrichedMatch.home_team ? (
+                  <Link
+                    to={`/team/${encodeURIComponent(enrichedMatch.home_team_name!)}`}
+                    className="text-xl sm:text-2xl font-bold hover:text-emerald-400 transition-colors"
+                  >
+                    {enrichedMatch.home_team_name}
+                  </Link>
+                ) : (
+                  <span className="text-xl sm:text-2xl font-bold text-zinc-500">
+                    A definir
+                  </span>
+                )}
+                {enrichedMatch.status !== "scheduled" && enrichedMatch.home_team && (
                   <p className="text-zinc-400">Local</p>
                 )}
               </div>
@@ -220,13 +286,16 @@ export default function Match() {
                 EN VIVO
               </span>
             )}
+            <Countdown datetimeUtc={enrichedMatch.datetime_utc} status={enrichedMatch.status} />
             <div className="mt-3">
-              <Link
-                to={`/head-to-head/${encodeURIComponent(enrichedMatch.home_team_name!)}/${encodeURIComponent(enrichedMatch.away_team_name!)}`}
-                className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors underline underline-offset-2"
-              >
-                Historial
-              </Link>
+              {enrichedMatch.home_team && enrichedMatch.away_team ? (
+                <Link
+                  to={`/head-to-head/${encodeURIComponent(enrichedMatch.home_team_name!)}/${encodeURIComponent(enrichedMatch.away_team_name!)}`}
+                  className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors underline underline-offset-2"
+                >
+                  Historial
+                </Link>
+              ) : null}
             </div>
           </div>
 
@@ -240,13 +309,19 @@ export default function Match() {
                 />
               )}
               <div>
-                <Link
-                  to={`/team/${encodeURIComponent(enrichedMatch.away_team_name!)}`}
-                  className="text-xl sm:text-2xl font-bold hover:text-emerald-400 transition-colors"
-                >
-                  {enrichedMatch.away_team_name}
-                </Link>
-                {enrichedMatch.status !== "scheduled" && (
+                {enrichedMatch.away_team ? (
+                  <Link
+                    to={`/team/${encodeURIComponent(enrichedMatch.away_team_name!)}`}
+                    className="text-xl sm:text-2xl font-bold hover:text-emerald-400 transition-colors"
+                  >
+                    {enrichedMatch.away_team_name}
+                  </Link>
+                ) : (
+                  <span className="text-xl sm:text-2xl font-bold text-zinc-500">
+                    A definir
+                  </span>
+                )}
+                {enrichedMatch.status !== "scheduled" && enrichedMatch.away_team && (
                   <p className="text-zinc-400">Visitante</p>
                 )}
               </div>
@@ -268,36 +343,28 @@ export default function Match() {
                 {enrichedMatch.status === "scheduled"
                   ? "Programado"
                   : enrichedMatch.status === "live"
-                  ? "En vivo"
-                  : enrichedMatch.status === "finished"
-                  ? "Finalizado"
-                  : enrichedMatch.status}
+                    ? "En vivo"
+                    : enrichedMatch.status === "finished"
+                      ? "Finalizado"
+                      : enrichedMatch.status}
               </dd>
             </div>
             {enrichedMatch.venue_name && (
               <div>
                 <dt className="text-zinc-500 mb-1">Estadio</dt>
-                <dd className="text-zinc-100 font-medium">{enrichedMatch.venue_name}</dd>
+                <dd className="text-zinc-100 font-medium">
+                  <Link
+                    to={`/venues/${enrichedMatch.venue}`}
+                    className="hover:text-emerald-400 transition-colors"
+                  >
+                    {enrichedMatch.venue_name}
+                    {enrichedMatch.venue_city && `, ${enrichedMatch.venue_city}`}
+                  </Link>
+                </dd>
               </div>
             )}
           </dl>
         </div>
-
-        {tvData && tvData.length > 0 && (
-          <div className="border-t border-zinc-800 pt-4 mt-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-zinc-500 mr-1">TV:</span>
-              {tvData.map((ch) => (
-                <span
-                  key={ch.id}
-                  className="inline-block px-2.5 py-1 bg-zinc-800 text-zinc-300 text-xs font-medium rounded-md"
-                >
-                  {ch.name}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
