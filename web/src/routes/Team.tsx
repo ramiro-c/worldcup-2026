@@ -2,6 +2,8 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getTeamMatches } from "../lib/api";
 import type { HistoricalTeamMatch } from "../lib/types";
+import { formatMatchTime } from "../lib/formatTime";
+import { useTimezone } from "../lib/useTimezone";
 import RetryButton from "../components/RetryButton";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 
@@ -17,6 +19,7 @@ const STAGE_LABELS: Record<string, string> = {
 
 export default function Team() {
   const { teamName } = useParams<{ teamName: string }>();
+  const { timezone } = useTimezone();
   const { data: matches, loading, error, refetch } = useAsync(
     () => getTeamMatches(teamName!),
     [teamName]
@@ -111,7 +114,7 @@ export default function Team() {
             </h3>
             <div className="space-y-2">
               {byYear[year].map((match, i) => (
-                <MatchCard key={i} match={match} />
+                <MatchCard key={i} match={match} timezone={timezone} />
               ))}
             </div>
           </section>
@@ -121,7 +124,7 @@ export default function Team() {
   );
 }
 
-function MatchCard({ match }: { match: HistoricalTeamMatch }) {
+function MatchCard({ match, timezone }: { match: HistoricalTeamMatch; timezone: string }) {
   const params = useParams<{ teamName: string }>();
   const navigate = useNavigate();
   const isTeam1 = match.team1.name.toLowerCase() === params.teamName?.toLowerCase();
@@ -179,7 +182,7 @@ function MatchCard({ match }: { match: HistoricalTeamMatch }) {
         )}
         {match.group_name && <span>Grupo {match.group_name}</span>}
         {match.venue && <span>{match.venue}</span>}
-        {match.date && <span>{match.date}</span>}
+        {match.date && <span>{formatMatchTime(match.date, null, timezone)}</span>}
         <Link
           to={`/head-to-head/${encodeURIComponent(teamName)}/${encodeURIComponent(opponentName)}`}
           onClick={(e) => e.stopPropagation()}

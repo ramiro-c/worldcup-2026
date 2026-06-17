@@ -4,6 +4,8 @@ import { useAsync } from "../lib/useAsync";
 import { usePolling } from "../lib/usePolling";
 import { getMatch, getTeams, getVenues, getTv } from "../lib/api";
 import type { Match } from "../lib/types";
+import { formatMatchTime } from "../lib/formatTime";
+import { useTimezone } from "../lib/useTimezone";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 import RetryButton from "../components/RetryButton";
 
@@ -18,6 +20,7 @@ interface MatchDetails extends Match {
 export default function Match() {
   const { id } = useParams<{ id: string }>();
   const [shouldPoll, setShouldPoll] = useState(true);
+  const { timezone } = useTimezone();
 
   // Static data: fetch once on mount
   const { data: teamsData } = useAsync(() => getTeams(), []);
@@ -256,7 +259,7 @@ export default function Match() {
             <div>
               <dt className="text-zinc-500 mb-1">Fecha</dt>
               <dd className="text-zinc-100 font-medium">
-                {enrichedMatch.date} {enrichedMatch.time}
+                {formatMatchTime(enrichedMatch.date, enrichedMatch.time, timezone)}
               </dd>
             </div>
             <div>
