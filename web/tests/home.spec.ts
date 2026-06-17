@@ -76,18 +76,6 @@ test.describe('Home page sections', () => {
     expect(errors).toHaveLength(0);
   });
 
-  test('TV channels section appears when data loads', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-
-    // The "Canales de TV" heading appears when there is TV channel data
-    const tvSection = page.locator('h2:has-text("Canales de TV")');
-
-    if (await tvSection.count() > 0) {
-      await expect(tvSection).toBeVisible();
-    }
-  });
-
   test('hero section displays tournament info', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');

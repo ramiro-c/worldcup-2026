@@ -81,6 +81,12 @@ function UpcomingMatchesSection({
           </Link>
         ))}
       </div>
+      <Link
+        to="/fixtures"
+        className="inline-flex items-center text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+      >
+        Ver todo el fixture →
+      </Link>
     </section>
   );
 }
@@ -144,6 +150,12 @@ function FeaturedVenuesSection({
           </Link>
         ))}
       </div>
+      <Link
+        to="/venues"
+        className="inline-flex items-center text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+      >
+        Ver todas las sedes →
+      </Link>
     </section>
   );
 }
