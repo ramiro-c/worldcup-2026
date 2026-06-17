@@ -1,6 +1,8 @@
 import type { Group, Team, Venue, Match, TvChannel, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch } from "./types";
 
-const API_BASE = "/api/tournament";
+const API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/tournament`
+  : "/api/tournament";
 
 async function fetchApi<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
   const response = await fetch(`${API_BASE}${endpoint}`, { signal });
@@ -35,7 +37,9 @@ export async function getTv(): Promise<TvChannel[]> {
   return fetchApi<TvChannel[]>("/tv");
 }
 
-const HISTORICAL_BASE = "/api/historical";
+const HISTORICAL_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/historical`
+  : "/api/historical";
 
 async function fetchHistorical<T>(endpoint: string): Promise<T> {
   const response = await fetch(`${HISTORICAL_BASE}${endpoint}`);
