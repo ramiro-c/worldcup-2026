@@ -2,10 +2,19 @@ import type { ReactNode } from "react";
 
 interface SkeletonProps {
   className?: string;
+  variant?: "pulse" | "shimmer";
 }
 
-export function Skeleton({ className }: SkeletonProps) {
-  return <div className={`animate-pulse rounded bg-zinc-800/50 ${className ?? ""}`} />;
+export function Skeleton({ className, variant = "shimmer" }: SkeletonProps) {
+  return (
+    <div
+      className={`${
+        variant === "shimmer"
+          ? "animate-shimmer bg-gradient-to-r from-transparent via-white/5 to-transparent bg-[length:200%_100%]"
+          : "animate-pulse"
+      } rounded bg-zinc-800/50 ${className ?? ""}`}
+    />
+  );
 }
 
 interface SkeletonTextProps {

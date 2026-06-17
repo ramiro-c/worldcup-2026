@@ -6,6 +6,7 @@ import { getMatches, getTeams, getVenues } from "../lib/api";
 import type { Match } from "../lib/types";
 import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";
+import { trackPageView } from "../lib/analytics";
 import FilterBar from "../components/FilterBar";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 import RetryButton from "../components/RetryButton";
@@ -19,6 +20,8 @@ interface MatchWithDetails extends Match {
 }
 
 export default function Fixtures() {
+  useEffect(() => { trackPageView("/fixtures"); }, []);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [shouldPoll, setShouldPoll] = useState(false);
   const { timezone } = useTimezone();
@@ -229,7 +232,7 @@ export default function Fixtures() {
             <p className="text-zinc-400 text-lg">
               {roundFilter === "knockout" && !teamFilter && !dateFilter && !venueFilter && statusFilter.length === 0
                 ? "No hay partidos de eliminatoria disponibles aún"
-                : "No hay partidos que coincidan con los filtros"}
+                : "No hay partidos con estos filtros"}
             </p>
             {(roundFilter === "knockout" && !teamFilter && !dateFilter && !venueFilter && statusFilter.length === 0) && (
               <p className="text-zinc-500 mt-2 text-sm">

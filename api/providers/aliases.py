@@ -67,5 +67,6 @@ def resolve_team_name(name: str) -> str:
         Canonical team name if an alias is found, otherwise the input
         name with its original casing preserved.
     """
-    normalized = name.lower().strip()
-    return TEAM_ALIASES.get(normalized, name)
+    stripped = name.strip()
+    normalized = stripped.lower()
+    return TEAM_ALIASES.get(normalized, stripped)

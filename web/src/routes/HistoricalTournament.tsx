@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getHistoricalTournament } from "../lib/api";
 import type { HistoricalMatch } from "../lib/types";
 import { STAGE_LABELS } from "../lib/constants";
+import { trackPageView } from "../lib/analytics";
 import RetryButton from "../components/RetryButton";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 
@@ -17,6 +19,8 @@ const FLAGS: Record<number, string> = {
 
 export default function HistoricalTournament() {
   const { year } = useParams<{ year: string }>();
+  useEffect(() => { trackPageView(`/historical/${year}`); }, [year]);
+
   const { data: tournament, loading, error, refetch } = useAsync(
     () => getHistoricalTournament(Number(year)),
     [year]

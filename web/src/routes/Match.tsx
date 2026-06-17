@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { usePolling } from "../lib/usePolling";
@@ -7,6 +7,7 @@ import type { Match } from "../lib/types";
 import { PHASE_LABELS } from "../lib/constants";
 import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";
+import { trackPageView } from "../lib/analytics";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 import RetryButton from "../components/RetryButton";
 
@@ -93,6 +94,92 @@ export default function Match() {
       setShouldPoll(match.status === "live");
     }
   }, [match]);
+
+  // Analytics tracking
+  useEffect(() => {
+    if (id) trackPageView(`/match/${id}`, id);
+  }, [id]);
+
+  // Toast state for clipboard fallback
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => {
+    if (toast) {
+      toastTimeoutRef.current = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(toastTimeoutRef.current);
+    }
+  }, [toast]);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = enrichedMatch
+      ? `${enrichedMatch.home_team_name} vs ${enrichedMatch.away_team_name} - Copa Mundial 2026`
+      : document.title;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+        return;
+      } catch {
+        // User cancelled or error — fall through to clipboard
+      }
+    }
+
+    // Clipboard fallback
+    try {
+      await navigator.clipboard.writeText(url);
+      setToast("Enlace copiado");
+    } catch {
+      // Clipboard not available
+    }
+  };
+
+  const handleCalendar = () => {
+    if (!enrichedMatch) return;
+
+    const matchDate = enrichedMatch.datetime_utc
+      ? new Date(enrichedMatch.datetime_utc)
+      : enrichedMatch.date
+        ? new Date(enrichedMatch.date)
+        : null;
+
+    if (!matchDate) return;
+
+    const endDate = new Date(matchDate.getTime() + 2 * 60 * 60 * 1000); // 2h duration
+    const fmt = (d: Date) =>
+      d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+
+    const lines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Copa2026//Match//ES",
+      "BEGIN:VEVENT",
+      `DTSTART:${fmt(matchDate)}`,
+      `DTEND:${fmt(endDate)}`,
+      `SUMMARY:${enrichedMatch.home_team_name} vs ${enrichedMatch.away_team_name} - Copa Mundial 2026`,
+    ];
+
+    if (enrichedMatch.venue_name) {
+      lines.push(`LOCATION:${enrichedMatch.venue_name}`);
+    }
+
+    lines.push("END:VEVENT");
+    lines.push("END:VCALENDAR");
+
+    const blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${enrichedMatch.home_team_name}-vs-${enrichedMatch.away_team_name}.ics`.replace(
+      /[^a-zA-Z0-9.-]/g,
+      "_"
+    );
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   // Enrich match with team and venue info
   const enrichedMatch = useMemo(() => {
@@ -224,7 +311,28 @@ export default function Match() {
           </svg>
           Volver al fixture
         </Link>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleShare}
+            className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors underline underline-offset-2"
+          >
+            Compartir
+          </button>
+          <button
+            onClick={handleCalendar}
+            className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors underline underline-offset-2"
+          >
+            Agregar a calendario
+          </button>
+        </div>
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-4 right-4 z-50 bg-zinc-800 text-zinc-100 px-4 py-2.5 rounded-lg shadow-lg text-sm font-medium">
+          {toast}
+        </div>
+      )}
 
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-8">
         <div className="text-center mb-6">

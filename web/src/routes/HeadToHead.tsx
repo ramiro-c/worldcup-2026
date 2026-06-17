@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getHeadToHead } from "../lib/api";
 import type { HistoricalMatch } from "../lib/types";
 import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";
+import { trackPageView } from "../lib/analytics";
 import RetryButton from "../components/RetryButton";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 
@@ -50,6 +51,8 @@ export default function HeadToHead() {
   const team1Name = decodeURIComponent(team1 ?? "");
   const team2Name = decodeURIComponent(team2 ?? "");
   const { timezone } = useTimezone();
+
+  useEffect(() => { trackPageView(`/head-to-head/${team1}/${team2}`); }, [team1, team2]);
 
   const { data: matches, loading, error, refetch } = useAsync(
     () => getHeadToHead(team1Name, team2Name),

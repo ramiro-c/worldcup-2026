@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getHistoricalTournaments } from "../lib/api";
+import { trackPageView } from "../lib/analytics";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 import RetryButton from "../components/RetryButton";
 
@@ -14,6 +16,8 @@ const FLAGS: Record<number, string> = {
 };
 
 export default function Historical() {
+  useEffect(() => { trackPageView("/historical"); }, []);
+
   const { data: tournaments, loading, error, refetch } = useAsync(getHistoricalTournaments, []);
 
   if (loading) {

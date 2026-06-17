@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getVenues, getMatches } from "../lib/api";
 import type { Match, Venue } from "../lib/types";
 import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";
+import { trackPageView } from "../lib/analytics";
 import { Skeleton } from "../components/Skeleton";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -27,6 +28,8 @@ function formatCapacity(capacity: number): string {
 export default function VenueDetail() {
   const { venueId } = useParams<{ venueId: string }>();
   const { timezone } = useTimezone();
+
+  useEffect(() => { trackPageView(`/venues/${venueId}`); }, [venueId]);
 
   const {
     data: venues,

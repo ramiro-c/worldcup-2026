@@ -1,4 +1,9 @@
+import { useEffect } from "react";
+import { trackPageView } from "../lib/analytics";
+
 export default function Bracket() {
+  useEffect(() => { trackPageView("/bracket"); }, []);
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Eliminatorias</h2>

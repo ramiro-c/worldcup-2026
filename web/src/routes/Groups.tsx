@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getGroups, getTeams, getMatches } from "../lib/api";
 import type { Team, Match } from "../lib/types";
+import { trackPageView } from "../lib/analytics";
 import { Skeleton, SkeletonCard, SkeletonTable } from "../components/Skeleton";
 import RetryButton from "../components/RetryButton";
 
@@ -60,6 +62,8 @@ function computeStandings(teams: Team[], matches: Match[], groupId: string): Tea
 }
 
 export default function Groups() {
+  useEffect(() => { trackPageView("/groups"); }, []);
+
   const { data: groups, loading, error, refetch } = useAsync(async () => {
     const [groupsData, teamsData, matchesData] = await Promise.all([
       getGroups(),

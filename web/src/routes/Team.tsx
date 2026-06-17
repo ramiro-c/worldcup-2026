@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getTeamMatches } from "../lib/api";
@@ -6,6 +6,7 @@ import type { HistoricalTeamMatch } from "../lib/types";
 import { STAGE_LABELS } from "../lib/constants";
 import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";
+import { trackPageView } from "../lib/analytics";
 import RetryButton from "../components/RetryButton";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 
@@ -64,6 +65,8 @@ function computeTeamStats(matches: HistoricalTeamMatch[], teamName: string): Tea
 export default function Team() {
   const { teamName } = useParams<{ teamName: string }>();
   const { timezone } = useTimezone();
+  useEffect(() => { trackPageView(`/team/${teamName}`); }, [teamName]);
+
   const { data: matches, loading, error, refetch } = useAsync(
     () => getTeamMatches(teamName!),
     [teamName]

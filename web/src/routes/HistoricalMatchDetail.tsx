@@ -1,11 +1,15 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getHistoricalTournament } from "../lib/api";
 import { STAGE_LABELS } from "../lib/constants";
+import { trackPageView } from "../lib/analytics";
 import { Skeleton } from "../components/Skeleton";
 
 export default function HistoricalMatchDetail() {
   const { year, matchId } = useParams<{ year: string; matchId: string }>();
+  useEffect(() => { trackPageView(`/historical/${year}/${matchId}`); }, [year, matchId]);
+
   const { data: tournament, loading, error, refetch } = useAsync(
     () => getHistoricalTournament(Number(year)),
     [year]

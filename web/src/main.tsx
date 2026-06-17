@@ -1,8 +1,9 @@
-import { StrictMode } from 'react'
+import { StrictMode, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 import App from "./App"
+import ErrorBoundary from "./components/ErrorBoundary"
 import Home from "./routes/Home"
 import Groups from "./routes/Groups"
 import Fixtures from "./routes/Fixtures"
@@ -17,24 +18,28 @@ import Team from "./routes/Team"
 import HeadToHead from "./routes/HeadToHead"
 import NotFound from "./routes/NotFound"
 
+function wrapBoundary(element: ReactNode) {
+  return <ErrorBoundary>{element}</ErrorBoundary>;
+}
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
-      { index: true, element: <Home /> },
-      { path: "groups", element: <Groups /> },
-      { path: "fixtures", element: <Fixtures /> },
-      { path: "bracket", element: <Bracket /> },
-      { path: "venues", element: <Venues /> },
-      { path: "venues/:venueId", element: <VenueDetail /> },
-      { path: "match/:id", element: <Match /> },
-      { path: "historical", element: <Historical /> },
-      { path: "historical/:year", element: <HistoricalTournament /> },
-      { path: "historical/:year/:matchId", element: <HistoricalMatchDetail /> },
-      { path: "team/:teamName", element: <Team /> },
-      { path: "head-to-head/:team1/:team2", element: <HeadToHead /> },
-      { path: "*", element: <NotFound /> },
+      { index: true, element: wrapBoundary(<Home />) },
+      { path: "groups", element: wrapBoundary(<Groups />) },
+      { path: "fixtures", element: wrapBoundary(<Fixtures />) },
+      { path: "bracket", element: wrapBoundary(<Bracket />) },
+      { path: "venues", element: wrapBoundary(<Venues />) },
+      { path: "venues/:venueId", element: wrapBoundary(<VenueDetail />) },
+      { path: "match/:id", element: wrapBoundary(<Match />) },
+      { path: "historical", element: wrapBoundary(<Historical />) },
+      { path: "historical/:year", element: wrapBoundary(<HistoricalTournament />) },
+      { path: "historical/:year/:matchId", element: wrapBoundary(<HistoricalMatchDetail />) },
+      { path: "team/:teamName", element: wrapBoundary(<Team />) },
+      { path: "head-to-head/:team1/:team2", element: wrapBoundary(<HeadToHead />) },
+      { path: "*", element: wrapBoundary(<NotFound />) },
     ],
   },
 ])
