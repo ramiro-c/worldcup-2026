@@ -69,31 +69,36 @@ export default function Tv() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
         <h2 className="text-2xl font-bold">Canales de TV</h2>
-        <div className="flex flex-wrap gap-2">
-          <button
-            key="all"
-            onClick={() => setCountryFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              countryFilter === "all"
-                ? "bg-emerald-500/20 text-emerald-400"
-                : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-            }`}
-          >
-            Todas
-          </button>
-          {countries.map((country) => (
-            <button
-              key={country}
-              onClick={() => setCountryFilter(country)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                countryFilter === country
-                  ? "bg-emerald-500/20 text-emerald-400"
-                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-              }`}
+        <div className="flex flex-col gap-1">
+          <label htmlFor="tv-country-filter" className="text-xs text-zinc-500 font-medium h-4">País</label>
+          <div className="relative">
+            <select
+              id="tv-country-filter"
+              value={countryFilter}
+              onChange={(e) => setCountryFilter(e.target.value)}
+              className="appearance-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 pr-8 text-sm text-zinc-100 hover:border-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors [color-scheme:dark] cursor-pointer"
             >
-              {country}
-            </button>
-          ))}
+              <option value="all">Todos</option>
+              {countries.map((country) => (
+                <option key={country} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
+            <svg
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </div>
         </div>
       </div>
 

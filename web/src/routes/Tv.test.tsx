@@ -91,7 +91,8 @@ describe("Tv", () => {
 
     await screen.findAllByRole("heading", { level: 3 });
 
-    await user.click(screen.getByRole("button", { name: /^argentina$/i }));
+    const select = screen.getByRole("combobox", { name: /país/i });
+    await user.selectOptions(select, "Argentina");
 
     const headings = screen.getAllByRole("heading", { level: 3 });
     expect(headings).toHaveLength(1);
@@ -103,7 +104,7 @@ describe("Tv", () => {
     expect(channels[1]).toHaveTextContent("Fox Sports");
   });
 
-  it("resets filter when clicking Todas", async () => {
+  it("resets filter when selecting Todos", async () => {
     vi.mocked(api.getTv).mockResolvedValue(mockChannels);
 
     const user = userEvent.setup();
@@ -111,12 +112,14 @@ describe("Tv", () => {
 
     await screen.findAllByRole("heading", { level: 3 });
 
+    const select = screen.getByRole("combobox", { name: /país/i });
+
     // Filter to Argentina only
-    await user.click(screen.getByRole("button", { name: /^argentina$/i }));
+    await user.selectOptions(select, "Argentina");
     expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(1);
 
-    // Click "Todas" to reset
-    await user.click(screen.getByRole("button", { name: /todas/i }));
+    // Select "Todos" to reset
+    await user.selectOptions(select, "all");
     expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(3);
   });
 
