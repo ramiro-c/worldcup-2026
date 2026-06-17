@@ -40,18 +40,33 @@ export default function FilterBar({
       {/* Team dropdown */}
       <div className="flex flex-col gap-1">
         <label className="text-xs text-zinc-500 font-medium">Equipo</label>
-        <select
-          value={teamFilter}
-          onChange={(e) => onTeamChange(e.target.value)}
-          className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100 focus:outline-none focus:border-emerald-500"
-        >
-          <option value="">Todos</option>
-          {teams.map((t) => (
-            <option key={t.id} value={t.name}>
-              {t.name}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={teamFilter}
+            onChange={(e) => onTeamChange(e.target.value)}
+            className="appearance-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 pr-8 text-sm text-zinc-100 hover:border-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors [color-scheme:dark] cursor-pointer"
+          >
+            <option value="">Todos</option>
+            {teams.map((t) => (
+              <option key={t.id} value={t.name}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+          <svg
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
       </div>
 
       {/* Date picker */}
@@ -61,25 +76,40 @@ export default function FilterBar({
           type="date"
           value={dateFilter}
           onChange={(e) => onDateChange(e.target.value)}
-          className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100 focus:outline-none focus:border-emerald-500 [color-scheme:dark]"
+          className="appearance-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100 hover:border-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors [color-scheme:dark] cursor-pointer"
         />
       </div>
 
       {/* Venue dropdown */}
       <div className="flex flex-col gap-1">
         <label className="text-xs text-zinc-500 font-medium">Sede</label>
-        <select
-          value={venueFilter}
-          onChange={(e) => onVenueChange(e.target.value)}
-          className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100 focus:outline-none focus:border-emerald-500"
-        >
-          <option value="">Todas</option>
-          {venues.map((v) => (
-            <option key={v.id} value={v.name}>
-              {v.name}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={venueFilter}
+            onChange={(e) => onVenueChange(e.target.value)}
+            className="appearance-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 pr-8 text-sm text-zinc-100 hover:border-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors [color-scheme:dark] cursor-pointer"
+          >
+            <option value="">Todas</option>
+            {venues.map((v) => (
+              <option key={v.id} value={v.name}>
+                {v.name}
+              </option>
+            ))}
+          </select>
+          <svg
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
       </div>
 
       {/* Status toggles */}
