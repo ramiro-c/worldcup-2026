@@ -13,6 +13,7 @@ import Historical from "./routes/Historical"
 import HistoricalTournament from "./routes/HistoricalTournament"
 import HistoricalMatchDetail from "./routes/HistoricalMatchDetail"
 import Team from "./routes/Team"
+import HeadToHead from "./routes/HeadToHead"
 import NotFound from "./routes/NotFound"
 
 const router = createBrowserRouter([
@@ -30,6 +31,7 @@ const router = createBrowserRouter([
       { path: "historical/:year", element: <HistoricalTournament /> },
       { path: "historical/:year/:matchId", element: <HistoricalMatchDetail /> },
       { path: "team/:teamName", element: <Team /> },
+      { path: "head-to-head/:team1/:team2", element: <HeadToHead /> },
       { path: "*", element: <NotFound /> },
     ],
   },

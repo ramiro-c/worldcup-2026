@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { usePolling } from "../lib/usePolling";
-import { getMatch, getTeams, getVenues } from "../lib/api";
+import { getMatch, getTeams, getVenues, getTv } from "../lib/api";
 import type { Match } from "../lib/types";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 import RetryButton from "../components/RetryButton";
@@ -22,6 +22,7 @@ export default function Match() {
   // Static data: fetch once on mount
   const { data: teamsData } = useAsync(() => getTeams(), []);
   const { data: venuesData } = useAsync(() => getVenues(), []);
+  const { data: tvData } = useAsync(() => getTv(), []);
 
   // Dynamic data: poll while match is live
   const { data: match, loading, error } = usePolling(
@@ -216,6 +217,14 @@ export default function Match() {
                 EN VIVO
               </span>
             )}
+            <div className="mt-3">
+              <Link
+                to={`/head-to-head/${encodeURIComponent(enrichedMatch.home_team_name!)}/${encodeURIComponent(enrichedMatch.away_team_name!)}`}
+                className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors underline underline-offset-2"
+              >
+                Historial
+              </Link>
+            </div>
           </div>
 
           <div className="w-full sm:flex-1 text-center sm:text-left">
@@ -270,6 +279,22 @@ export default function Match() {
             )}
           </dl>
         </div>
+
+        {tvData && tvData.length > 0 && (
+          <div className="border-t border-zinc-800 pt-4 mt-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-zinc-500 mr-1">TV:</span>
+              {tvData.map((ch) => (
+                <span
+                  key={ch.id}
+                  className="inline-block px-2.5 py-1 bg-zinc-800 text-zinc-300 text-xs font-medium rounded-md"
+                >
+                  {ch.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
+import LiveWidget from "../components/LiveWidget";
 
 export default function Home() {
   return (
     <div className="space-y-8">
+      <LiveWidget />
+
       <section className="text-center space-y-4">
         <h2 className="text-4xl font-bold tracking-tight">
           Copa Mundial de la FIFA 2026

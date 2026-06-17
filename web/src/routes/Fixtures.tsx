@@ -17,7 +17,7 @@ interface MatchWithDetails extends Match {
 
 export default function Fixtures() {
   const [filter, setFilter] = useState<string>("all");
-  const [shouldPoll, setShouldPoll] = useState(true);
+  const [shouldPoll, setShouldPoll] = useState(false);
 
   // Static data: fetch once on mount
   const { data: teamsData } = useAsync(() => getTeams(), []);

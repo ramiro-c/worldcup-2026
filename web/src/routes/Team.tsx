@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getTeamMatches } from "../lib/api";
 import type { HistoricalTeamMatch } from "../lib/types";
@@ -122,12 +122,24 @@ export default function Team() {
 }
 
 function MatchCard({ match }: { match: HistoricalTeamMatch }) {
-  const isTeam1 = match.team1.name.toLowerCase() === useParams<{ teamName: string }>().teamName?.toLowerCase();
+  const params = useParams<{ teamName: string }>();
+  const navigate = useNavigate();
+  const isTeam1 = match.team1.name.toLowerCase() === params.teamName?.toLowerCase();
   const isWinner = isTeam1 ? match.team1.is_winner : match.team2.is_winner;
+  const teamName = params.teamName!;
+  const opponentName = isTeam1 ? match.team2.name : match.team1.name;
 
   return (
-    <Link
-      to={`/historical/${match.tournament_year}/${match.id}`}
+    <div
+      onClick={() => navigate(`/historical/${match.tournament_year}/${match.id}`)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigate(`/historical/${match.tournament_year}/${match.id}`);
+        }
+      }}
+      role="button"
+      tabIndex={0}
       className="block rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-colors cursor-pointer"
     >
       <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-4">
@@ -168,6 +180,13 @@ function MatchCard({ match }: { match: HistoricalTeamMatch }) {
         {match.group_name && <span>Grupo {match.group_name}</span>}
         {match.venue && <span>{match.venue}</span>}
         {match.date && <span>{match.date}</span>}
+        <Link
+          to={`/head-to-head/${encodeURIComponent(teamName)}/${encodeURIComponent(opponentName)}`}
+          onClick={(e) => e.stopPropagation()}
+          className="text-emerald-500 hover:text-emerald-400 transition-colors font-medium"
+        >
+          vs {opponentName}
+        </Link>
       </div>
 
       {match.scorers.length > 0 && (
@@ -179,6 +198,6 @@ function MatchCard({ match }: { match: HistoricalTeamMatch }) {
           ))}
         </div>
       )}
-    </Link>
+    </div>
   );
 }
