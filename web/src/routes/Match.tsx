@@ -1,5 +1,7 @@
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
+import { usePolling } from "../lib/usePolling";
 import { getMatch, getTeams, getVenues } from "../lib/api";
 import type { Match } from "../lib/types";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
@@ -15,36 +17,51 @@ interface MatchDetails extends Match {
 
 export default function Match() {
   const { id } = useParams<{ id: string }>();
+  const [shouldPoll, setShouldPoll] = useState(true);
 
-  const { data: match, loading, error, refetch } = useAsync(async () => {
-    if (!id) return null;
+  // Static data: fetch once on mount
+  const { data: teamsData } = useAsync(() => getTeams(), []);
+  const { data: venuesData } = useAsync(() => getVenues(), []);
 
-    const [matchData, teamsData, venuesData] = await Promise.all([
-      getMatch(id),
-      getTeams(),
-      getVenues(),
-    ]);
+  // Dynamic data: poll while match is live
+  const { data: match, loading, error } = usePolling(
+    (signal) => getMatch(id!, signal),
+    30000,
+    shouldPoll,
+    [id]
+  );
 
-    if (!matchData) return null;
+  // Update poll condition when match data changes
+  useEffect(() => {
+    if (match) {
+      setShouldPoll(match.status === "live");
+    }
+  }, [match]);
+
+  // Enrich match with team and venue info
+  const enrichedMatch = useMemo(() => {
+    if (!match || !teamsData || !venuesData) return null;
 
     const teamMap = new Map(teamsData.map((t) => [t.id, t]));
     const venueMap = new Map(venuesData.map((v) => [v.id, v]));
 
-    const homeTeam = teamMap.get(matchData.home_team);
-    const awayTeam = teamMap.get(matchData.away_team);
-    const venue = venueMap.get(matchData.venue);
+    const homeTeam = teamMap.get(match.home_team);
+    const awayTeam = teamMap.get(match.away_team);
+    const venue = venueMap.get(match.venue);
 
     return {
-      ...matchData,
+      ...match,
       home_team_name: homeTeam?.name,
       away_team_name: awayTeam?.name,
       venue_name: venue?.name,
       home_crest: homeTeam?.crest,
       away_crest: awayTeam?.crest,
     } as MatchDetails;
-  }, [id]);
+  }, [match, teamsData, venuesData]);
 
-  if (loading) {
+  const isLoading = !enrichedMatch && (loading || !teamsData || !venuesData);
+
+  if (isLoading) {
     return (
       <div className="space-y-8">
         <Skeleton className="h-5 w-32" />
@@ -95,7 +112,7 @@ export default function Match() {
       <div className="text-center py-20 space-y-6">
         <h1 className="text-4xl font-bold text-zinc-700">Error al cargar</h1>
         <p className="text-zinc-500">No se pudo cargar la información del partido.</p>
-        <RetryButton onRetry={refetch} />
+        <RetryButton onRetry={() => window.location.reload()} message={error.message} />
         <div>
           <Link
             to="/fixtures"
@@ -108,7 +125,7 @@ export default function Match() {
     );
   }
 
-  if (!match) {
+  if (!enrichedMatch) {
     return (
       <div className="text-center py-20 space-y-6">
         <h1 className="text-4xl font-bold text-zinc-700">404</h1>
@@ -151,13 +168,13 @@ export default function Match() {
 
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-8">
         <div className="text-center mb-6">
-          {match.group ? (
+          {enrichedMatch.group ? (
             <span className="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 text-sm font-medium rounded-full">
-              Grupo {match.group}
+              Grupo {enrichedMatch.group}
             </span>
           ) : (
             <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 text-sm font-medium rounded-full">
-              {match.round}
+              {enrichedMatch.round}
             </span>
           )}
         </div>
@@ -167,19 +184,19 @@ export default function Match() {
             <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4">
               <div>
                 <Link
-                  to={`/team/${encodeURIComponent(match.home_team_name!)}`}
+                  to={`/team/${encodeURIComponent(enrichedMatch.home_team_name!)}`}
                   className="text-xl sm:text-2xl font-bold hover:text-emerald-400 transition-colors"
                 >
-                  {match.home_team_name}
+                  {enrichedMatch.home_team_name}
                 </Link>
-                {match.status !== "scheduled" && (
+                {enrichedMatch.status !== "scheduled" && (
                   <p className="text-zinc-400">Local</p>
                 )}
               </div>
-              {match.home_crest && (
+              {enrichedMatch.home_crest && (
                 <img
-                  src={match.home_crest}
-                  alt={match.home_team_name}
+                  src={enrichedMatch.home_crest}
+                  alt={enrichedMatch.home_team_name}
                   className="w-14 h-14 sm:w-20 sm:h-20 object-contain"
                 />
               )}
@@ -187,14 +204,14 @@ export default function Match() {
           </div>
 
           <div className="text-center px-4 sm:px-8">
-            {match.status === "finished" || match.status === "live" ? (
+            {enrichedMatch.status === "finished" || enrichedMatch.status === "live" ? (
               <div className="text-3xl sm:text-5xl font-bold tabular-nums">
-                {match.home_score ?? "-"} - {match.away_score ?? "-"}
+                {enrichedMatch.home_score ?? "-"} - {enrichedMatch.away_score ?? "-"}
               </div>
             ) : (
               <div className="text-xl sm:text-2xl text-zinc-500">VS</div>
             )}
-            {match.status === "live" && (
+            {enrichedMatch.status === "live" && (
               <span className="inline-block mt-2 px-3 py-1 bg-red-500/20 text-red-400 text-sm font-medium rounded-full animate-pulse">
                 EN VIVO
               </span>
@@ -203,21 +220,21 @@ export default function Match() {
 
           <div className="w-full sm:flex-1 text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start gap-3 sm:gap-4">
-              {match.away_crest && (
+              {enrichedMatch.away_crest && (
                 <img
-                  src={match.away_crest}
-                  alt={match.away_team_name}
+                  src={enrichedMatch.away_crest}
+                  alt={enrichedMatch.away_team_name}
                   className="w-14 h-14 sm:w-20 sm:h-20 object-contain"
                 />
               )}
               <div>
                 <Link
-                  to={`/team/${encodeURIComponent(match.away_team_name!)}`}
+                  to={`/team/${encodeURIComponent(enrichedMatch.away_team_name!)}`}
                   className="text-xl sm:text-2xl font-bold hover:text-emerald-400 transition-colors"
                 >
-                  {match.away_team_name}
+                  {enrichedMatch.away_team_name}
                 </Link>
-                {match.status !== "scheduled" && (
+                {enrichedMatch.status !== "scheduled" && (
                   <p className="text-zinc-400">Visitante</p>
                 )}
               </div>
@@ -230,25 +247,25 @@ export default function Match() {
             <div>
               <dt className="text-zinc-500 mb-1">Fecha</dt>
               <dd className="text-zinc-100 font-medium">
-                {match.date} {match.time}
+                {enrichedMatch.date} {enrichedMatch.time}
               </dd>
             </div>
             <div>
               <dt className="text-zinc-500 mb-1">Estado</dt>
               <dd className="text-zinc-100 font-medium capitalize">
-                {match.status === "scheduled"
+                {enrichedMatch.status === "scheduled"
                   ? "Programado"
-                  : match.status === "live"
+                  : enrichedMatch.status === "live"
                   ? "En vivo"
-                  : match.status === "finished"
+                  : enrichedMatch.status === "finished"
                   ? "Finalizado"
-                  : match.status}
+                  : enrichedMatch.status}
               </dd>
             </div>
-            {match.venue_name && (
+            {enrichedMatch.venue_name && (
               <div>
                 <dt className="text-zinc-500 mb-1">Estadio</dt>
-                <dd className="text-zinc-100 font-medium">{match.venue_name}</dd>
+                <dd className="text-zinc-100 font-medium">{enrichedMatch.venue_name}</dd>
               </div>
             )}
           </dl>

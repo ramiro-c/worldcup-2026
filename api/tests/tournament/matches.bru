@@ -36,4 +36,23 @@ tests {
     expect(final).to.not.be.undefined;
     expect(final.date).to.equal("2026-07-19");
   });
+  test("each match has status, home_score, away_score fields", function() {
+    res.body.data.forEach(function(m) {
+      expect(m).to.have.property("status");
+      expect(m).to.have.property("home_score");
+      expect(m).to.have.property("away_score");
+    });
+  });
+  test("status is lowercase string", function() {
+    res.body.data.forEach(function(m) {
+      expect(m.status).to.be.a("string");
+      expect(m.status).to.match(/^(scheduled|live|finished|[a-z]+)$/);
+    });
+  });
+  test("home_score and away_score are number or null", function() {
+    res.body.data.forEach(function(m) {
+      expect(m.home_score === null || typeof m.home_score === "number").to.be.true;
+      expect(m.away_score === null || typeof m.away_score === "number").to.be.true;
+    });
+  });
 }

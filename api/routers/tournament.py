@@ -184,6 +184,17 @@ def map_matches(raw: list[dict]) -> list[dict]:
         if away_normalized == "URY":
             away_normalized = "URU"
         
+        score_home_raw = m.get("score_home")
+        score_away_raw = m.get("score_away")
+        try:
+            home_score = int(score_home_raw) if score_home_raw is not None else None
+        except (ValueError, TypeError):
+            home_score = None
+        try:
+            away_score = int(score_away_raw) if score_away_raw is not None else None
+        except (ValueError, TypeError):
+            away_score = None
+
         mapped.append(
             {
                 "id": m.get("slug", str(m.get("num", ""))),
@@ -195,7 +206,10 @@ def map_matches(raw: list[dict]) -> list[dict]:
                 "venue_name": m.get("venue_name", ""),
                 "date": m.get("date", ""),
                 "time": m.get("time_utc", ""),
-                "status": "scheduled",
+                "status": (m.get("status") or "scheduled").lower(),
+                "home_score": home_score,
+                "away_score": away_score,
+                "phase": m.get("phase"),
                 "group": m.get("group"),
                 "round": m.get("round"),
             }

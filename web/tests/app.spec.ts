@@ -54,6 +54,17 @@ test.describe('Copa 2026 Web App', () => {
     await expect(matchCards.first()).toBeVisible();
   });
 
+  test('should display live scores or VS for matches', async ({ page }) => {
+    await page.goto('/fixtures');
+
+    // Wait for match cards to render
+    await expect(page.locator('[class*="tabular-nums"]').first()).toBeVisible({ timeout: 15000 });
+
+    // Verify score elements exist — either scores (finished/live) or "VS" (scheduled)
+    const scoreText = await page.locator('[class*="tabular-nums"]').first().textContent();
+    expect(scoreText).toMatch(/^(\d+ - \d+|VS)$/);
+  });
+
   test('should navigate to Venues page', async ({ page }) => {
     await page.goto('/');
     await page.click('a[href="/venues"]');

@@ -2,8 +2,8 @@ import type { Group, Team, Venue, Match, TvChannel, HistoricalTournamentSummary,
 
 const API_BASE = "/api/tournament";
 
-async function fetchApi<T>(endpoint: string): Promise<T> {
-  const response = await fetch(`${API_BASE}${endpoint}`);
+async function fetchApi<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
+  const response = await fetch(`${API_BASE}${endpoint}`, { signal });
   if (!response.ok) {
     throw new Error(`API error: ${response.statusText}`);
   }
@@ -23,12 +23,12 @@ export async function getVenues(): Promise<Venue[]> {
   return fetchApi<Venue[]>("/venues");
 }
 
-export async function getMatches(): Promise<Match[]> {
-  return fetchApi<Match[]>("/matches");
+export async function getMatches(signal?: AbortSignal): Promise<Match[]> {
+  return fetchApi<Match[]>("/matches", signal);
 }
 
-export async function getMatch(id: string): Promise<Match | null> {
-  return fetchApi<Match | null>(`/matches/${id}`);
+export async function getMatch(id: string, signal?: AbortSignal): Promise<Match | null> {
+  return fetchApi<Match | null>(`/matches/${id}`, signal);
 }
 
 export async function getTv(): Promise<TvChannel[]> {

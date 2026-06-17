@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
+import { usePolling } from "../lib/usePolling";
 import { getMatches, getTeams, getVenues } from "../lib/api";
 import type { Match } from "../lib/types";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
@@ -16,18 +17,34 @@ interface MatchWithDetails extends Match {
 
 export default function Fixtures() {
   const [filter, setFilter] = useState<string>("all");
+  const [shouldPoll, setShouldPoll] = useState(true);
 
-  const { data: matches, loading, error, refetch } = useAsync(async () => {
-    const [matchesData, teamsData, venuesData] = await Promise.all([
-      getMatches(),
-      getTeams(),
-      getVenues(),
-    ]);
+  // Static data: fetch once on mount
+  const { data: teamsData } = useAsync(() => getTeams(), []);
+  const { data: venuesData } = useAsync(() => getVenues(), []);
+
+  // Dynamic data: poll while live matches exist
+  const { data: matches, loading, error } = usePolling(
+    (signal) => getMatches(signal),
+    30000,
+    shouldPoll
+  );
+
+  // Update poll condition when match data changes
+  useEffect(() => {
+    if (matches) {
+      setShouldPoll(matches.some((m: Match) => m.status === "live"));
+    }
+  }, [matches]);
+
+  // Enrich matches with team and venue info
+  const enrichedMatches = useMemo(() => {
+    if (!matches || !teamsData || !venuesData) return null;
 
     const teamMap = new Map(teamsData.map((t) => [t.id, t]));
     const venueMap = new Map(venuesData.map((v) => [v.id, v.name]));
 
-    return matchesData.map((match) => {
+    return matches.map((match) => {
       const home = teamMap.get(match.home_team);
       const away = teamMap.get(match.away_team);
       return {
@@ -39,9 +56,9 @@ export default function Fixtures() {
         venue_name: venueMap.get(match.venue),
       };
     });
-  }, []);
+  }, [matches, teamsData, venuesData]);
 
-  const filteredMatches = matches?.filter((match) => {
+  const filteredMatches = enrichedMatches?.filter((match) => {
     if (filter === "all") return true;
     if (filter === "group") return !!match.group;
     if (filter === "knockout") return !!match.round;
@@ -55,7 +72,9 @@ export default function Fixtures() {
     return acc;
   }, {} as Record<string, MatchWithDetails[]>);
 
-  if (loading) {
+  const isLoading = !enrichedMatches && (loading || !teamsData || !venuesData);
+
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
@@ -96,7 +115,7 @@ export default function Fixtures() {
   }
 
   if (error) {
-    return <RetryButton onRetry={refetch} message={error.message} />;
+    return <RetryButton onRetry={() => window.location.reload()} message={error.message} />;
   }
 
   return (
