@@ -37,6 +37,27 @@ export async function getTv(): Promise<TvChannel[]> {
   return fetchApi<TvChannel[]>("/tv");
 }
 
+export async function getUpcomingMatches(limit = 5): Promise<Match[]> {
+  const matches = await fetchApi<Match[]>("/matches");
+  const now = new Date();
+  return matches
+    .filter((m) => {
+      const matchDate = new Date(`${m.date}T${m.time || "00:00"}`);
+      return matchDate > now || m.status === "scheduled";
+    })
+    .sort((a, b) => {
+      const dateA = new Date(`${a.date}T${a.time || "00:00"}`);
+      const dateB = new Date(`${b.date}T${b.time || "00:00"}`);
+      return dateA.getTime() - dateB.getTime();
+    })
+    .slice(0, limit);
+}
+
+export async function getFeaturedVenues(limit = 4): Promise<Venue[]> {
+  const venues = await fetchApi<Venue[]>("/venues");
+  return venues.slice(0, limit);
+}
+
 const HISTORICAL_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/historical`
   : "/api/historical";

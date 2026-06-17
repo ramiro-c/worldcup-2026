@@ -50,7 +50,7 @@ export default function Navigation() {
         <ul className="hidden md:flex items-center gap-1">
           {navItems.map((item) => (
             <li key={item.to}>
-              <NavLink to={item.to} className={({ isActive }) =>
+              <NavLink to={item.to} end={item.to === "/"} className={({ isActive }) =>
                 `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-emerald-500/20 text-emerald-400"

@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getVenues } from "../lib/api";
 import type { Venue } from "../lib/types";
+import { trackPageView } from "../lib/analytics";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
-import RetryButton from "../components/RetryButton";
+import ErrorState from "../components/ErrorState";
 
 export default function Venues() {
+  useEffect(() => { trackPageView("/venues"); }, []);
+
   const { data: venues, loading, error, refetch } = useAsync(getVenues, []);
 
   const [regionFilter, setRegionFilter] = useState<string>("all");
@@ -75,7 +79,7 @@ export default function Venues() {
   }
 
   if (error) {
-    return <RetryButton onRetry={refetch} message={error.message} />;
+    return <ErrorState message={error.message} onRetry={refetch} />;
   }
 
   return (
@@ -106,9 +110,10 @@ export default function Venues() {
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {countryVenues.map((venue) => (
-                <div
+                <Link
                   key={venue.id}
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-3 hover:border-emerald-500/50 transition-colors"
+                  to={`/venues/${venue.id}`}
+                  className="block rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-3 hover:border-emerald-500/50 transition-colors hover:bg-emerald-500/5"
                 >
                   <div>
                     <h4 className="font-semibold">{venue.name}</h4>
@@ -135,6 +140,7 @@ export default function Venues() {
                       href={`https://www.google.com/maps?q=${venue.latitude},${venue.longitude}`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
                       className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
                     >
                       <svg
@@ -159,7 +165,7 @@ export default function Venues() {
                       Ver en mapa
                     </a>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
