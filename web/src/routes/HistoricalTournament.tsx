@@ -120,7 +120,7 @@ export default function HistoricalTournament() {
                   key={g.name}
                   className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
                 >
-                  <h4 className="font-semibold text-emerald-400 mb-2">
+                  <h4 className="font-semibold text-zinc-100 mb-2">
                     Grupo {g.name}
                   </h4>
                   <ol className="space-y-1">
@@ -197,14 +197,14 @@ function MatchCard({ match }: { match: HistoricalMatch }) {
       to={`/historical/${year}/${match.id}`}
       className="block rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-colors cursor-pointer"
     >
-      <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-4">
-        <div className="flex items-center gap-3 w-full sm:w-auto sm:justify-end">
-          <Link to={`/team/${encodeURIComponent(match.team1.name)}`} className={`text-sm sm:text-base ${winnerClass(match.team1.is_winner)} hover:text-emerald-400 transition-colors flex-1 sm:flex-none text-right`}>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+        <div className="text-right">
+          <Link to={`/team/${encodeURIComponent(match.team1.name)}`} className={`text-sm sm:text-base ${winnerClass(match.team1.is_winner)} hover:text-emerald-400 transition-colors`}>
             {match.team1.name}
           </Link>
         </div>
 
-        <div className="text-center min-w-[80px]">
+        <div className="text-center px-2">
           <div className="text-xl font-bold tabular-nums text-zinc-100">
             {match.score}
           </div>
@@ -221,8 +221,8 @@ function MatchCard({ match }: { match: HistoricalMatch }) {
           )}
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto sm:justify-start">
-          <Link to={`/team/${encodeURIComponent(match.team2.name)}`} className={`text-sm sm:text-base ${winnerClass(match.team2.is_winner)} hover:text-emerald-400 transition-colors flex-1 sm:flex-none text-left`}>
+        <div className="text-left">
+          <Link to={`/team/${encodeURIComponent(match.team2.name)}`} className={`text-sm sm:text-base ${winnerClass(match.team2.is_winner)} hover:text-emerald-400 transition-colors`}>
             {match.team2.name}
           </Link>
         </div>
