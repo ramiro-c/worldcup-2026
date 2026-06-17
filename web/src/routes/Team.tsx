@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { getTeamMatches } from "../lib/api";
@@ -6,6 +7,15 @@ import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";
 import RetryButton from "../components/RetryButton";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
+
+interface TeamStats {
+  wins: number;
+  draws: number;
+  losses: number;
+  gf: number;
+  ga: number;
+  total: number;
+}
 
 const STAGE_LABELS: Record<string, string> = {
   group: "Fase de Grupos",
@@ -17,6 +27,49 @@ const STAGE_LABELS: Record<string, string> = {
   final: "Final",
 };
 
+function computeTeamStats(matches: HistoricalTeamMatch[], teamName: string): TeamStats {
+  let wins = 0;
+  let draws = 0;
+  let losses = 0;
+  let gf = 0;
+  let ga = 0;
+
+  for (const match of matches) {
+    // W/D/L
+    const isTeam1 = match.team1.name.toLowerCase() === teamName.toLowerCase();
+    const t1Won = match.team1.is_winner;
+    const t2Won = match.team2.is_winner;
+
+    if (t1Won === t2Won) {
+      draws++;
+    } else if ((isTeam1 && t1Won) || (!isTeam1 && t2Won)) {
+      wins++;
+    } else {
+      losses++;
+    }
+
+    // Goals
+    if (match.score && match.score !== "-") {
+      const parts = match.score.split("-");
+      if (parts.length === 2) {
+        const homeGoals = parseInt(parts[0], 10);
+        const awayGoals = parseInt(parts[1], 10);
+        if (!isNaN(homeGoals) && !isNaN(awayGoals)) {
+          if (isTeam1) {
+            gf += homeGoals;
+            ga += awayGoals;
+          } else {
+            gf += awayGoals;
+            ga += homeGoals;
+          }
+        }
+      }
+    }
+  }
+
+  return { wins, draws, losses, gf, ga, total: matches.length };
+}
+
 export default function Team() {
   const { teamName } = useParams<{ teamName: string }>();
   const { timezone } = useTimezone();
@@ -24,6 +77,11 @@ export default function Team() {
     () => getTeamMatches(teamName!),
     [teamName]
   );
+
+  const stats = useMemo(() => {
+    if (!matches || !teamName) return null;
+    return computeTeamStats(matches, teamName);
+  }, [matches, teamName]);
 
   if (loading) {
     return (
@@ -105,6 +163,32 @@ export default function Team() {
           <p className="text-zinc-400 text-sm">{matches.length} partidos</p>
         </div>
       </div>
+
+      {/* Stats card */}
+      {stats && (
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-center">
+            <div className="text-2xl font-bold text-emerald-400">{stats.wins}</div>
+            <div className="text-xs text-zinc-500 mt-1">Victorias</div>
+          </div>
+          <div className="rounded-xl border border-zinc-700 bg-zinc-800/50 p-4 text-center">
+            <div className="text-2xl font-bold text-zinc-300">{stats.draws}</div>
+            <div className="text-xs text-zinc-500 mt-1">Empates</div>
+          </div>
+          <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4 text-center">
+            <div className="text-2xl font-bold text-red-400">{stats.losses}</div>
+            <div className="text-xs text-zinc-500 mt-1">Derrotas</div>
+          </div>
+          <div className="rounded-xl border border-zinc-700 bg-zinc-800/50 p-4 text-center">
+            <div className="text-2xl font-bold text-zinc-300">{stats.gf}</div>
+            <div className="text-xs text-zinc-500 mt-1">Goles a favor</div>
+          </div>
+          <div className="rounded-xl border border-zinc-700 bg-zinc-800/50 p-4 text-center">
+            <div className="text-2xl font-bold text-zinc-300">{stats.ga}</div>
+            <div className="text-xs text-zinc-500 mt-1">Goles en contra</div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-8">
         {years.map((year) => (

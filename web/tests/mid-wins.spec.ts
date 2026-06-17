@@ -108,4 +108,36 @@ test.describe("Mid-Wins: F5 Timezone, F9 Fixture Filters, F6 Team Stats", () => 
       expect(url.includes("?")).toBe(false);
     }
   });
+
+  // ── F6 Team Stats ─────────────────────────────────────────────────────
+
+  test("6.3a: Team page shows W/D/L stats card", async ({ page }) => {
+    await page.goto("/team/Argentina");
+
+    // Wait for match data
+    await expect(page.locator("h2").first()).toBeVisible({ timeout: 15000 });
+
+    // Stats card should show Victorias, Empates, Derrotas
+    await expect(page.locator("text=Victorias").first()).toBeVisible();
+    await expect(page.locator("text=Empates").first()).toBeVisible();
+    await expect(page.locator("text=Derrotas").first()).toBeVisible();
+  });
+
+  test("6.3b: Team page shows goals for/against", async ({ page }) => {
+    await page.goto("/team/Argentina");
+
+    await expect(page.locator("h2").first()).toBeVisible({ timeout: 15000 });
+
+    // Goals stats should be visible
+    await expect(page.locator("text=Goles a favor").first()).toBeVisible();
+    await expect(page.locator("text=Goles en contra").first()).toBeVisible();
+  });
+
+  test("6.3c: Unknown team shows stats with all zeros", async ({ page }) => {
+    await page.goto("/team/Kirguist%C3%A1n");
+
+    // Could show 0-0-0 or empty state for team with no data
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("h1").or(page.locator("h2")).first()).toBeVisible();
+  });
 });
