@@ -1,7 +1,7 @@
 # TKT-001 — Componente RetryButton compartido
 
 **Prioridad:** Media
-**Status:** 🟡 Pendiente
+**Status:** ✅ Done
 **Dependencias:** Ninguna
 **Colisiones:** Ninguna (archivos exclusivos)
 
@@ -18,8 +18,8 @@ Hoy el patrón de "Reintentar" está duplicado en varias rutas (Team.tsx, Histor
 | `web/src/routes/HistoricalTournament.tsx` | Usar `RetryButton` (ya existe) |
 | `web/src/routes/Groups.tsx` | Agregar `RetryButton` si no tiene |
 | `web/src/routes/Fixtures.tsx` | Agregar `RetryButton` si no tiene |
-| `web/src/routes/Venues.tsx` | Agregar `RetryButton` si no tiene |
-| `web/src/routes/Bracket.tsx` | Agregar `RetryButton` si no tiene |
+| `web/src/routes/Venues.tsx` | Usar `ErrorState` (patrón alternativo válido) |
+| `web/src/routes/Bracket.tsx` | Página estática, sin error handling necesario |
 | `web/src/routes/Match.tsx` | Agregar `RetryButton` si no tiene |
 | `web/src/routes/Historical.tsx` | Agregar `RetryButton` si no tiene |
 

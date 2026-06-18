@@ -1,7 +1,7 @@
 # TKT-009 — Meta tags dinámicos por ruta
 
 **Prioridad:** Baja
-**Status:** 🟡 Pendiente
+**Status:** ✅ Done (parcial)
 **Dependencias:** Ninguna
 **Colisiones:** Ninguna
 
@@ -20,11 +20,14 @@ Cada ruta debería tener `<title>` y `<meta description>` dinámicos para SEO y 
 
 | Archivo | Cambio |
 |---------|--------|
-| `web/src/index.html` | Templates de title/meta por defecto |
-| `web/src/routes/*.tsx` | Efectos `document.title` en cada ruta |
+| `web/src/components/PageTitle.tsx` | **Crear** — componente compartido |
+| `web/src/App.tsx` | Agregar `<PageTitle />` en layout global |
+| `web/src/index.html` | Title por defecto "Copa 2026" |
 
 ## Notas
 
-- Usar `useEffect` con `document.title` en cada componente
-- Opcional: `react-helmet-async` si hay muchas rutas
-- No requiere build step, solo efectos
+- `PageTitle.tsx` integrado globalmente en el layout (App.tsx)
+- Cubre rutas estáticas: `/`, `/groups`, `/fixtures`, `/bracket`, `/venues`, `/historical`
+- Title format: `"{title} | Copa Mundial 2026"`
+- Rutas con parámetros (`/team/:name`, `/match/:id`, etc.) usan title genérico
+- `<meta description>` actualizable dinámicamente (requiere tag en index.html para rutas parametrizadas)

@@ -1,7 +1,7 @@
 # TKT-008 — Breadcrumbs en páginas anidadas
 
 **Prioridad:** Baja
-**Status:** 🟡 Pendiente
+**Status:** ✅ Done
 **Dependencias:** Ninguna
 **Colisiones:** Ninguna
 
@@ -17,13 +17,11 @@ Falta breadcrumb trail en páginas anidadas para navegación jerárquica:
 | Archivo | Cambio |
 |---------|--------|
 | `web/src/components/Breadcrumbs.tsx` | **Crear** — componente compartido |
-| `web/src/routes/HistoricalTournament.tsx` | Agregar `<Breadcrumbs>` |
-| `web/src/routes/HistoricalMatchDetail.tsx` | Agregar `<Breadcrumbs>` |
-| `web/src/routes/Team.tsx` | Agregar `<Breadcrumbs>` |
+| `web/src/App.tsx` | Agregar `<Breadcrumbs />` en layout global |
 
 ## Notas
 
-- Componente simple que recibe `items: [{ label, to? }]`
+- Componente integrado globalmente en el layout (App.tsx), aplica a todas las rutas
+- Manejo de parámetros de ruta (salta segmentos como `:name`, `:id`)
 - Separador `›` entre items
-- Primer item siempre "Historial" (link a `/historical`)
 - Último item sin link (página actual)

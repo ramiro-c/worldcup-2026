@@ -1,7 +1,7 @@
 # TKT-007 — Skeleton y RetryButton en Match.tsx
 
 **Prioridad:** Media
-**Status:** 🟡 Pendiente
+**Status:** ✅ Done
 **Dependencias:** TKT-001 (RetryButton compartido)
 **Colisiones:** Ninguna
 

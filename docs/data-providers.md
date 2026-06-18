@@ -14,9 +14,10 @@
 | `teams` | Equipos con código, grupo y URL de escudo |
 | `venues` | Sedes con nombre, ciudad, país, capacidad |
 | `matches` | Todos los partidos con fecha, hora, equipos, sede, grupo/ronda |
-| `tv` | Información de transmisión televisiva |
+| `match/{id}` | Detalle de un partido individual |
+| `tv` | Canales de TV por país (transformado a lista plana) |
 
-**Proxy cachea** con TTL 5 min, con fallback a stale en caso de error.
+**Proxy cachea** con TTL 5 min (60s para matches en vivo), con fallback a stale en caso de error.
 
 ---
 
@@ -33,6 +34,7 @@
 | `tournaments` | Lista de torneos disponibles (año, nombre, host) |
 | `tournaments/{year}` | Grupos + partidos de un torneo específico |
 | `head-to-head` | Todos los partidos históricos entre dos equipos |
+| `teams/{teamName}/matches` | Partidos históricos de un equipo |
 
 **Cobertura:** 23 mundiales, todos completos con:
 - Partidos de grupo y eliminatorias
@@ -41,6 +43,8 @@
 - Golden goal, own goals, replays
 
 **Parser** (`OpenfootballParser`) traduce texto plano estructurado a dicts.
+
+**Team aliases** (`providers/aliases.py`) resuelve variantes históricas: West Germany → Germany, USSR → Russia, Czechoslovakia → Czech Republic, Yugoslavia → Serbia, etc.
 
 ---
 
@@ -70,3 +74,38 @@
 | wheniskickoff | 2026 (en vivo) | JSON | Fixture, grupos, sedes, TV |
 | openfootball | 1930–2026 (histórico) | TXT parseado | Resultados, goleadores, grupos |
 | StatsBomb | 1958–2022 (8 mundiales) | JSON | Eventos detalle, alineaciones |
+
+---
+
+## Arquitectura de cache
+
+**Sin DB local.** La app usa cache en memoria con patrón cache-aside:
+
+```
+Cliente → BE → ¿está en cache?
+              ├─ Sí → retorna
+              └─ No → fetch proveedor → guarda en cache → retorna
+```
+
+### Motor
+
+**`MemoryCache`** (`providers/cache.py`):
+- TTL por endpoint (300s default, 60s para matches en vivo)
+- Stale-while-revalidate: si el upstream falla, retorna dato stale
+- Stats de hit/miss/stale-hit
+- Sin persistencia — se pierde al reiniciar
+
+### Interfaces
+
+ABC interfaces en `providers/interfaces.py`:
+- `ITournamentDataProvider` — wheniskickoff
+- `IHistoricalDataProvider` — openfootball
+- `IHeadToHeadProvider` — openfootball
+- `ITeamDataProvider` — openfootball
+- `IEventDataProvider` — StatsBomb
+
+### Estrategia de actualización
+
+- **Matches en vivo**: polling 60s durante el torneo
+- **Fixture**: cache 5 min, stale fallback
+- **Histórico**: cache 5 min, no cambia (datos estáticos)
