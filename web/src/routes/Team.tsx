@@ -7,6 +7,7 @@ import { STAGE_LABELS } from "../lib/constants";
 import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";
 import { trackPageView } from "../lib/analytics";
+import { useNavigateBack } from "../lib/navigation";
 import RetryButton from "../components/RetryButton";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 
@@ -64,6 +65,7 @@ function computeTeamStats(matches: HistoricalTeamMatch[], teamName: string): Tea
 
 export default function Team() {
   const { teamName } = useParams<{ teamName: string }>();
+  const goBack = useNavigateBack("/historical");
   const { timezone } = useTimezone();
   useEffect(() => { trackPageView(`/team/${teamName}`); }, [teamName]);
 
@@ -107,12 +109,12 @@ export default function Team() {
         <p className="text-zinc-500">{error.message}</p>
         <RetryButton onRetry={refetch} message={error.message} />
         <div>
-          <Link
-            to="/historical"
-            className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors"
+          <button
+            onClick={goBack}
+            className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors cursor-pointer"
           >
-            Volver al historial
-          </Link>
+            Volver
+          </button>
         </div>
       </div>
     );
@@ -125,12 +127,12 @@ export default function Team() {
         <p className="text-zinc-500">
           No se encontraron partidos para "{teamName}" en los Mundiales.
         </p>
-        <Link
-          to="/historical"
-          className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors"
+        <button
+          onClick={goBack}
+          className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors cursor-pointer"
         >
-          Volver al historial
-        </Link>
+          Volver
+        </button>
       </div>
     );
   }
@@ -147,12 +149,12 @@ export default function Team() {
     <div className="space-y-8">
       <div className="flex items-center gap-4">
         <div>
-          <Link
-            to="/historical"
-            className="text-sm text-zinc-500 hover:text-emerald-400 transition-colors"
+          <button
+            onClick={goBack}
+            className="text-sm text-zinc-500 hover:text-emerald-400 transition-colors cursor-pointer"
           >
             &larr; Historial
-          </Link>
+          </button>
           <h2 className="text-2xl font-bold mt-1">{teamName} en Mundiales</h2>
           <p className="text-zinc-400 text-sm">{matches.length} partidos</p>
         </div>

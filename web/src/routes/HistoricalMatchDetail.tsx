@@ -4,10 +4,12 @@ import { useAsync } from "../lib/useAsync";
 import { getHistoricalTournament } from "../lib/api";
 import { STAGE_LABELS } from "../lib/constants";
 import { trackPageView } from "../lib/analytics";
+import { useNavigateBack } from "../lib/navigation";
 import { Skeleton } from "../components/Skeleton";
 
 export default function HistoricalMatchDetail() {
   const { year, matchId } = useParams<{ year: string; matchId: string }>();
+  const goBack = useNavigateBack(`/historical/${year}`);
   useEffect(() => { trackPageView(`/historical/${year}/${matchId}`); }, [year, matchId]);
 
   const { data: tournament, loading, error, refetch } = useAsync(
@@ -39,12 +41,12 @@ export default function HistoricalMatchDetail() {
             Reintentar
           </button>
         )}
-        <Link
-          to={`/historical/${year}`}
-          className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors"
+        <button
+          onClick={goBack}
+          className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors cursor-pointer"
         >
-          Volver al torneo
-        </Link>
+          Volver
+        </button>
       </div>
     );
   }
@@ -52,15 +54,15 @@ export default function HistoricalMatchDetail() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <Link
-          to={`/historical/${year}`}
-          className="text-zinc-500 hover:text-emerald-400 transition-colors flex items-center gap-2"
+        <button
+          onClick={goBack}
+          className="text-zinc-500 hover:text-emerald-400 transition-colors flex items-center gap-2 cursor-pointer"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Volver al torneo
-        </Link>
+          Volver
+        </button>
       </div>
 
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-8">

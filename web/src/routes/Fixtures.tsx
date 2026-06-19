@@ -64,9 +64,9 @@ export default function Fixtures() {
       const away = teamMap.get(match.away_team);
       return {
         ...match,
-        home_team_name: home?.name,
+        home_team_name: home?.name || match.home_team,
         home_team_crest: home?.crest,
-        away_team_name: away?.name,
+        away_team_name: away?.name || match.away_team,
         away_team_crest: away?.crest,
         venue_name: venueMap.get(match.venue),
       };
@@ -280,11 +280,13 @@ export default function Fixtures() {
                       >
                         {match.home_team_name}
                       </Link>
-                      <img
-                        src={match.home_team_crest}
-                        alt={match.home_team_name}
-                        className="w-8 h-8 object-contain"
-                      />
+                      {match.home_team_crest && (
+                        <img
+                          src={match.home_team_crest}
+                          alt={match.home_team_name ?? ''}
+                          className="w-8 h-8 object-contain"
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -306,11 +308,13 @@ export default function Fixtures() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3">
-                      <img
-                        src={match.away_team_crest}
-                        alt={match.away_team_name}
-                        className="w-8 h-8 object-contain"
-                      />
+                      {match.away_team_crest && (
+                        <img
+                          src={match.away_team_crest}
+                          alt={match.away_team_name}
+                          className="w-8 h-8 object-contain"
+                        />
+                      )}
                       <Link
                         to={`/team/${encodeURIComponent(match.away_team_name!)}`}
                         onClick={(e) => e.stopPropagation()}

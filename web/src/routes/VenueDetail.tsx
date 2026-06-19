@@ -6,6 +6,7 @@ import type { Match, Venue } from "../lib/types";
 import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";
 import { trackPageView } from "../lib/analytics";
+import { useNavigateBack } from "../lib/navigation";
 import { Skeleton } from "../components/Skeleton";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -27,6 +28,7 @@ function formatCapacity(capacity: number): string {
 
 export default function VenueDetail() {
   const { venueId } = useParams<{ venueId: string }>();
+  const goBack = useNavigateBack("/venues");
   const { timezone } = useTimezone();
 
   useEffect(() => { trackPageView(`/venues/${venueId}`); }, [venueId]);
@@ -72,12 +74,12 @@ export default function VenueDetail() {
         <p className="text-zinc-500">
           El estadio solicitado no existe o no está disponible.
         </p>
-        <Link
-          to="/venues"
-          className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors"
+        <button
+          onClick={goBack}
+          className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-900 font-semibold rounded-lg transition-colors cursor-pointer"
         >
-          Volver a estadios
-        </Link>
+          Volver
+        </button>
       </div>
     );
   }
@@ -93,9 +95,9 @@ export default function VenueDetail() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <Link
-          to="/venues"
-          className="text-zinc-500 hover:text-emerald-400 transition-colors flex items-center gap-2"
+        <button
+          onClick={goBack}
+          className="text-zinc-500 hover:text-emerald-400 transition-colors flex items-center gap-2 cursor-pointer"
         >
           <svg
             className="w-5 h-5"
@@ -110,8 +112,8 @@ export default function VenueDetail() {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          Volver a estadios
-        </Link>
+          Volver
+        </button>
       </div>
 
       <div>
