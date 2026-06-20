@@ -61,6 +61,28 @@ export default function Attribution() {
           <span>Datos históricos de partidos</span>
         </a>
       </div>
+      <div className="mx-auto max-w-6xl mt-4 text-center sm:text-left">
+        <span>
+          Developed by{" "}
+          <a
+            href="https://github.com/ramiro-c"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-zinc-300"
+          >
+            ramiro-c
+          </a>{" "}
+          ·{" "}
+          <a
+            href="https://ramirocerda.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-zinc-300"
+          >
+            ramirocerda.vercel.app
+          </a>
+        </span>
+      </div>
     </footer>
   );
 }
