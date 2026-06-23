@@ -22,6 +22,18 @@ function getFlag(country: string): string {
   return COUNTRY_FLAGS[country] || "🏆";
 }
 
+function Card({ title, icon, children, className = "" }: { title: string; icon: string; children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 ${className}`}>
+      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <span className="text-xl">{icon}</span>
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+}
+
 export default function Stats() {
   useEffect(() => { trackPageView("/stats"); }, []);
 
@@ -96,12 +108,10 @@ export default function Stats() {
       </div>
 
       <section>
-        <h3 className="text-xl font-semibold mb-4">Goleadores Históricos</h3>
         <TopScorersCard scorers={stats.top_scorers} />
       </section>
 
       <section>
-        <h3 className="text-xl font-semibold mb-4">Anfitriones</h3>
         <HostRecordsCard records={stats.host_records} />
       </section>
     </div>
@@ -113,11 +123,7 @@ function ChampionCard({ data }: { data: TournamentStats }) {
   const maxCount = top10[0]?.count || 1;
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-        <span className="text-xl">🏆</span>
-        Campeones
-      </h3>
+    <Card title="Campeones" icon="🏆">
       <div className="space-y-3">
           {top10.map((entry, i) => (
           <Link
@@ -151,7 +157,7 @@ function ChampionCard({ data }: { data: TournamentStats }) {
           +{data.champion_counts.length - 10} países
         </p>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -159,11 +165,7 @@ function BiggestWinsCard({ data }: { data: TournamentStats }) {
   const top5 = data.biggest_wins.slice(0, 5);
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-        <span className="text-xl">💥</span>
-        Mayores Goleadas
-      </h3>
+    <Card title="Mayores Goleadas" icon="💥">
       <div className="space-y-3">
         {top5.map((win) => (
           <div
@@ -187,17 +189,13 @@ function BiggestWinsCard({ data }: { data: TournamentStats }) {
           Hay {data.biggest_wins.length} goleadas de 4+ goles de diferencia
         </p>
       )}
-    </div>
+    </Card>
   );
 }
 
 function TotalsCard({ data }: { data: TournamentStats }) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-        <span className="text-xl">📊</span>
-        Totales
-      </h3>
+    <Card title="Totales" icon="📊">
       <div className="space-y-4">
         <div>
           <p className="text-3xl font-bold tabular-nums text-emerald-400">
@@ -218,7 +216,7 @@ function TotalsCard({ data }: { data: TournamentStats }) {
           <p className="text-xs text-zinc-500">Países campeones distintos</p>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -226,15 +224,11 @@ function TopScorersCard({ scorers }: { scorers: TournamentStats["top_scorers"] }
   const top15 = scorers.slice(0, 15);
 
   if (top15.length === 0) {
-    return (
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 text-center">
-        <p className="text-zinc-500">Sin datos de goleadores</p>
-      </div>
-    );
+    return <Card title="Goleadores Históricos" icon="⚽" className="text-center"><p className="text-zinc-500">Sin datos de goleadores</p></Card>;
   }
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+    <Card title="Goleadores Históricos" icon="⚽" className="overflow-hidden p-0">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-zinc-800 text-zinc-500 text-xs uppercase">
@@ -266,13 +260,13 @@ function TopScorersCard({ scorers }: { scorers: TournamentStats["top_scorers"] }
           ))}
         </tbody>
       </table>
-    </div>
+    </Card>
   );
 }
 
 function HostRecordsCard({ records }: { records: TournamentStats["host_records"] }) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+    <Card title="Anfitriones" icon="🌍" className="overflow-hidden p-0">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-zinc-800 text-zinc-500 text-xs uppercase">
@@ -318,6 +312,6 @@ function HostRecordsCard({ records }: { records: TournamentStats["host_records"]
           ))}
         </tbody>
       </table>
-    </div>
+    </Card>
   );
 }
