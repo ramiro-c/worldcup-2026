@@ -10,7 +10,14 @@ function positionCategory(pos?: string): string {
   if (p.includes("goalkeeper")) return "GK";
   if (p.includes("back") || p.includes("defender") || p.includes("defensa")) return "DEF";
   if (p.includes("midfield") || p.includes("mid") || p.includes("mediocampista")) return "MID";
-  if (p.includes("forward") || p.includes("striker") || p.includes("delantero")) return "FWD";
+  if (
+    p.includes("forward") ||
+    p.includes("striker") ||
+    p.includes("wing") || // Left Wing / Right Wing → forwards
+    p.includes("delantero")
+  ) {
+    return "FWD";
+  }
   return "OTROS";
 }
 

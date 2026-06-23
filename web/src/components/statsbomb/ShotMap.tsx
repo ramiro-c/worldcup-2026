@@ -15,7 +15,10 @@ function toSvgX(sbX: number): number {
   return sbX * SCALE_X;
 }
 function toSvgY(sbY: number): number {
-  return SVG_H - sbY * SCALE_Y; // flip Y so bottom of pitch = y=0
+  // StatsBomb's coordinate origin (0, 0) is the top-left of the pitch
+  // (from the broadcast camera's perspective) — matches SVG's y-down
+  // convention, so no axis flip is needed.
+  return sbY * SCALE_Y;
 }
 
 const OUTCOME_COLORS: Record<string, string> = {

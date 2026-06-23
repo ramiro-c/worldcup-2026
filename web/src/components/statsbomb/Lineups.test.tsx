@@ -84,4 +84,24 @@ describe("Lineups", () => {
     render(<Lineups lineups={withoutPosition} />);
     expect(screen.getByText("Otros")).toBeInTheDocument();
   });
+
+  it("groups wing positions under Delanteros (FWD)", () => {
+    // Real StatsBomb positions: "Left Wing" / "Right Wing" → forwards
+    const wings: StatsBombLineup[] = [
+      {
+        team: "Germany",
+        startingXI: [
+          { player: "Left Winger", jerseyNumber: 7, position: "Left Wing" },
+          { player: "Right Winger", jerseyNumber: 11, position: "Right Wing" },
+        ],
+        substitutes: [],
+      },
+    ];
+    render(<Lineups lineups={wings} />);
+    // Both wings should be in the Delanteros group, not Otros
+    expect(screen.getByText("Delanteros")).toBeInTheDocument();
+    expect(screen.queryByText("Otros")).not.toBeInTheDocument();
+    expect(screen.getByText("Left Winger")).toBeInTheDocument();
+    expect(screen.getByText("Right Winger")).toBeInTheDocument();
+  });
 });

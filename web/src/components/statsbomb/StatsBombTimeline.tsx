@@ -58,6 +58,10 @@ function StatsBombAttribution() {
 
 export function StatsBombTimeline({ year, team1, team2, date }: StatsBombTimelineProps) {
   const [loadState, setLoadState] = useState<LoadState>({ status: "idle" });
+  // Bumped on retry click to force the effect to re-run. `setLoadState("idle")`
+  // alone doesn't change the effect's dependency array, so the effect would
+  // never re-fire after a failure.
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -127,7 +131,7 @@ export function StatsBombTimeline({ year, team1, team2, date }: StatsBombTimelin
 
     discover();
     return () => { cancelled = true; };
-  }, [year, team1, team2, date]);
+  }, [year, team1, team2, date, retryCount]);
 
   // ── Loading skeleton ──
   if (loadState.status === "idle" || loadState.status === "loading") {
@@ -159,7 +163,7 @@ export function StatsBombTimeline({ year, team1, team2, date }: StatsBombTimelin
           Error al cargar datos de StatsBomb: {loadState.message}
         </p>
         <button
-          onClick={() => setLoadState({ status: "idle" })}
+          onClick={() => setRetryCount((c) => c + 1)}
           className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-sm font-medium rounded-lg transition-colors cursor-pointer"
         >
           Reintentar

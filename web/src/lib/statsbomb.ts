@@ -65,6 +65,7 @@ function mapShotOutcome(outcome: string): StatsBombShot["outcome"] {
       return "saved";
     case "blocked":
       return "blocked";
+    case "off t": // StatsBomb uses "Off T" (truncated)
     case "off target":
       return "off_target";
     case "wayward":
@@ -81,8 +82,27 @@ function getFirstPosition(positions: unknown): string | undefined {
 }
 
 /**
+ * A player is a starter if any of their position entries has
+ * `start_reason === "Starting XI"`. StatsBomb's open-data format
+ * tracks this on the lineup object itself — no need to cross-reference
+ * substitution events.
+ */
+function isStartingXI(positions: unknown): boolean {
+  if (!Array.isArray(positions)) return false;
+  return positions.some(
+    (p) => String((p as Record<string, unknown>)?.start_reason ?? "") === "Starting XI",
+  );
+}
+
+/**
  * Parse raw StatsBomb events into cleaned timeline events and shot data.
  * Sorts timeline events by minute.
+ *
+ * Real StatsBomb event types used here:
+ *   - "Shot" with shot.outcome.name === "Goal" → goal timeline event
+ *   - "Bad Behaviour" with bad_behaviour.card.name → card timeline event
+ *   - "Substitution" with substitution.replacement.name (on) and
+ *     event.player.name (off) → substitution timeline event
  */
 export function parseEvents(
   rawEvents: Record<string, unknown>[],
@@ -96,19 +116,31 @@ export function parseEvents(
     const player = String((ev.player as Record<string, unknown>)?.name ?? "");
     const typeName = String((ev.type as Record<string, unknown>)?.name ?? "");
 
-    if (typeName === "Goal") {
-      timelineEvents.push({ minute, type: "goal", team, player });
-    } else if (typeName === "Card") {
-      const card = (ev.card as Record<string, unknown>) ?? {};
+    // Goals are Shot events whose outcome is "Goal" — StatsBomb has no "Goal" type.
+    if (typeName === "Shot") {
+      const shot = (ev.shot as Record<string, unknown>) ?? {};
+      const outcomeName = String((shot.outcome as Record<string, unknown>)?.name ?? "");
+      if (outcomeName === "Goal") {
+        timelineEvents.push({ minute, type: "goal", team, player });
+      }
+    } else if (typeName === "Bad Behaviour") {
+      const badBehaviour = (ev.bad_behaviour as Record<string, unknown>) ?? {};
+      const card = (badBehaviour.card as Record<string, unknown>) ?? {};
       const cardName = String(card.name ?? "");
-      const cardType = cardName.toLowerCase().includes("red") ? "red" : "yellow";
-      timelineEvents.push({ minute, type: "card", team, player, cardType });
+      // Second Yellow is treated as a red card for the timeline.
+      const cardType = cardName.toLowerCase().includes("red") || cardName.toLowerCase().includes("second yellow")
+        ? "red"
+        : "yellow";
+      if (cardName) {
+        timelineEvents.push({ minute, type: "card", team, player, cardType });
+      }
     } else if (typeName === "Substitution") {
       const sub = (ev.substitution as Record<string, unknown>) ?? {};
       const replacement = (sub.replacement as Record<string, unknown>) ?? {};
-      const off = (sub.off as Record<string, unknown>) ?? {};
+      // Real data puts the player going OFF in event.player.name (NOT in
+      // sub.off.name, which doesn't exist in the v4 spec).
       const playerOn = String(replacement.name ?? "");
-      const playerOff = String(off.name ?? "");
+      const playerOff = player;
       timelineEvents.push({
         minute,
         type: "substitution",
@@ -118,7 +150,7 @@ export function parseEvents(
       });
     }
 
-    // "Shot" events for the shot map (includes goal shots)
+    // Shots for the shot map (includes goals — outcome is preserved).
     if (typeName === "Shot") {
       const location = ev.location as number[] | undefined;
       if (location && location.length >= 2) {
@@ -141,20 +173,15 @@ export function parseEvents(
 // ─── Lineup parsing ─────────────────────────────────────────────
 
 /**
- * Parse raw StatsBomb lineups into cleaned data, distinguishing starting XI
- * from substitutes by cross-referencing substitution events.
+ * Parse raw StatsBomb lineups into cleaned data. Starting XI vs substitutes
+ * is determined by the `start_reason` field on each player's position entry
+ * — the canonical StatsBomb source of truth.
  */
 export function parseLineups(
   rawLineups: Record<string, unknown>[],
-  timelineEvents: StatsBombTimelineEvent[],
+  // Kept for backwards-compatibility with callers; no longer used for XI detection.
+  _timelineEvents?: StatsBombTimelineEvent[],
 ): StatsBombLineup[] {
-  // Collect players who came ON as substitutes via events
-  const subPlayerNames = new Set(
-    timelineEvents
-      .filter((e) => e.type === "substitution" && e.substitution)
-      .map((e) => e.substitution!.playerOn),
-  );
-
   return rawLineups.map((raw) => {
     const team = String(raw.team_name ?? "");
     const lineup = (raw.lineup as Record<string, unknown>[]) ?? [];
@@ -167,8 +194,18 @@ export function parseLineups(
 
     players.sort((a, b) => a.jerseyNumber - b.jerseyNumber);
 
-    const startingXI = players.filter((p) => !subPlayerNames.has(p.player));
-    const substitutes = players.filter((p) => subPlayerNames.has(p.player));
+    // Re-derive start_reason from the original raw entry to avoid duplicating
+    // position-info on the cleaned player record.
+    const startingXI: typeof players = [];
+    const substitutes: typeof players = [];
+    lineup.forEach((p, i) => {
+      const cleaned = players[i];
+      if (isStartingXI(p.positions)) {
+        startingXI.push(cleaned);
+      } else {
+        substitutes.push(cleaned);
+      }
+    });
 
     return { team, startingXI, substitutes };
   });

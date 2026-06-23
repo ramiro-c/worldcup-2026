@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { StatsBombTimeline } from "./StatsBombTimeline";
 
 // Mock the API module
@@ -31,29 +32,34 @@ const mockMatches = [
 ];
 
 const mockEvents: Record<string, unknown>[] = [
+  // Goal as Shot (real StatsBomb shape)
   {
     id: "1",
     minute: 113,
-    type: { name: "Goal" },
+    type: { name: "Shot" },
     team: { name: "Germany" },
     player: { name: "Mario Götze" },
+    location: [110, 41],
+    shot: { outcome: { name: "Goal" } },
   },
+  // Non-goal shot (still appears on shot map)
   {
     id: "2",
     minute: 28,
     type: { name: "Shot" },
     team: { name: "Germany" },
     player: { name: "Toni Kroos" },
-    location: [55, 38],
+    location: [105, 38],
     shot: { outcome: { name: "Goal" } },
   },
+  // Yellow card via Bad Behaviour
   {
     id: "3",
     minute: 45,
-    type: { name: "Card" },
+    type: { name: "Bad Behaviour" },
     team: { name: "Argentina" },
     player: { name: "Javier Mascherano" },
-    card: { name: "Yellow Card" },
+    bad_behaviour: { card: { name: "Yellow Card" } },
   },
 ];
 
@@ -61,13 +67,21 @@ const mockLineups: Record<string, unknown>[] = [
   {
     team_name: "Germany",
     lineup: [
-      { player_name: "Manuel Neuer", jersey_number: 1, positions: [{ position: "Goalkeeper" }] },
+      {
+        player_name: "Manuel Neuer",
+        jersey_number: 1,
+        positions: [{ position: "Goalkeeper", start_reason: "Starting XI" }],
+      },
     ],
   },
   {
     team_name: "Argentina",
     lineup: [
-      { player_name: "Sergio Romero", jersey_number: 1, positions: [{ position: "Goalkeeper" }] },
+      {
+        player_name: "Sergio Romero",
+        jersey_number: 1,
+        positions: [{ position: "Goalkeeper", start_reason: "Starting XI" }],
+      },
     ],
   },
 ];
@@ -185,5 +199,40 @@ describe("StatsBombTimeline", () => {
 
     // Lineups should still show
     expect(screen.getByText("Alineaciones")).toBeInTheDocument();
+  });
+
+  it("retry button re-triggers the fetch on error", async () => {
+    const user = userEvent.setup();
+    // First call rejects, second call resolves.
+    vi.mocked(getHistoricalCompetitions)
+      .mockRejectedValueOnce(new Error("Network failure"))
+      .mockResolvedValueOnce(mockCompetitions);
+    vi.mocked(getHistoricalMatches).mockResolvedValue(mockMatches);
+    vi.mocked(getHistoricalMatchEvents).mockResolvedValue(mockEvents);
+    vi.mocked(getHistoricalMatchLineups).mockResolvedValue(mockLineups);
+
+    render(
+      <StatsBombTimeline year={2014} team1="Germany" team2="Argentina" date="2014-07-13" />,
+    );
+
+    // Wait for the error state.
+    await waitFor(() => {
+      expect(screen.getByText(/Error al cargar datos de StatsBomb/)).toBeInTheDocument();
+    });
+
+    // The competitions endpoint should have been called exactly once so far.
+    expect(getHistoricalCompetitions).toHaveBeenCalledTimes(1);
+
+    // Click retry and verify the effect re-runs (competitions called again).
+    await user.click(screen.getByText("Reintentar"));
+
+    await waitFor(() => {
+      expect(getHistoricalCompetitions).toHaveBeenCalledTimes(2);
+    });
+
+    // After retry, the data should load.
+    await waitFor(() => {
+      expect(screen.getByText("Datos StatsBomb")).toBeInTheDocument();
+    });
   });
 });

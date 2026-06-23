@@ -101,62 +101,74 @@ describe("matchByTeamsAndDate", () => {
 // ─── parseEvents ────────────────────────────────────────────────
 
 describe("parseEvents", () => {
+  // Real StatsBomb event shapes (verified against statsbomb/open-data v4.0.0):
+  //   - Goals are Shot events with shot.outcome.name === "Goal"
+  //   - Cards are Bad Behaviour events with bad_behaviour.card.name
+  //   - Substitutions: event.player.name = player OFF, substitution.replacement.name = player ON
   const rawEvents: Record<string, unknown>[] = [
+    // Shot that became a goal (Müller, minute 36)
     {
       id: "1",
       minute: 36,
-      type: { name: "Goal" },
+      type: { name: "Shot" },
       team: { name: "Germany" },
       player: { name: "Thomas Müller" },
+      location: [108, 41],
+      shot: { outcome: { name: "Goal" } },
     },
+    // Yellow card via Bad Behaviour
     {
       id: "2",
       minute: 45,
-      type: { name: "Card" },
+      type: { name: "Bad Behaviour" },
       team: { name: "Argentina" },
       player: { name: "Javier Mascherano" },
-      card: { name: "Yellow Card" },
+      bad_behaviour: { card: { name: "Yellow Card" } },
     },
+    // Red card via Bad Behaviour
     {
       id: "3",
       minute: 88,
-      type: { name: "Card" },
+      type: { name: "Bad Behaviour" },
       team: { name: "Germany" },
       player: { name: "Bastian Schweinsteiger" },
-      card: { name: "Red Card" },
+      bad_behaviour: { card: { name: "Red Card" } },
     },
+    // Substitution: event.player = OFF, substitution.replacement = ON
     {
       id: "4",
       minute: 70,
       type: { name: "Substitution" },
       team: { name: "Germany" },
-      player: { name: "Mario Götze" },
+      player: { name: "Bastian Schweinsteiger" },
       substitution: {
-        replacement: { name: "Mario Götze" },
-        off: { name: "Bastian Schweinsteiger" },
+        outcome: { name: "Tactical" },
+        replacement: { id: 9999, name: "Mario Götze" },
       },
     },
+    // Plain shot (Saved)
     {
       id: "5",
       minute: 22,
       type: { name: "Shot" },
       team: { name: "Germany" },
       player: { name: "Toni Kroos" },
-      location: [50, 35],
-      shot: { outcome: { name: "Goal" } },
+      location: [105, 35],
+      shot: { outcome: { name: "Saved" } },
     },
+    // Missed shot (StatsBomb uses "Off T" not "Off Target")
     {
       id: "6",
       minute: 65,
       type: { name: "Shot" },
       team: { name: "Argentina" },
       player: { name: "Lionel Messi" },
-      location: [60, 40],
-      shot: { outcome: { name: "Saved" } },
+      location: [100, 40],
+      shot: { outcome: { name: "Off T" } },
     },
   ];
 
-  it("parses Goals into timeline events", () => {
+  it("parses Shot+Goal into timeline goal events", () => {
     const { timelineEvents } = parseEvents(rawEvents);
     const goals = timelineEvents.filter((e) => e.type === "goal");
     expect(goals).toHaveLength(1);
@@ -164,7 +176,7 @@ describe("parseEvents", () => {
     expect(goals[0].minute).toBe(36);
   });
 
-  it("parses Cards with correct color", () => {
+  it("parses Bad Behaviour cards with correct color", () => {
     const { timelineEvents } = parseEvents(rawEvents);
     const yellows = timelineEvents.filter((e) => e.type === "card" && e.cardType === "yellow");
     const reds = timelineEvents.filter((e) => e.type === "card" && e.cardType === "red");
@@ -176,11 +188,44 @@ describe("parseEvents", () => {
     expect(reds[0].player).toBe("Bastian Schweinsteiger");
   });
 
-  it("parses Substitutions", () => {
+  it("treats Second Yellow as a red card", () => {
+    const events: Record<string, unknown>[] = [
+      {
+        id: "x",
+        minute: 80,
+        type: { name: "Bad Behaviour" },
+        team: { name: "Argentina" },
+        player: { name: "Heitinga" },
+        bad_behaviour: { card: { name: "Second Yellow" } },
+      },
+    ];
+    const { timelineEvents } = parseEvents(events);
+    expect(timelineEvents).toHaveLength(1);
+    expect(timelineEvents[0].cardType).toBe("red");
+  });
+
+  it("ignores Bad Behaviour events without a card", () => {
+    const events: Record<string, unknown>[] = [
+      {
+        id: "y",
+        minute: 30,
+        type: { name: "Bad Behaviour" },
+        team: { name: "Germany" },
+        player: { name: "Neuer" },
+        bad_behaviour: { reason: "Time wasting" }, // no card
+      },
+    ];
+    const { timelineEvents } = parseEvents(events);
+    expect(timelineEvents).toHaveLength(0);
+  });
+
+  it("parses Substitutions with player ON/OFF from real shape", () => {
     const { timelineEvents } = parseEvents(rawEvents);
     const subs = timelineEvents.filter((e) => e.type === "substitution");
     expect(subs).toHaveLength(1);
+    // Player ON = substitution.replacement.name
     expect(subs[0].substitution?.playerOn).toBe("Mario Götze");
+    // Player OFF = event.player.name (NOT substitution.off, which doesn't exist)
     expect(subs[0].substitution?.playerOff).toBe("Bastian Schweinsteiger");
   });
 
@@ -191,19 +236,20 @@ describe("parseEvents", () => {
     }
   });
 
-  it("parses Shots with coordinates", () => {
+  it("parses Shots with coordinates (including goals)", () => {
     const { shots } = parseEvents(rawEvents);
-    expect(shots).toHaveLength(2);
-    expect(shots[0].x).toBe(50);
-    expect(shots[0].y).toBe(35);
+    expect(shots).toHaveLength(3); // goal shot + saved + off target
+    expect(shots[0].x).toBe(108);
+    expect(shots[0].y).toBe(41);
     expect(shots[0].outcome).toBe("goal");
     expect(shots[1].outcome).toBe("saved");
+    expect(shots[2].outcome).toBe("off_target"); // mapped from "Off T"
   });
 
   it("ignores events with unknown type", () => {
     const withUnknown = [...rawEvents, { id: "99", minute: 90, type: { name: "Offside" } }];
     const { timelineEvents } = parseEvents(withUnknown);
-    expect(timelineEvents).toHaveLength(4); // goal + 2 cards + 1 sub
+    expect(timelineEvents).toHaveLength(4); // 1 goal + 2 cards + 1 sub
   });
 
   it("skips shots without location data", () => {
@@ -229,29 +275,32 @@ describe("parseEvents", () => {
 // ─── parseLineups ───────────────────────────────────────────────
 
 describe("parseLineups", () => {
-  it("distinguishes starting XI from substitutes via substitution events", () => {
+  it("distinguishes starting XI from substitutes via positions[].start_reason", () => {
+    // Real StatsBomb lineups: starter if any position has start_reason === "Starting XI".
     const rawLineups: Record<string, unknown>[] = [
       {
         team_name: "Germany",
         lineup: [
-          { player_name: "Manuel Neuer", jersey_number: 1, positions: [{ position: "Goalkeeper" }] },
-          { player_name: "Bastian Schweinsteiger", jersey_number: 7, positions: [{ position: "Midfielder" }] },
-          { player_name: "Mario Götze", jersey_number: 19, positions: [{ position: "Forward" }] },
+          {
+            player_name: "Manuel Neuer",
+            jersey_number: 1,
+            positions: [{ position: "Goalkeeper", start_reason: "Starting XI" }],
+          },
+          {
+            player_name: "Bastian Schweinsteiger",
+            jersey_number: 7,
+            positions: [{ position: "Center Defensive Midfield", start_reason: "Starting XI" }],
+          },
+          {
+            player_name: "Mario Götze",
+            jersey_number: 19,
+            positions: [{ position: "Center Forward", start_reason: "Substitution - On (Tactical)" }],
+          },
         ],
       },
     ];
 
-    const timelineEvents = [
-      {
-        minute: 70,
-        type: "substitution" as const,
-        team: "Germany",
-        player: "Mario Götze",
-        substitution: { playerOff: "Bastian Schweinsteiger", playerOn: "Mario Götze" },
-      },
-    ];
-
-    const lineups = parseLineups(rawLineups, timelineEvents);
+    const lineups = parseLineups(rawLineups);
     expect(lineups).toHaveLength(1);
 
     const germanLineup = lineups[0];
@@ -260,6 +309,41 @@ describe("parseLineups", () => {
     expect(germanLineup.startingXI.map((p) => p.player)).toContain("Manuel Neuer");
     expect(germanLineup.substitutes).toHaveLength(1);
     expect(germanLineup.substitutes[0].player).toBe("Mario Götze");
+  });
+
+  it("counts a player as starter if ANY of their positions started in Starting XI (tactical shift)", () => {
+    const rawLineups: Record<string, unknown>[] = [
+      {
+        team_name: "Germany",
+        lineup: [
+          {
+            player_name: "Damaris Egurrola",
+            jersey_number: 12,
+            positions: [
+              { position: "Right Defensive Midfield", start_reason: "Starting XI", end_reason: "Tactical Shift" },
+              { position: "Left Center Back", start_reason: "Tactical Shift" },
+            ],
+          },
+        ],
+      },
+    ];
+    const lineups = parseLineups(rawLineups);
+    expect(lineups[0].startingXI).toHaveLength(1);
+    expect(lineups[0].substitutes).toHaveLength(0);
+  });
+
+  it("treats players with no positions as substitutes", () => {
+    const rawLineups: Record<string, unknown>[] = [
+      {
+        team_name: "Germany",
+        lineup: [
+          { player_name: "Unused Sub", jersey_number: 23, positions: [] },
+        ],
+      },
+    ];
+    const lineups = parseLineups(rawLineups);
+    expect(lineups[0].startingXI).toHaveLength(0);
+    expect(lineups[0].substitutes).toHaveLength(1);
   });
 
   it("sorts players by jersey number", () => {
@@ -274,8 +358,9 @@ describe("parseLineups", () => {
     ];
 
     const lineups = parseLineups(rawLineups, []);
-    expect(lineups[0].startingXI[0].player).toBe("Manuel Neuer");
-    expect(lineups[0].startingXI[1].player).toBe("Thomas Müller");
+    // No starters (positions are empty) → both end up as substitutes, still sorted.
+    expect(lineups[0].substitutes[0].player).toBe("Manuel Neuer");
+    expect(lineups[0].substitutes[1].player).toBe("Thomas Müller");
   });
 
   it("handles missing position data", () => {
@@ -291,7 +376,7 @@ describe("parseLineups", () => {
 
     expect(() => parseLineups(rawLineups, [])).not.toThrow();
     const lineups = parseLineups(rawLineups, []);
-    expect(lineups[0].startingXI[0].position).toBeUndefined();
+    expect(lineups[0].substitutes[0].position).toBeUndefined();
   });
 
   it("handles empty input", () => {
