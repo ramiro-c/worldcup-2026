@@ -116,53 +116,29 @@ export function parseEvents(
     const player = String((ev.player as Record<string, unknown>)?.name ?? "");
     const typeName = String((ev.type as Record<string, unknown>)?.name ?? "");
 
-    // Goals are Shot events whose outcome is "Goal" — StatsBomb has no "Goal" type.
     if (typeName === "Shot") {
-      const shot = (ev.shot as Record<string, unknown>) ?? {};
-      const outcomeName = String((shot.outcome as Record<string, unknown>)?.name ?? "");
-      if (outcomeName === "Goal") {
-        timelineEvents.push({ minute, type: "goal", team, player });
-      }
-    } else if (typeName === "Bad Behaviour") {
-      const badBehaviour = (ev.bad_behaviour as Record<string, unknown>) ?? {};
-      const card = (badBehaviour.card as Record<string, unknown>) ?? {};
-      const cardName = String(card.name ?? "");
-      // Second Yellow is treated as a red card for the timeline.
-      const cardType = cardName.toLowerCase().includes("red") || cardName.toLowerCase().includes("second yellow")
-        ? "red"
-        : "yellow";
-      if (cardName) {
-        timelineEvents.push({ minute, type: "card", team, player, cardType });
-      }
-    } else if (typeName === "Substitution") {
-      const sub = (ev.substitution as Record<string, unknown>) ?? {};
-      const replacement = (sub.replacement as Record<string, unknown>) ?? {};
-      // Real data puts the player going OFF in event.player.name (NOT in
-      // sub.off.name, which doesn't exist in the v4 spec).
-      const playerOn = String(replacement.name ?? "");
-      const playerOff = player;
-      timelineEvents.push({
-        minute,
-        type: "substitution",
-        team,
-        player: playerOn,
-        substitution: { playerOff, playerOn },
-      });
-    }
-
-    // Shots for the shot map (includes goals — outcome is preserved).
-    if (typeName === "Shot") {
+      // Shot → shot map data (always, if coordinates present)
       const location = ev.location as number[] | undefined;
       if (location && location.length >= 2) {
         const shot = (ev.shot as Record<string, unknown>) ?? {};
         const outcomeRaw = (shot.outcome as Record<string, unknown>) ?? {};
-        const outcomeName = String(outcomeRaw.name ?? "");
-        shots.push({
-          x: location[0],
-          y: location[1],
-          outcome: mapShotOutcome(outcomeName),
+        shots.push({ x: location[0], y: location[1], outcome: mapShotOutcome(String(outcomeRaw.name ?? "")) });
+      }
+      // Goal if outcome is "Goal" — StatsBomb has no "Goal" type.
+      if (String(((ev.shot as Record<string, unknown>)?.outcome as Record<string, unknown>)?.name ?? "") === "Goal") {
+        timelineEvents.push({ minute, type: "goal", team, player });
+      }
+    } else if (typeName === "Bad Behaviour") {
+      const cardName = String((((ev.bad_behaviour as Record<string, unknown>)?.card as Record<string, unknown>)?.name ?? ""));
+      if (cardName) {
+        timelineEvents.push({
+          minute, type: "card", team, player,
+          cardType: cardName.toLowerCase().includes("red") || cardName.toLowerCase().includes("second yellow") ? "red" : "yellow",
         });
       }
+    } else if (typeName === "Substitution") {
+      const playerOn = String((((ev.substitution as Record<string, unknown>)?.replacement as Record<string, unknown>)?.name ?? ""));
+      timelineEvents.push({ minute, type: "substitution", team, player: playerOn, substitution: { playerOff: player, playerOn } });
     }
   }
 
