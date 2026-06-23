@@ -80,12 +80,15 @@ export default function BracketTree({ rounds }: BracketTreeProps) {
 
     const linkGroup = svg.append("g").attr("class", "links");
     root.links().forEach((link) => {
-      // link.source = later round (right), link.target = earlier round (left)
-      // Draw connector from right edge of earlier round to left edge of later round
-      const sx = link.target.x! + CARD_WIDTH / 2;
-      const sy = link.target.y!;
-      const tx = link.source.x! - CARD_WIDTH / 2;
-      const ty = link.source.y!;
+      // The tree builds Final as root, so link.source = later round (right)
+      // and link.target = earlier round (left). Draw from right edge of
+      // earlier round to left edge of later round.
+      const leftNode = link.target;
+      const rightNode = link.source;
+      const sx = leftNode.x! + CARD_WIDTH / 2;
+      const sy = leftNode.y!;
+      const tx = rightNode.x! - CARD_WIDTH / 2;
+      const ty = rightNode.y!;
       linkGroup
         .append("path")
         .attr("d", linkGen({ source: [sx, sy], target: [tx, ty] }))
@@ -138,18 +141,18 @@ export default function BracketTree({ rounds }: BracketTreeProps) {
         .attr("class", "match-slot");
 
       // TBD slot: dashed border
-      g.append("rect")
+      const rect = g.append("rect")
         .attr("width", CARD_WIDTH)
         .attr("height", CARD_HEIGHT)
         .attr("rx", 6)
         .attr("fill", "#18181b")
         .attr("stroke", "#3f3f46")
-        .attr("stroke-width", 1)
-        .attr("stroke-dasharray", hasTeam ? "0" : "4 3");
+        .attr("stroke-width", 1);
+      if (!hasTeam) rect.attr("stroke-dasharray", "4 3");
 
       // Team slot rendering
-      renderTeamSlot(g, match.home_team_name, match.home_crest, match.home_score, match.home_team, 10, true);
-      renderTeamSlot(g, match.away_team_name, match.away_crest, match.away_score, match.away_team, 31, false);
+      renderTeamSlot(g, match.home_team_name, match.home_crest, match.home_score, match.home_team, 10);
+      renderTeamSlot(g, match.away_team_name, match.away_crest, match.away_score, match.away_team, 31);
     });
 
     // ── Hover: path-to-final highlight ───────────────────
@@ -214,7 +217,7 @@ export default function BracketTree({ rounds }: BracketTreeProps) {
           .match-slot { transition: opacity 0.2s ease; }
           .match-slot.dimmed { opacity: 0.25; }
           .match-slot.highlighted rect { stroke: #10b981; stroke-width: 2; }
-          .match-slot.highlighted text.score { fill: #10b981; }
+          .match-slot.highlighted text { fill: #10b981; }
         `}</style>
       </svg>
     </div>
@@ -230,7 +233,6 @@ function renderTeamSlot(
   score: number | null,
   code: string | null,
   y: number,
-  _isHome: boolean,
 ) {
   if (name) {
     // Crest image

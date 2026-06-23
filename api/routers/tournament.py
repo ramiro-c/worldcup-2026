@@ -79,7 +79,7 @@ FIFA_TO_CCA2: dict[str, str] = {
 
 
 def get_flag_url(fifa_code: str) -> str:
-    cca2 = FIFA_TO_CCA2.get(fifa_code, "xx")
+    cca2 = FIFA_TO_CCA2.get(fifa_code.upper(), "xx")
     return f"https://flagcdn.com/{cca2}.svg"
 
 
@@ -103,6 +103,12 @@ def _safe_int(value: Any) -> int | None:
         return None
 
 
+def _normalize_code(code: str) -> str:
+    """Normalize FIFA team code. Handles URY→URU."""
+    c = code.upper()
+    return "URU" if c == "URY" else c
+
+
 def _next_match_num(round_name: str, slot: int) -> int | None:
     """Compute the next-round match number for a given slot in the current round."""
     if round_name == "round_of_32":
@@ -117,12 +123,12 @@ def _next_match_num(round_name: str, slot: int) -> int | None:
 
 
 def _get_team_code(raw_code: str | None) -> str | None:
-    """Return normalized team code or None for TBD."""
+    """Return normalized team code (lowercase) or None for TBD."""
     if not raw_code or raw_code.strip() == "":
         return None
-    c = raw_code.strip().upper()
-    if c == "URY":
-        return "URU"
+    c = raw_code.strip().lower()
+    if c == "ury":
+        return "uru"
     return c
 
 
@@ -284,83 +290,42 @@ def map_venues(raw: list[dict]) -> list[dict]:
 def map_matches(raw: list[dict]) -> list[dict]:
     mapped = []
     for m in raw:
-        home = m.get("home") or m.get("home_code", "")
-        away = m.get("away") or m.get("away_code", "")
+        home = _normalize_code(m.get("home") or m.get("home_code", ""))
+        away = _normalize_code(m.get("away") or m.get("away_code", ""))
         if not home or not away:
             continue
-        
-        home_normalized = home.upper()
-        away_normalized = away.upper()
-        if home_normalized == "URY":
-            home_normalized = "URU"
-        if away_normalized == "URY":
-            away_normalized = "URU"
-        
-        score_home_raw = m.get("score_home")
-        score_away_raw = m.get("score_away")
-        try:
-            home_score = int(score_home_raw) if score_home_raw is not None else None
-        except (ValueError, TypeError):
-            home_score = None
-        try:
-            away_score = int(score_away_raw) if score_away_raw is not None else None
-        except (ValueError, TypeError):
-            away_score = None
 
-        mapped.append(
-            {
-                "id": m.get("slug", str(m.get("num", ""))),
-                "home_team": home_normalized.lower(),
-                "away_team": away_normalized.lower(),
-                "home_team_name": m.get("home_name", home),
-                "away_team_name": m.get("away_name", away),
-                "venue": m.get("venue", ""),
-                "venue_name": m.get("venue_name", ""),
-                "venue_city": m.get("venue_city", ""),
-                "datetime_utc": m.get("datetime_utc", ""),
-                "date": m.get("date", ""),
-                "time": m.get("time_utc", ""),
-                "status": (m.get("status") or "scheduled").lower(),
-                "home_score": home_score,
-                "away_score": away_score,
-                "phase": m.get("phase"),
-                "group": m.get("group"),
-                "round": m.get("round"),
-            }
-        )
+        mapped.append({
+            "id": m.get("slug", str(m.get("num", ""))),
+            "home_team": home.lower(),
+            "away_team": away.lower(),
+            "home_team_name": m.get("home_name", home),
+            "away_team_name": m.get("away_name", away),
+            "venue": m.get("venue", ""),
+            "venue_name": m.get("venue_name", ""),
+            "venue_city": m.get("venue_city", ""),
+            "datetime_utc": m.get("datetime_utc", ""),
+            "date": m.get("date", ""),
+            "time": m.get("time_utc", ""),
+            "status": (m.get("status") or "scheduled").lower(),
+            "home_score": _safe_int(m.get("score_home")),
+            "away_score": _safe_int(m.get("score_away")),
+            "phase": m.get("phase"),
+            "group": m.get("group"),
+            "round": m.get("round"),
+        })
     return mapped
 
 
 def map_match(raw: dict | None) -> dict | None:
     if not raw:
         return None
-
-    home = raw.get("home") or raw.get("home_code", "")
-    away = raw.get("away") or raw.get("away_code", "")
-
-    # Normalize codes (preserve empty string for TBD)
-    home_normalized = home.upper() if home else ""
-    away_normalized = away.upper() if away else ""
-    if home_normalized == "URY":
-        home_normalized = "URU"
-    if away_normalized == "URY":
-        away_normalized = "URU"
-
-    score_home_raw = raw.get("score_home")
-    score_away_raw = raw.get("score_away")
-    try:
-        home_score = int(score_home_raw) if score_home_raw is not None else None
-    except (ValueError, TypeError):
-        home_score = None
-    try:
-        away_score = int(score_away_raw) if score_away_raw is not None else None
-    except (ValueError, TypeError):
-        away_score = None
-
+    home = _normalize_code(raw.get("home") or raw.get("home_code", ""))
+    away = _normalize_code(raw.get("away") or raw.get("away_code", ""))
     return {
         "id": raw.get("slug", str(raw.get("num", ""))),
-        "home_team": home_normalized.lower() if home else "",
-        "away_team": away_normalized.lower() if away else "",
+        "home_team": home.lower() if home else "",
+        "away_team": away.lower() if away else "",
         "home_team_name": raw.get("home_name", home) if home else "",
         "away_team_name": raw.get("away_name", away) if away else "",
         "venue": raw.get("venue", ""),
@@ -370,8 +335,8 @@ def map_match(raw: dict | None) -> dict | None:
         "date": raw.get("date", ""),
         "time": raw.get("time_utc", ""),
         "status": (raw.get("status") or "scheduled").lower(),
-        "home_score": home_score,
-        "away_score": away_score,
+        "home_score": _safe_int(raw.get("score_home")),
+        "away_score": _safe_int(raw.get("score_away")),
         "phase": raw.get("phase"),
         "group": raw.get("group"),
         "round": raw.get("round"),
