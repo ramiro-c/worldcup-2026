@@ -34,7 +34,7 @@ interface DotInfo {
 
 export function ShotMap({ shots }: ShotMapProps) {
   const goalShots = shots.filter((s) => s.outcome === "goal");
-  const nonGoalShots = shots.filter((s) => s.outcome !== "goal");
+  // nonGoalShots = shots.filter((s) => s.outcome !== "goal");
 
   if (shots.length === 0) return null;
 
