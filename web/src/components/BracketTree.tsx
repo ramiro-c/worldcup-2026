@@ -11,12 +11,12 @@ interface BracketNode {
   children?: BracketNode[];
 }
 
-const CARD_WIDTH = 150;
-const CARD_HEIGHT = 42;
-const ROUND_SPACING = 180;
-const VERTICAL_SPACING = 48;
-const PADDING_TOP = 40;
-const PADDING_SIDE = 20;
+const CARD_WIDTH = 110;
+const CARD_HEIGHT = 34;
+const ROUND_SPACING = 120;
+const VERTICAL_SPACING = 36;
+const PADDING_TOP = 28;
+const PADDING_SIDE = 10;
 
 export default function BracketTree({ rounds }: BracketTreeProps) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -69,9 +69,9 @@ export default function BracketTree({ rounds }: BracketTreeProps) {
     defs.append("clipPath")
       .attr("id", "crest-clip")
       .append("circle")
-      .attr("r", 11)
-      .attr("cx", 11)
-      .attr("cy", 11);
+      .attr("r", 8)
+      .attr("cx", 8)
+      .attr("cy", 8);
 
     // ── Connector lines ──────────────────────────────────
     const linkGen = d3.linkHorizontal<any, any>()
@@ -116,7 +116,7 @@ export default function BracketTree({ rounds }: BracketTreeProps) {
         .attr("x", anchor.x!)
         .attr("y", minYInRound - CARD_HEIGHT / 2 - 8)
         .attr("fill", "#a1a1aa")
-        .attr("font-size", 13)
+        .attr("font-size", 11)
         .attr("font-weight", "700")
         .attr("text-anchor", "middle")
         .attr("font-family", "system-ui, sans-serif")
@@ -151,8 +151,8 @@ export default function BracketTree({ rounds }: BracketTreeProps) {
       if (!hasTeam) rect.attr("stroke-dasharray", "4 3");
 
       // Team slot rendering
-      renderTeamSlot(g, match.home_team_name, match.home_crest, match.home_score, match.home_team, 10);
-      renderTeamSlot(g, match.away_team_name, match.away_crest, match.away_score, match.away_team, 31);
+      renderTeamSlot(g, match.home_team_name, match.home_crest, match.home_score, match.home_team, 8);
+      renderTeamSlot(g, match.away_team_name, match.away_crest, match.away_score, match.away_team, 25);
     });
 
     // ── Hover: path-to-final highlight ───────────────────
@@ -239,29 +239,29 @@ function renderTeamSlot(
     if (crest) {
       g.append("image")
         .attr("href", crest)
-        .attr("x", 6)
-        .attr("y", y - 9)
-        .attr("width", 22)
-        .attr("height", 22)
+        .attr("x", 4)
+        .attr("y", y - 7)
+        .attr("width", 16)
+        .attr("height", 16)
         .attr("clip-path", "url(#crest-clip)");
     }
 
     // Team code (FIFA 3-letter code)
     g.append("text")
-      .attr("x", 30)
-      .attr("y", y + 4)
+      .attr("x", 23)
+      .attr("y", y + 3)
       .attr("fill", "#e4e4e7")
-      .attr("font-size", 11)
+      .attr("font-size", 10)
       .attr("font-weight", "600")
       .attr("font-family", "system-ui, sans-serif")
       .text(code ?? name.substring(0, 3).toUpperCase());
 
     // Score
     g.append("text")
-      .attr("x", CARD_WIDTH - 10)
-      .attr("y", y + 4)
+      .attr("x", CARD_WIDTH - 6)
+      .attr("y", y + 3)
       .attr("fill", score != null ? "#e4e4e7" : "#52525b")
-      .attr("font-size", 11)
+      .attr("font-size", 10)
       .attr("font-weight", "700")
       .attr("text-anchor", "end")
       .attr("font-family", "system-ui, sans-serif")
@@ -270,19 +270,19 @@ function renderTeamSlot(
   } else {
     // TBD state
     g.append("text")
-      .attr("x", 10)
-      .attr("y", y + 4)
+      .attr("x", 6)
+      .attr("y", y + 3)
       .attr("fill", "#52525b")
-      .attr("font-size", 11)
+      .attr("font-size", 10)
       .attr("font-style", "italic")
       .attr("font-family", "system-ui, sans-serif")
       .text("TBD");
 
     g.append("text")
-      .attr("x", CARD_WIDTH - 10)
-      .attr("y", y + 4)
+      .attr("x", CARD_WIDTH - 6)
+      .attr("y", y + 3)
       .attr("fill", "#52525b")
-      .attr("font-size", 11)
+      .attr("font-size", 10)
       .attr("text-anchor", "end")
       .attr("font-family", "system-ui, sans-serif")
       .text("—");
@@ -291,9 +291,9 @@ function renderTeamSlot(
   // Divider line between home/away
   g.append("line")
     .attr("x1", 0)
-    .attr("y1", 21)
+    .attr("y1", 17)
     .attr("x2", CARD_WIDTH)
-    .attr("y2", 21)
+    .attr("y2", 17)
     .attr("stroke", "#27272a")
     .attr("stroke-width", 1);
 }
