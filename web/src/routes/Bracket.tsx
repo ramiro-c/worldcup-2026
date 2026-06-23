@@ -61,7 +61,7 @@ export default function Bracket() {
             El cuadro se activará cuando comience la fase eliminatoria
           </p>
           <p className="text-zinc-500 mt-2 text-sm">
-            Octavos de final &bull; 27-30 de junio, 2026
+            Dieciseisavos de final &bull; 27-30 de junio, 2026
           </p>
         </div>
       </div>

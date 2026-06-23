@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import type { BracketRound, BracketMatch } from "../lib/types";
 
@@ -20,16 +20,21 @@ const PADDING_SIDE = 20;
 
 export default function BracketTree({ rounds }: BracketTreeProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const [hierarchyError, setHierarchyError] = useState<string | null>(null);
 
   useEffect(() => {
     const el = svgRef.current;
+    setHierarchyError(null);
     if (!el || rounds.length === 0) return;
 
     const svg = d3.select(el);
     svg.selectAll("*").remove();
 
     const hierarchyData = buildHierarchy(rounds);
-    if (!hierarchyData) return;
+    if (!hierarchyData) {
+      setHierarchyError("No se pudo construir el cuadro eliminatorio");
+      return;
+    }
 
     // ── Tree layout ──────────────────────────────────────
     const root = d3.hierarchy(hierarchyData);
@@ -43,16 +48,21 @@ export default function BracketTree({ rounds }: BracketTreeProps) {
       node.y = treeX;
     });
 
-    // Compute viewBox bounds
-    let minY = Infinity, maxY = -Infinity;
+    // Compute viewBox bounds — must include negative coordinates
+    // produced by the tree layout (R32 top half extends to negative y).
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     root.each((n) => {
+      if (n.x! < minX) minX = n.x!;
+      if (n.x! > maxX) maxX = n.x!;
       if (n.y! < minY) minY = n.y!;
       if (n.y! > maxY) maxY = n.y!;
     });
-    const svgHeight = maxY - minY + CARD_HEIGHT + PADDING_TOP + 20;
+    const viewBoxMinX = Math.min(0, minX - CARD_WIDTH / 2 - 10);
+    const viewBoxMinY = Math.min(0, minY - CARD_HEIGHT / 2 - 10);
     const svgWidth = (maxDepth + 1) * ROUND_SPACING + CARD_WIDTH + PADDING_SIDE * 2;
+    const svgHeight = maxY - minY + CARD_HEIGHT + PADDING_TOP + 40;
 
-    svg.attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
+    svg.attr("viewBox", `${viewBoxMinX} ${viewBoxMinY} ${svgWidth} ${svgHeight}`);
 
     // ── Defs: clip path for crests ───────────────────────
     const defs = svg.append("defs");
@@ -84,19 +94,24 @@ export default function BracketTree({ rounds }: BracketTreeProps) {
         .attr("stroke-width", 2);
     });
 
-    // ── Round labels ─────────────────────────────────────
-    const seenRounds = new Set<string>();
-    const labelGroup = svg.append("g").attr("class", "round-labels");
+    // ── Round labels (positioned above the topmost card in each round) ──
+    const roundNodes = new Map<string, d3.HierarchyNode<BracketNode>[]>();
     root.each((node) => {
-      const match = node.data.data;
-      if (seenRounds.has(match.round)) return;
-      seenRounds.add(match.round);
-      const roundDef = rounds.find((r) => r.name === match.round);
-      if (!roundDef) return;
+      const arr = roundNodes.get(node.data.data.round) ?? [];
+      arr.push(node);
+      roundNodes.set(node.data.data.round, arr);
+    });
+
+    const labelGroup = svg.append("g").attr("class", "round-labels");
+    roundNodes.forEach((nodes, round) => {
+      const roundDef = rounds.find((r) => r.name === round);
+      if (!roundDef || nodes.length === 0) return;
+      const minYInRound = Math.min(...nodes.map((n) => n.y!));
+      const anchor = nodes[0]!;
       labelGroup
         .append("text")
-        .attr("x", node.x!)
-        .attr("y", PADDING_TOP - 14)
+        .attr("x", anchor.x!)
+        .attr("y", minYInRound - CARD_HEIGHT / 2 - 8)
         .attr("fill", "#a1a1aa")
         .attr("font-size", 13)
         .attr("font-weight", "700")
@@ -177,6 +192,16 @@ export default function BracketTree({ rounds }: BracketTreeProps) {
       svg.on("mouseout.highlight", null);
     };
   }, [rounds]);
+
+  if (hierarchyError) {
+    return (
+      <div className="overflow-auto">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-12 text-center">
+          <p className="text-zinc-400">{hierarchyError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-auto">
