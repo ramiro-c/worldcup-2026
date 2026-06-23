@@ -13,6 +13,13 @@ const NAME_MAP: Record<string, string> = {
   "korea dpr": "north korea",
   "ir iran": "iran",
   "côte d'ivoire": "ivory coast",
+  "russia": "russian federation",
+  "turkey": "türkiye",
+  "netherlands": "holland",
+  "czech republic": "czechia",
+  "saudi arabia": "saudia",
+  "china pr": "china",
+  "great britain": "england",
 };
 
 function normalizeTeamName(name: string): string {
