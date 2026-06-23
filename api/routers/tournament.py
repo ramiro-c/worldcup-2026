@@ -2,6 +2,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from providers.interfaces import ITournamentDataProvider, IHeadToHeadProvider
+from providers.aliases import resolve_team_name
 from typing import Any
 
 router = APIRouter(prefix="/tournament", tags=["tournament"])
@@ -287,8 +288,12 @@ def summarize_h2h(matches: list[dict], team1: str, team2: str) -> dict:
         Summary dict with total_matches, team1/team2 wins/draws/goals,
         last_meetings (up to 5), and last_meeting.
     """
-    t1_lower = team1.strip().lower()
-    t2_lower = team2.strip().lower()
+    # Resolve aliases (e.g. "Czechia" -> "Czech Republic", "W. Germany" -> "Germany")
+    # so historical names that differ from the API-derived names still match.
+    t1_resolved = resolve_team_name(team1)
+    t2_resolved = resolve_team_name(team2)
+    t1_lower = t1_resolved.lower()
+    t2_lower = t2_resolved.lower()
 
     team1_wins = 0
     team2_wins = 0
@@ -297,8 +302,8 @@ def summarize_h2h(matches: list[dict], team1: str, team2: str) -> dict:
     team2_goals = 0
 
     for m in matches:
-        mt1_name = m.get("team1", {}).get("name", "")
-        mt2_name = m.get("team2", {}).get("name", "")
+        mt1_name = resolve_team_name(m.get("team1", {}).get("name", ""))
+        mt2_name = resolve_team_name(m.get("team2", {}).get("name", ""))
         score = m.get("score", "")
         parts = score.split("-")
         t1g = int(parts[0]) if len(parts) == 2 and parts[0].isdigit() else 0
@@ -317,8 +322,8 @@ def summarize_h2h(matches: list[dict], team1: str, team2: str) -> dict:
         # Determine result from our perspective (team1 = first arg = home team)
         if m.get("penalty_score"):
             pen_parts = m["penalty_score"].split("-")
-            pt1 = int(pen_parts[0]) if len(pen_parts) == 2 else 0
-            pt2 = int(pen_parts[1]) if len(pen_parts) == 2 else 0
+            pt1 = int(pen_parts[0]) if len(pen_parts) == 2 and pen_parts[0].isdigit() else 0
+            pt2 = int(pen_parts[1]) if len(pen_parts) == 2 and pen_parts[1].isdigit() else 0
             # Penalty winner is the team that won on penalties
             pen_winner_is_team1 = (
                 (mt1_name.lower() == t1_lower and pt1 > pt2) or
@@ -342,37 +347,55 @@ def summarize_h2h(matches: list[dict], team1: str, team2: str) -> dict:
             draws += 1
 
     # Sort by date descending (newest first)
-    # Parse date strings like "18 Dec 2022" or "3 Jul 2010" for proper chronological ordering
+    # Parse date strings like "18 Dec 2022" or "3 Jul 2010" for proper chronological ordering.
+    # Real openfootball matches often omit the year (e.g. "Sat Jun 12"), so we fall back
+    # to the per-match `tournament_year` field that the H2H provider attaches.
     import re
-    from datetime import datetime
 
     MONTH_ABBR = {
         "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
         "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
     }
 
-    def _parse_match_date(date_str: str | None) -> tuple:
-        """Parse openfootball date string into sortable tuple (year, month, day)."""
-        if not date_str:
-            return (0, 0, 0)
-        m = re.match(r"(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})", date_str.strip())
-        if m:
-            day = int(m.group(1))
-            month = MONTH_ABBR.get(m.group(2).lower()[:3], 0)
-            year = int(m.group(3))
-            return (year, month, day)
+    def _parse_match_date(match: dict) -> tuple:
+        """Parse openfootball date string into sortable tuple (year, month, day).
+
+        Falls back to the match's `tournament_year` when the date string omits
+        the year (e.g. "Sat Jun 12"). Returns (0, 0, 0) when nothing usable.
+        """
+        date_str = match.get("date") if match else None
+        tournament_year = match.get("tournament_year") if match else None
+        if date_str:
+            m = re.match(r"(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})", date_str.strip())
+            if m:
+                day = int(m.group(1))
+                month = MONTH_ABBR.get(m.group(2).lower()[:3], 0)
+                year = int(m.group(3))
+                return (year, month, day)
+            # Date has month/day but no year: e.g. "Sat Jun 12" or "12 Jun"
+            m = re.match(
+                r"(?:(?:Sun|Mon|Tue|Wed|Thu|Fri|Sat)\s+)?"
+                r"(\d{1,2})\s+([A-Za-z]+)",
+                date_str.strip(),
+            )
+            if m and tournament_year:
+                day = int(m.group(1))
+                month = MONTH_ABBR.get(m.group(2).lower()[:3], 0)
+                return (int(tournament_year), month, day)
+        if tournament_year:
+            return (int(tournament_year), 0, 0)
         return (0, 0, 0)
 
     sorted_matches = sorted(
         matches,
-        key=lambda m: _parse_match_date(m.get("date")),
+        key=lambda m: _parse_match_date(m),
         reverse=True,
     )
 
     last_meetings = []
     for m in sorted_matches[:5]:
-        mt1_name = m.get("team1", {}).get("name", "")
-        mt2_name = m.get("team2", {}).get("name", "")
+        mt1_name = resolve_team_name(m.get("team1", {}).get("name", ""))
+        mt2_name = resolve_team_name(m.get("team2", {}).get("name", ""))
         score = m.get("score", "")
         stage = m.get("stage", "")
         is_team1_side = mt1_name.lower() == t1_lower
@@ -381,8 +404,8 @@ def summarize_h2h(matches: list[dict], team1: str, team2: str) -> dict:
         winner = None
         if m.get("penalty_score"):
             pen_parts = m["penalty_score"].split("-")
-            pt1 = int(pen_parts[0]) if len(pen_parts) == 2 else 0
-            pt2 = int(pen_parts[1]) if len(pen_parts) == 2 else 0
+            pt1 = int(pen_parts[0]) if len(pen_parts) == 2 and pen_parts[0].isdigit() else 0
+            pt2 = int(pen_parts[1]) if len(pen_parts) == 2 and pen_parts[1].isdigit() else 0
             pen_winner_is_team1 = (
                 (is_team1_side and pt1 > pt2) or
                 (not is_team1_side and pt2 > pt1)
@@ -401,7 +424,7 @@ def summarize_h2h(matches: list[dict], team1: str, team2: str) -> dict:
                 winner = mt2_name if is_team1_side else mt1_name
 
         last_meetings.append({
-            "year": None,
+            "year": m.get("tournament_year"),
             "date": m.get("date"),
             "stage": stage,
             "score": score,

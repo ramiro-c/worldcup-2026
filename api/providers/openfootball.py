@@ -436,7 +436,10 @@ class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider, ITeamDa
                     if (mt1 == t1_lower and mt2 == t2_lower) or (
                         mt1 == t2_lower and mt2 == t1_lower
                     ):
-                        matches.append(match)
+                        enriched = dict(match)
+                        enriched["tournament_year"] = year
+                        enriched["tournament_name"] = tournament.get("name", "")
+                        matches.append(enriched)
             except Exception:
                 continue
         return matches
