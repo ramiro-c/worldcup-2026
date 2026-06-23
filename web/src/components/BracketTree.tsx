@@ -17,6 +17,8 @@ const ROUND_SPACING = 120;
 const VERTICAL_SPACING = 36;
 const PADDING_TOP = 28;
 const PADDING_SIDE = 10;
+const LABEL_FONT_SIZE = 11;
+const LABEL_GAP = 8;
 
 export default function BracketTree({ rounds }: BracketTreeProps) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -57,8 +59,8 @@ export default function BracketTree({ rounds }: BracketTreeProps) {
       if (n.y! < minY) minY = n.y!;
       if (n.y! > maxY) maxY = n.y!;
     });
-    const viewBoxMinX = Math.min(0, minX - CARD_WIDTH / 2 - 10);
-    const viewBoxMinY = Math.min(0, minY - CARD_HEIGHT / 2 - 10);
+    const viewBoxMinX = Math.min(0, minX - CARD_WIDTH / 2 - PADDING_SIDE);
+    const viewBoxMinY = Math.min(0, minY - CARD_HEIGHT / 2 - LABEL_GAP - LABEL_FONT_SIZE - 10);
     const svgWidth = (maxDepth + 1) * ROUND_SPACING + CARD_WIDTH + PADDING_SIDE * 2;
     const svgHeight = maxY - minY + CARD_HEIGHT + PADDING_TOP + 40;
 
@@ -116,7 +118,7 @@ export default function BracketTree({ rounds }: BracketTreeProps) {
         .attr("x", anchor.x!)
         .attr("y", minYInRound - CARD_HEIGHT / 2 - 8)
         .attr("fill", "#a1a1aa")
-        .attr("font-size", 11)
+        .attr("font-size", LABEL_FONT_SIZE)
         .attr("font-weight", "700")
         .attr("text-anchor", "middle")
         .attr("font-family", "system-ui, sans-serif")
