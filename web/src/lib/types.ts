@@ -124,3 +124,105 @@ export interface HistoricalTournament {
   groups: HistoricalGroup[];
   matches: HistoricalMatch[];
 }
+
+export interface HeadToHeadMeeting {
+  year: number | null;
+  date: string | null;
+  stage: string;
+  score: string;
+  winner: string | null;
+}
+
+export interface HeadToHeadSummary {
+  total_matches: number;
+  team1_wins: number;
+  team2_wins: number;
+  draws: number;
+  team1_goals: number;
+  team2_goals: number;
+  last_meetings: HeadToHeadMeeting[];
+  last_meeting: HeadToHeadMeeting | null;
+}
+
+export interface EnrichedMatchResponse {
+  match: Match;
+  head_to_head: HeadToHeadSummary | null;
+}
+
+// StatsBomb data types
+export interface StatsBombCompetition {
+  competition_id: number;
+  season_id: number;
+  competition_name: string;
+  season_name: string;
+}
+
+export interface StatsBombTimelineEvent {
+  minute: number;
+  type: "goal" | "card" | "substitution";
+  team: string;
+  player: string;
+  cardType?: "yellow" | "red";
+  substitution?: {
+    playerOff: string;
+    playerOn: string;
+  };
+}
+
+export interface StatsBombShot {
+  x: number;
+  y: number;
+  outcome: "goal" | "saved" | "blocked" | "off_target" | "wayward";
+}
+
+export interface StatsBombLineupPlayer {
+  player: string;
+  jerseyNumber: number;
+  position?: string;
+}
+
+export interface StatsBombLineup {
+  team: string;
+  startingXI: StatsBombLineupPlayer[];
+  substitutes: StatsBombLineupPlayer[];
+}
+
+export interface ChampionCount {
+  country: string;
+  count: number;
+}
+
+export interface BiggestWin {
+  year: number;
+  team1: string;
+  team2: string;
+  score: string;
+  margin: number;
+  stage: string;
+}
+
+export interface HostRecord {
+  year: number;
+  host: string;
+  champion: string;
+}
+
+export interface TopScorer {
+  player: string;
+  team: string;
+  goals: number;
+  tournaments: number[];
+}
+
+export interface TournamentStats {
+  champion_counts: ChampionCount[];
+  biggest_wins: BiggestWin[];
+  total_goals: {
+    overall: number;
+    avg_per_tournament: number;
+  };
+  host_records: HostRecord[];
+  top_scorers: TopScorer[];
+  skipped_tournaments?: number[];
+}
+}

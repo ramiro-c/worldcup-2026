@@ -8,6 +8,7 @@ from providers.interfaces import (
     ITournamentDataProvider,
     IHistoricalDataProvider,
     IHeadToHeadProvider,
+    ITournamentStatsProvider,
     IEventDataProvider,
 )
 from providers.wheniskickoff import WheniskickoffProvider
@@ -15,7 +16,7 @@ from providers.openfootball import OpenfootballProvider
 from providers.statsbomb import StatsBombProvider
 
 tournament_provider: ITournamentDataProvider = WheniskickoffProvider()
-historical_provider: IHistoricalDataProvider & IHeadToHeadProvider = OpenfootballProvider()
+historical_provider: IHistoricalDataProvider & IHeadToHeadProvider & ITournamentStatsProvider = OpenfootballProvider()
 event_provider: IEventDataProvider = StatsBombProvider()
 
 app = FastAPI(
@@ -36,7 +37,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-tournament_module.init_router(tournament_provider)
+tournament_module.init_router(tournament_provider, historical_provider)
 historical_module.init_router(historical_provider, event_provider)
 
 app.include_router(tournament_module.router)

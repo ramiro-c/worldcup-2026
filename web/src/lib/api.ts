@@ -1,4 +1,4 @@
-import type { Group, Team, Venue, Match, TvChannel, BracketRound, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch } from "./types";
+import type { Group, Team, Venue, Match, TvChannel, BracketRound, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch, TournamentStats, StatsBombCompetition, EnrichedMatchResponse } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/tournament`
@@ -39,6 +39,23 @@ export async function getMatches(signal?: AbortSignal): Promise<Match[]> {
 
 export async function getMatch(id: string, signal?: AbortSignal): Promise<Match | null> {
   return fetchApi<Match | null>(`/matches/${id}`, signal);
+}
+
+export async function fetchMatchEnriched(id: string): Promise<EnrichedMatchResponse | null> {
+  const response = await fetch(`${API_BASE}/matches/${id}/enriched`);
+  if (!response.ok) {
+    if (response.status === 404) return null;
+    const body = await response.json().catch(() => ({}));
+    const err = new Error(
+      (body as Record<string, unknown>).error
+        ? String((body as Record<string, unknown>).error)
+        : `API error: ${response.statusText}`,
+    );
+    (err as unknown as Record<string, unknown>).status = response.status;
+    throw err;
+  }
+  const data = await response.json();
+  return data.data as EnrichedMatchResponse;
 }
 
 export async function getTv(): Promise<TvChannel[]> {
@@ -108,4 +125,36 @@ export async function getHeadToHead(team1: string, team2: string): Promise<Histo
   return fetchHistorical<HistoricalMatch[]>(
     `/head-to-head?team1=${encodeURIComponent(team1)}&team2=${encodeURIComponent(team2)}`
   );
+}
+
+// StatsBomb API functions
+
+export async function getHistoricalCompetitions(): Promise<StatsBombCompetition[]> {
+  return fetchHistorical<StatsBombCompetition[]>("/competitions");
+}
+
+export async function getHistoricalMatches(
+  competitionId: number,
+  seasonId: number,
+): Promise<Record<string, unknown>[]> {
+  return fetchHistorical<Record<string, unknown>[]>(
+    `/matches?competition_id=${competitionId}&season_id=${seasonId}`,
+  );
+}
+
+export async function getHistoricalMatchEvents(
+  matchId: number,
+): Promise<Record<string, unknown>[]> {
+  return fetchHistorical<Record<string, unknown>[]>(`/matches/${matchId}/events`);
+}
+
+export async function getHistoricalMatchLineups(
+  matchId: number,
+): Promise<Record<string, unknown>[]> {
+  return fetchHistorical<Record<string, unknown>[]>(`/matches/${matchId}/lineups`);
+}
+
+export async function getTournamentStats(): Promise<TournamentStats> {
+  return fetchHistorical<TournamentStats>("/tournament-stats");
+}
 }

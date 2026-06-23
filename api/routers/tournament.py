@@ -1,10 +1,13 @@
+from __future__ import annotations
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from providers.interfaces import ITournamentDataProvider
+from providers.interfaces import ITournamentDataProvider, IHeadToHeadProvider
+from providers.aliases import resolve_team_name
 from typing import Any
 
 router = APIRouter(prefix="/tournament", tags=["tournament"])
 provider: ITournamentDataProvider
+h2h_provider: IHeadToHeadProvider | None = None
 
 VENUE_REGIONS: dict[str, str] = {
     "metlife": "Eastern",
@@ -346,9 +349,136 @@ def map_match(raw: dict | None) -> dict | None:
     }
 
 
-def init_router(tournament_provider: ITournamentDataProvider):
-    global provider
+def init_router(tournament_provider: ITournamentDataProvider, head_to_head_provider: IHeadToHeadProvider | None = None):
+    global provider, h2h_provider
     provider = tournament_provider
+    h2h_provider = head_to_head_provider
+
+
+import re
+
+_MONTH_ABBR = {
+    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+    "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+}
+
+
+def _parse_score(s: str) -> tuple[int, int]:
+    """Split "3-1" → (3, 1). Returns (0, 0) on bad input."""
+    parts = s.split("-")
+    return (
+        int(parts[0]) if len(parts) == 2 and parts[0].isdigit() else 0,
+        int(parts[1]) if len(parts) == 2 and parts[1].isdigit() else 0,
+    )
+
+
+def _match_date_sort_key(match: dict) -> tuple:
+    """Sort key descending: (year, month, day). Falls back to tournament_year when the
+    date string omits the year (e.g. "Sat Jun 12"). Returns (0,0,0) on nothing."""
+    date_str = match.get("date")
+    ty = match.get("tournament_year")
+    if date_str:
+        m = re.match(r"(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})", str(date_str).strip())
+        if m:
+            return (int(m.group(3)), _MONTH_ABBR.get(m.group(2).lower()[:3], 0), int(m.group(1)))
+        m = re.match(r"(?:(?:Sun|Mon|Tue|Wed|Thu|Fri|Sat)\s+)?(\d{1,2})\s+([A-Za-z]+)", str(date_str).strip())
+        if m and ty:
+            return (int(ty), _MONTH_ABBR.get(m.group(2).lower()[:3], 0), int(m.group(1)))
+    return (int(ty), 0, 0) if ty else (0, 0, 0)
+
+
+def _winner_from_score(t1g: int, t2g: int, is_t1_side: bool, team1: str, team2: str, mt1_name: str, mt2_name: str) -> str | None:
+    """Return winner name (or None on draw) from score values and perspective."""
+    if t1g > t2g:
+        return mt1_name if is_t1_side else mt2_name
+    if t2g > t1g:
+        return mt2_name if is_t1_side else mt1_name
+    return None
+
+
+def _penalty_winner(penalty_score: str, is_t1_side: bool, team1: str, team2: str) -> str | None:
+    """Return penalty winner name, or None if tied/malformed."""
+    pt1, pt2 = _parse_score(penalty_score)
+    return team1 if (is_t1_side and pt1 > pt2) or (not is_t1_side and pt2 > pt1) else team2 if pt1 != pt2 else None
+
+
+def summarize_h2h(matches: list[dict], team1: str, team2: str) -> dict:
+    t1_lower = resolve_team_name(team1).lower()
+    t2_lower = resolve_team_name(team2).lower()
+
+    team1_wins = 0
+    team2_wins = 0
+    draws = 0
+    team1_goals = 0
+    team2_goals = 0
+
+    for m in matches:
+        mt1_name = resolve_team_name(m.get("team1", {}).get("name", ""))
+        mt2_name = resolve_team_name(m.get("team2", {}).get("name", ""))
+        t1g, t2g = _parse_score(m.get("score", ""))
+
+        # Attribute goals to our perspective
+        if mt1_name.lower() == t1_lower:
+            team1_goals += t1g
+            team2_goals += t2g
+        elif mt2_name.lower() == t1_lower:
+            team1_goals += t2g
+            team2_goals += t1g
+        else:
+            continue
+
+        # Persist result
+        if m.get("penalty_score"):
+            pen_is_t1 = (mt1_name.lower() == t1_lower)
+            w = _penalty_winner(m["penalty_score"], pen_is_t1, team1, team2)
+            if w == team1:
+                team1_wins += 1
+            elif w == team2:
+                team2_wins += 1
+            else:
+                draws += 1
+        elif t1g > t2g:
+            team1_wins += 1 if mt1_name.lower() == t1_lower else 0
+            team2_wins += 1 if mt1_name.lower() != t1_lower else 0
+        elif t2g > t1g:
+            team1_wins += 1 if mt1_name.lower() == t2_lower else 0
+            team2_wins += 1 if mt1_name.lower() != t2_lower else 0
+        else:
+            draws += 1
+
+    sorted_matches = sorted(matches, key=_match_date_sort_key, reverse=True)
+
+    last_meetings = []
+    for m in sorted_matches[:5]:
+        mt1_name = resolve_team_name(m.get("team1", {}).get("name", ""))
+        mt2_name = resolve_team_name(m.get("team2", {}).get("name", ""))
+        is_t1_side = mt1_name.lower() == t1_lower
+        t1g, t2g = _parse_score(m.get("score", ""))
+
+        winner: str | None = None
+        if m.get("penalty_score"):
+            winner = _penalty_winner(m["penalty_score"], is_t1_side, team1, team2)
+        else:
+            winner = _winner_from_score(t1g, t2g, is_t1_side, team1, team2, mt1_name, mt2_name)
+
+        last_meetings.append({
+            "year": m.get("tournament_year"),
+            "date": m.get("date"),
+            "stage": m.get("stage", ""),
+            "score": m.get("score", ""),
+            "winner": winner,
+        })
+
+    return {
+        "total_matches": len(matches),
+        "team1_wins": team1_wins,
+        "team2_wins": team2_wins,
+        "draws": draws,
+        "team1_goals": team1_goals,
+        "team2_goals": team2_goals,
+        "last_meetings": last_meetings,
+        "last_meeting": last_meetings[0] if last_meetings else None,
+    }
 
 
 @router.get("/groups")
@@ -396,6 +526,29 @@ async def get_bracket():
             content={"error": "provider_unavailable"},
         )
     return {"data": build_bracket_tree(raw)}
+
+
+@router.get("/matches/{match_id}/enriched")
+async def get_enriched_match(match_id: str):
+    match = await provider.get_match(match_id)
+    if match is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": "Match not found", "match_id": match_id},
+        )
+    mapped = map_match(match)
+
+    head_to_head = None
+    if h2h_provider is not None and mapped.get("home_team_name") and mapped.get("away_team_name"):
+        try:
+            raw_h2h = await h2h_provider.get_head_to_head(
+                mapped["home_team_name"], mapped["away_team_name"]
+            )
+            head_to_head = summarize_h2h(raw_h2h, mapped["home_team_name"], mapped["away_team_name"])
+        except Exception:
+            head_to_head = None
+
+    return {"data": {"match": mapped, "head_to_head": head_to_head}}
 
 
 @router.get("/tv")

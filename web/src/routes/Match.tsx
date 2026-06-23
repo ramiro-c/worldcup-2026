@@ -2,14 +2,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { usePolling } from "../lib/usePolling";
-import { getMatch, getTeams, getVenues } from "../lib/api";
-import type { Match } from "../lib/types";
+import { getMatch, getTeams, getVenues, fetchMatchEnriched } from "../lib/api";
+import type { Match, HeadToHeadSummary } from "../lib/types";
 import { PHASE_LABELS } from "../lib/constants";
 import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";
 import { trackPageView } from "../lib/analytics";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 import RetryButton from "../components/RetryButton";
+import HeadToHeadCard from "../components/HeadToHeadCard";
 import { isValidMatchId } from "../lib/validation";
 import { useNavigateBack } from "../lib/navigation";
 
@@ -82,6 +83,12 @@ export default function Match() {
   // Static data: fetch once on mount
   const { data: teamsData } = useAsync(() => getTeams(), []);
   const { data: venuesData } = useAsync(() => getVenues(), []);
+
+  // Enriched data: one-shot H2H fetch (non-blocking, no loading state)
+  const { data: enrichedData } = useAsync(
+    () => (id ? fetchMatchEnriched(id) : Promise.resolve(null)),
+    [id],
+  );
 
   // Dynamic data: poll while match is live
   const { data: match, loading, error } = usePolling(
@@ -444,16 +451,6 @@ export default function Match() {
               </span>
             )}
             <Countdown datetimeUtc={enrichedMatch.datetime_utc} status={enrichedMatch.status} />
-            <div className="mt-3">
-              {enrichedMatch.home_team && enrichedMatch.away_team ? (
-                <Link
-                  to={`/head-to-head/${encodeURIComponent(enrichedMatch.home_team_name!)}/${encodeURIComponent(enrichedMatch.away_team_name!)}`}
-                  className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors underline underline-offset-2"
-                >
-                  Historial
-                </Link>
-              ) : null}
-            </div>
           </div>
 
           <div className="w-full sm:flex-1 text-center sm:text-left">
@@ -485,6 +482,15 @@ export default function Match() {
             </div>
           </div>
         </div>
+
+        {/* Head-to-head card - non-blocking fetch, appears once data arrives */}
+        {enrichedData?.head_to_head && enrichedMatch.home_team_name && enrichedMatch.away_team_name ? (
+          <HeadToHeadCard
+            summary={enrichedData.head_to_head}
+            homeTeam={enrichedMatch.home_team_name}
+            awayTeam={enrichedMatch.away_team_name}
+          />
+        ) : null}
 
         <div className="border-t border-zinc-800 pt-6">
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 text-sm">
