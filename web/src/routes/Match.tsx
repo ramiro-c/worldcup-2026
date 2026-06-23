@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
 import { usePolling } from "../lib/usePolling";
 import { getMatch, getTeams, getVenues, fetchMatchEnriched } from "../lib/api";
-import type { Match, HeadToHeadSummary } from "../lib/types";
+import type { Match } from "../lib/types";
 import { PHASE_LABELS } from "../lib/constants";
 import { formatMatchTime } from "../lib/formatTime";
 import { useTimezone } from "../lib/useTimezone";

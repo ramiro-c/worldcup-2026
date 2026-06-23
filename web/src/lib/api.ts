@@ -157,4 +157,3 @@ export async function getHistoricalMatchLineups(
 export async function getTournamentStats(): Promise<TournamentStats> {
   return fetchHistorical<TournamentStats>("/tournament-stats");
 }
-}

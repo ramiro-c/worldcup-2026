@@ -225,4 +225,3 @@ export interface TournamentStats {
   top_scorers: TopScorer[];
   skipped_tournaments?: number[];
 }
-}
