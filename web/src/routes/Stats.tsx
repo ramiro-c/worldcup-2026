@@ -76,6 +76,19 @@ export default function Stats() {
         </p>
       </div>
 
+      {stats.skipped_tournaments && stats.skipped_tournaments.length > 0 && (
+        <div
+          role="alert"
+          className="rounded-lg border border-amber-900/50 bg-amber-950/30 px-4 py-3 text-sm text-amber-300/90"
+        >
+          No se pudieron cargar los datos de{" "}
+          <span className="font-medium text-amber-200">
+            {stats.skipped_tournaments.join(", ")}
+          </span>
+          .
+        </div>
+      )}
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <ChampionCard data={stats} />
         <BiggestWinsCard data={stats} />
@@ -135,7 +148,7 @@ function ChampionCard({ data }: { data: TournamentStats }) {
       </div>
       {data.champion_counts.length > 10 && (
         <p className="text-xs text-zinc-600 mt-4 text-center">
-          +{data.champion_counts.length - 10} países con 1 título
+          +{data.champion_counts.length - 10} países
         </p>
       )}
     </div>
@@ -233,9 +246,16 @@ function TopScorersCard({ scorers }: { scorers: TournamentStats["top_scorers"] }
         </thead>
         <tbody>
           {top15.map((scorer, i) => (
-            <tr key={scorer.player} className="border-b border-zinc-800/50 last:border-0">
+            <tr key={`${scorer.player}-${scorer.team}`} className="border-b border-zinc-800/50 last:border-0">
               <td className="py-2.5 px-4 text-zinc-500 tabular-nums w-8">{i + 1}</td>
-              <td className="py-2.5 px-4 text-zinc-200 font-medium">{scorer.player}</td>
+              <td className="py-2.5 px-4 text-zinc-200 font-medium">
+                <div className="flex flex-col">
+                  <span>{scorer.player}</span>
+                  {scorer.team && scorer.team !== "Unknown" && (
+                    <span className="text-xs text-zinc-500 font-normal">{scorer.team}</span>
+                  )}
+                </div>
+              </td>
               <td className="py-2.5 px-4 text-right font-bold tabular-nums text-emerald-400">
                 {scorer.goals}
               </td>
@@ -279,13 +299,20 @@ function HostRecordsCard({ records }: { records: TournamentStats["host_records"]
                 </span>
               </td>
               <td className="py-2.5 px-4">
-                <Link
-                  to={`/team/${encodeURIComponent(record.champion)}`}
-                  className={`${record.champion !== "—" ? "text-zinc-200 hover:text-emerald-400 transition-colors" : "text-zinc-600"} flex items-center gap-2`}
-                >
-                  {getFlag(record.champion)}
-                  <span>{record.champion}</span>
-                </Link>
+                {record.champion === "—" ? (
+                  <span className="text-zinc-600 flex items-center gap-2">
+                    {getFlag(record.champion)}
+                    <span>{record.champion}</span>
+                  </span>
+                ) : (
+                  <Link
+                    to={`/team/${encodeURIComponent(record.champion)}`}
+                    className="text-zinc-200 hover:text-emerald-400 transition-colors flex items-center gap-2"
+                  >
+                    {getFlag(record.champion)}
+                    <span>{record.champion}</span>
+                  </Link>
+                )}
               </td>
             </tr>
           ))}

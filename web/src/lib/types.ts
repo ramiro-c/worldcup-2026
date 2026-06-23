@@ -125,6 +125,7 @@ export interface HostRecord {
 
 export interface TopScorer {
   player: string;
+  team: string;
   goals: number;
   tournaments: number[];
 }

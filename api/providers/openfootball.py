@@ -519,14 +519,22 @@ class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider, ITeamDa
                         })
 
                     # Scorers aggregation
+                    # Key on (player, team) to prevent cross-team collisions
+                    # (e.g. "Silva" from Brazil vs Portugal).
+                    # The parser preserves the full name when available
+                    # (e.g. "Gerd Müller" not "Müller"), so players sharing
+                    # a last name within the same team will still be merged
+                    # — the source data doesn't carry enough disambiguation.
                     for scorer in match.get("scorers", []):
                         player = scorer.get("player", "").strip()
                         if not player:
                             continue
-                        if player not in scorer_totals:
-                            scorer_totals[player] = {"goals": 0, "tournaments": set()}
-                        scorer_totals[player]["goals"] += 1
-                        scorer_totals[player]["tournaments"].add(year)
+                        team = scorer.get("team", "").strip() or "Unknown"
+                        key = (player, team)
+                        if key not in scorer_totals:
+                            scorer_totals[key] = {"goals": 0, "tournaments": set()}
+                        scorer_totals[key]["goals"] += 1
+                        scorer_totals[key]["tournaments"].add(year)
 
             except Exception:
                 skipped_years.append(year)
@@ -546,11 +554,12 @@ class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider, ITeamDa
         top_scorers_list = sorted(
             [
                 {
-                    "player": p,
+                    "player": player,
+                    "team": team,
                     "goals": d["goals"],
                     "tournaments": sorted(list(d["tournaments"])),
                 }
-                for p, d in scorer_totals.items()
+                for (player, team), d in scorer_totals.items()
             ],
             key=lambda x: (-x["goals"], x["player"]),
         )[:30]
