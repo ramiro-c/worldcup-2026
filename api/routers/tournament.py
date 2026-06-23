@@ -276,24 +276,56 @@ def init_router(tournament_provider: ITournamentDataProvider, head_to_head_provi
     h2h_provider = head_to_head_provider
 
 
+import re
+
+_MONTH_ABBR = {
+    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+    "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+}
+
+
+def _parse_score(s: str) -> tuple[int, int]:
+    """Split "3-1" → (3, 1). Returns (0, 0) on bad input."""
+    parts = s.split("-")
+    return (
+        int(parts[0]) if len(parts) == 2 and parts[0].isdigit() else 0,
+        int(parts[1]) if len(parts) == 2 and parts[1].isdigit() else 0,
+    )
+
+
+def _match_date_sort_key(match: dict) -> tuple:
+    """Sort key descending: (year, month, day). Falls back to tournament_year when the
+    date string omits the year (e.g. "Sat Jun 12"). Returns (0,0,0) on nothing."""
+    date_str = match.get("date")
+    ty = match.get("tournament_year")
+    if date_str:
+        m = re.match(r"(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})", str(date_str).strip())
+        if m:
+            return (int(m.group(3)), _MONTH_ABBR.get(m.group(2).lower()[:3], 0), int(m.group(1)))
+        m = re.match(r"(?:(?:Sun|Mon|Tue|Wed|Thu|Fri|Sat)\s+)?(\d{1,2})\s+([A-Za-z]+)", str(date_str).strip())
+        if m and ty:
+            return (int(ty), _MONTH_ABBR.get(m.group(2).lower()[:3], 0), int(m.group(1)))
+    return (int(ty), 0, 0) if ty else (0, 0, 0)
+
+
+def _winner_from_score(t1g: int, t2g: int, is_t1_side: bool, team1: str, team2: str, mt1_name: str, mt2_name: str) -> str | None:
+    """Return winner name (or None on draw) from score values and perspective."""
+    if t1g > t2g:
+        return mt1_name if is_t1_side else mt2_name
+    if t2g > t1g:
+        return mt2_name if is_t1_side else mt1_name
+    return None
+
+
+def _penalty_winner(penalty_score: str, is_t1_side: bool, team1: str, team2: str) -> str | None:
+    """Return penalty winner name, or None if tied/malformed."""
+    pt1, pt2 = _parse_score(penalty_score)
+    return team1 if (is_t1_side and pt1 > pt2) or (not is_t1_side and pt2 > pt1) else team2 if pt1 != pt2 else None
+
+
 def summarize_h2h(matches: list[dict], team1: str, team2: str) -> dict:
-    """Summarize raw head-to-head matches into a compact digest.
-
-    Args:
-        matches: Raw historical matches from get_head_to_head.
-        team1: Home team name (canonical).
-        team2: Away team name (canonical).
-
-    Returns:
-        Summary dict with total_matches, team1/team2 wins/draws/goals,
-        last_meetings (up to 5), and last_meeting.
-    """
-    # Resolve aliases (e.g. "Czechia" -> "Czech Republic", "W. Germany" -> "Germany")
-    # so historical names that differ from the API-derived names still match.
-    t1_resolved = resolve_team_name(team1)
-    t2_resolved = resolve_team_name(team2)
-    t1_lower = t1_resolved.lower()
-    t2_lower = t2_resolved.lower()
+    t1_lower = resolve_team_name(team1).lower()
+    t2_lower = resolve_team_name(team2).lower()
 
     team1_wins = 0
     team2_wins = 0
@@ -304,12 +336,9 @@ def summarize_h2h(matches: list[dict], team1: str, team2: str) -> dict:
     for m in matches:
         mt1_name = resolve_team_name(m.get("team1", {}).get("name", ""))
         mt2_name = resolve_team_name(m.get("team2", {}).get("name", ""))
-        score = m.get("score", "")
-        parts = score.split("-")
-        t1g = int(parts[0]) if len(parts) == 2 and parts[0].isdigit() else 0
-        t2g = int(parts[1]) if len(parts) == 2 and parts[1].isdigit() else 0
+        t1g, t2g = _parse_score(m.get("score", ""))
 
-        # Determine which side team1/team2 are on in this historical match
+        # Attribute goals to our perspective
         if mt1_name.lower() == t1_lower:
             team1_goals += t1g
             team2_goals += t2g
@@ -319,115 +348,45 @@ def summarize_h2h(matches: list[dict], team1: str, team2: str) -> dict:
         else:
             continue
 
-        # Determine result from our perspective (team1 = first arg = home team)
+        # Persist result
         if m.get("penalty_score"):
-            pen_parts = m["penalty_score"].split("-")
-            pt1 = int(pen_parts[0]) if len(pen_parts) == 2 and pen_parts[0].isdigit() else 0
-            pt2 = int(pen_parts[1]) if len(pen_parts) == 2 and pen_parts[1].isdigit() else 0
-            # Penalty winner is the team that won on penalties
-            pen_winner_is_team1 = (
-                (mt1_name.lower() == t1_lower and pt1 > pt2) or
-                (mt2_name.lower() == t1_lower and pt2 > pt1)
-            )
-            if pen_winner_is_team1:
+            pen_is_t1 = (mt1_name.lower() == t1_lower)
+            w = _penalty_winner(m["penalty_score"], pen_is_t1, team1, team2)
+            if w == team1:
                 team1_wins += 1
-            else:
+            elif w == team2:
                 team2_wins += 1
+            else:
+                draws += 1
         elif t1g > t2g:
-            if mt1_name.lower() == t1_lower:
-                team1_wins += 1
-            else:
-                team2_wins += 1
+            team1_wins += 1 if mt1_name.lower() == t1_lower else 0
+            team2_wins += 1 if mt1_name.lower() != t1_lower else 0
         elif t2g > t1g:
-            if mt1_name.lower() == t2_lower:
-                team1_wins += 1
-            else:
-                team2_wins += 1
+            team1_wins += 1 if mt1_name.lower() == t2_lower else 0
+            team2_wins += 1 if mt1_name.lower() != t2_lower else 0
         else:
             draws += 1
 
-    # Sort by date descending (newest first)
-    # Parse date strings like "18 Dec 2022" or "3 Jul 2010" for proper chronological ordering.
-    # Real openfootball matches often omit the year (e.g. "Sat Jun 12"), so we fall back
-    # to the per-match `tournament_year` field that the H2H provider attaches.
-    import re
-
-    MONTH_ABBR = {
-        "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
-        "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
-    }
-
-    def _parse_match_date(match: dict) -> tuple:
-        """Parse openfootball date string into sortable tuple (year, month, day).
-
-        Falls back to the match's `tournament_year` when the date string omits
-        the year (e.g. "Sat Jun 12"). Returns (0, 0, 0) when nothing usable.
-        """
-        date_str = match.get("date") if match else None
-        tournament_year = match.get("tournament_year") if match else None
-        if date_str:
-            m = re.match(r"(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})", date_str.strip())
-            if m:
-                day = int(m.group(1))
-                month = MONTH_ABBR.get(m.group(2).lower()[:3], 0)
-                year = int(m.group(3))
-                return (year, month, day)
-            # Date has month/day but no year: e.g. "Sat Jun 12" or "12 Jun"
-            m = re.match(
-                r"(?:(?:Sun|Mon|Tue|Wed|Thu|Fri|Sat)\s+)?"
-                r"(\d{1,2})\s+([A-Za-z]+)",
-                date_str.strip(),
-            )
-            if m and tournament_year:
-                day = int(m.group(1))
-                month = MONTH_ABBR.get(m.group(2).lower()[:3], 0)
-                return (int(tournament_year), month, day)
-        if tournament_year:
-            return (int(tournament_year), 0, 0)
-        return (0, 0, 0)
-
-    sorted_matches = sorted(
-        matches,
-        key=lambda m: _parse_match_date(m),
-        reverse=True,
-    )
+    sorted_matches = sorted(matches, key=_match_date_sort_key, reverse=True)
 
     last_meetings = []
     for m in sorted_matches[:5]:
         mt1_name = resolve_team_name(m.get("team1", {}).get("name", ""))
         mt2_name = resolve_team_name(m.get("team2", {}).get("name", ""))
-        score = m.get("score", "")
-        stage = m.get("stage", "")
-        is_team1_side = mt1_name.lower() == t1_lower
+        is_t1_side = mt1_name.lower() == t1_lower
+        t1g, t2g = _parse_score(m.get("score", ""))
 
-        # Determine winner from enriched perspective
-        winner = None
+        winner: str | None = None
         if m.get("penalty_score"):
-            pen_parts = m["penalty_score"].split("-")
-            pt1 = int(pen_parts[0]) if len(pen_parts) == 2 and pen_parts[0].isdigit() else 0
-            pt2 = int(pen_parts[1]) if len(pen_parts) == 2 and pen_parts[1].isdigit() else 0
-            pen_winner_is_team1 = (
-                (is_team1_side and pt1 > pt2) or
-                (not is_team1_side and pt2 > pt1)
-            )
-            if pen_winner_is_team1:
-                winner = team1
-            else:
-                winner = team2
+            winner = _penalty_winner(m["penalty_score"], is_t1_side, team1, team2)
         else:
-            parts = score.split("-")
-            t1g_val = int(parts[0]) if len(parts) == 2 and parts[0].isdigit() else 0
-            t2g_val = int(parts[1]) if len(parts) == 2 and parts[1].isdigit() else 0
-            if t1g_val > t2g_val:
-                winner = mt1_name if is_team1_side else mt2_name
-            elif t2g_val > t1g_val:
-                winner = mt2_name if is_team1_side else mt1_name
+            winner = _winner_from_score(t1g, t2g, is_t1_side, team1, team2, mt1_name, mt2_name)
 
         last_meetings.append({
             "year": m.get("tournament_year"),
             "date": m.get("date"),
-            "stage": stage,
-            "score": score,
+            "stage": m.get("stage", ""),
+            "score": m.get("score", ""),
             "winner": winner,
         })
 
