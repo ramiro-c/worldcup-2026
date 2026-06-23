@@ -341,12 +341,31 @@ def summarize_h2h(matches: list[dict], team1: str, team2: str) -> dict:
         else:
             draws += 1
 
-    # Sort by year desc (matches from get_head_to_head are chronological)
+    # Sort by date descending (newest first)
+    # Parse date strings like "18 Dec 2022" or "3 Jul 2010" for proper chronological ordering
+    import re
+    from datetime import datetime
+
+    MONTH_ABBR = {
+        "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+        "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+    }
+
+    def _parse_match_date(date_str: str | None) -> tuple:
+        """Parse openfootball date string into sortable tuple (year, month, day)."""
+        if not date_str:
+            return (0, 0, 0)
+        m = re.match(r"(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})", date_str.strip())
+        if m:
+            day = int(m.group(1))
+            month = MONTH_ABBR.get(m.group(2).lower()[:3], 0)
+            year = int(m.group(3))
+            return (year, month, day)
+        return (0, 0, 0)
+
     sorted_matches = sorted(
         matches,
-        key=lambda m: (
-            m.get("date", "") or "",
-        ),
+        key=lambda m: _parse_match_date(m.get("date")),
         reverse=True,
     )
 

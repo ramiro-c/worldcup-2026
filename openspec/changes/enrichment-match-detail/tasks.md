@@ -52,6 +52,6 @@ Chain strategy: size-exception
 
 ## Phase 6: Tests
 
-- [ ] 6.1 Write unit tests for `summarize_h2h` — known fixture data, empty input, single match, draw/penalty cases
-- [ ] 6.2 Write integration test for `/matches/{id}/enriched` — 200 with H2H, 404, no-history empty state, provider timeout
-- [ ] 6.3 Write `HeadToHeadCard.test.tsx` — renders summary data, renders empty state, link navigates correctly
+- [x] 6.1 Write unit tests for `summarize_h2h` — known fixture data, empty input, single match, draw/penalty cases
+- [x] 6.2 Write integration test for `/matches/{id}/enriched` — 200 with H2H, 404, no-history empty state, provider timeout
+- [x] 6.3 Write `HeadToHeadCard.test.tsx` — renders summary data, renders empty state, link navigates correctly
