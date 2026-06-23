@@ -8,6 +8,7 @@ const navItems = [
   { to: "/bracket", label: "Eliminatorias" },
   { to: "/venues", label: "Sedes" },
   { to: "/historical", label: "Historial" },
+  { to: "/stats", label: "Estadísticas" },
   { to: "/tv", label: "TV" },
 ];
 

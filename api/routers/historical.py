@@ -1,13 +1,13 @@
 from __future__ import annotations
 from fastapi import APIRouter, Query
-from providers.interfaces import IHistoricalDataProvider, IHeadToHeadProvider, ITeamDataProvider, IEventDataProvider
+from providers.interfaces import IHistoricalDataProvider, IHeadToHeadProvider, ITeamDataProvider, IEventDataProvider, ITournamentStatsProvider
 
 router = APIRouter(prefix="/historical", tags=["historical"])
-historical_provider: IHistoricalDataProvider & IHeadToHeadProvider & ITeamDataProvider
+historical_provider: IHistoricalDataProvider & IHeadToHeadProvider & ITeamDataProvider & ITournamentStatsProvider
 event_provider: IEventDataProvider
 
 
-def init_router(historical: IHistoricalDataProvider & IHeadToHeadProvider & ITeamDataProvider, events: IEventDataProvider):
+def init_router(historical: IHistoricalDataProvider & IHeadToHeadProvider & ITeamDataProvider & ITournamentStatsProvider, events: IEventDataProvider):
     global historical_provider, event_provider
     historical_provider = historical
     event_provider = events
@@ -43,6 +43,11 @@ async def get_matches(
 @router.get("/matches/{match_id}/events")
 async def get_match_events(match_id: int):
     return {"data": await event_provider.get_events(match_id)}
+
+
+@router.get("/tournament-stats")
+async def get_tournament_stats():
+    return {"data": await historical_provider.get_tournament_stats()}
 
 
 @router.get("/teams/{team_name}/matches")
