@@ -1,4 +1,4 @@
-import type { Group, Team, Venue, Match, TvChannel, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch } from "./types";
+import type { Group, Team, Venue, Match, TvChannel, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch, EnrichedMatchResponse } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/tournament`
@@ -39,6 +39,23 @@ export async function getMatches(signal?: AbortSignal): Promise<Match[]> {
 
 export async function getMatch(id: string, signal?: AbortSignal): Promise<Match | null> {
   return fetchApi<Match | null>(`/matches/${id}`, signal);
+}
+
+export async function fetchMatchEnriched(id: string): Promise<EnrichedMatchResponse | null> {
+  const response = await fetch(`${API_BASE}/matches/${id}/enriched`);
+  if (!response.ok) {
+    if (response.status === 404) return null;
+    const body = await response.json().catch(() => ({}));
+    const err = new Error(
+      (body as Record<string, unknown>).error
+        ? String((body as Record<string, unknown>).error)
+        : `API error: ${response.statusText}`,
+    );
+    (err as unknown as Record<string, unknown>).status = response.status;
+    throw err;
+  }
+  const data = await response.json();
+  return data.data as EnrichedMatchResponse;
 }
 
 export async function getTv(): Promise<TvChannel[]> {

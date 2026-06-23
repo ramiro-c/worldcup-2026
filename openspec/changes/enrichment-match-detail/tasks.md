@@ -35,8 +35,8 @@ Chain strategy: size-exception
 
 ## Phase 3: Frontend Types & Client
 
-- [ ] 3.1 Add `HeadToHeadMeeting`, `HeadToHeadSummary`, and `EnrichedMatchResponse` types to `web/src/lib/types.ts`
-- [ ] 3.2 Add `fetchMatchEnriched(id)` to `web/src/lib/api.ts`
+- [x] 3.1 Add `HeadToHeadMeeting`, `HeadToHeadSummary`, and `EnrichedMatchResponse` types to `web/src/lib/types.ts`
+- [x] 3.2 Add `fetchMatchEnriched(id)` to `web/src/lib/api.ts`
 
 ## Phase 4: HeadToHeadCard Component
 
