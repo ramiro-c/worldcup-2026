@@ -149,6 +149,9 @@ def build_bracket_tree(raw_matches: list[dict]) -> list[dict]:
         except (ValueError, TypeError):
             continue
         if 73 <= n <= 104:
+            # Skip 3rd place match (match #103 in wheniskickoff)
+            if n == 103:
+                continue
             num_map[n] = m
 
     rounds = []

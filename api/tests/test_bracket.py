@@ -26,8 +26,8 @@ def _make_match(num: int, home: str = "", away: str = "", home_score=None, away_
 
 
 def _all_tbd_matches() -> list[dict]:
-    """Generate 31 knockout matches with all teams TBD."""
-    return [_make_match(num) for num in range(73, 105) if num != 103]
+    """Generate all 32 knockout matches (including #103 third place) with all teams TBD."""
+    return [_make_match(num) for num in range(73, 105)]
 
 
 def _partial_matches() -> list[dict]:
