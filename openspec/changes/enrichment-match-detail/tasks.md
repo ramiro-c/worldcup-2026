@@ -29,9 +29,9 @@ Chain strategy: size-exception
 
 ## Phase 2: API Endpoint
 
-- [ ] 2.1 Add `summarize_h2h(matches, team1, team2)` helper in `api/routers/tournament.py` — returns `total_matches`, `team1_wins`, `team2_wins`, `draws`, `team1_goals`, `team2_goals`, `last_meetings`, `last_meeting`
-- [ ] 2.2 Add `GET /tournament/matches/{match_id}/enriched` endpoint — calls `get_match` + `openfootball.get_head_to_head` + `summarize_h2h`, returns `{ match, head_to_head }`
-- [ ] 2.3 Handle 404 when match_id not found; handle openfootball timeout gracefully returning `head_to_head: null`
+- [x] 2.1 Add `summarize_h2h(matches, team1, team2)` helper in `api/routers/tournament.py` — returns `total_matches`, `team1_wins`, `team2_wins`, `draws`, `team1_goals`, `team2_goals`, `last_meetings`, `last_meeting`
+- [x] 2.2 Add `GET /tournament/matches/{match_id}/enriched` endpoint — calls `get_match` + `openfootball.get_head_to_head` + `summarize_h2h`, returns `{ match, head_to_head }`
+- [x] 2.3 Handle 404 when match_id not found; handle openfootball timeout gracefully returning `head_to_head: null`
 
 ## Phase 3: Frontend Types & Client
 
