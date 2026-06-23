@@ -40,9 +40,9 @@ Chain strategy: size-exception
 
 ## Phase 4: HeadToHeadCard Component
 
-- [ ] 4.1 Create `web/src/components/HeadToHeadCard.tsx` — compact card showing total matches, team1/team2 wins, draws, last 5 meetings, last meeting summary
-- [ ] 4.2 Render empty state ("Sin enfrentamientos previos", muted styling) when no history
-- [ ] 4.3 Add "Ver historial completo" link pointing to `/head-to-head/{home}/{away}`
+- [x] 4.1 Create `web/src/components/HeadToHeadCard.tsx` — compact card showing total matches, team1/team2 wins, draws, last 5 meetings, last meeting summary
+- [x] 4.2 Render empty state ("Sin enfrentamientos previos", muted styling) when no history
+- [x] 4.3 Add "Ver historial completo" link pointing to `/head-to-head/{home}/{away}`
 
 ## Phase 5: Match.tsx Integration
 
