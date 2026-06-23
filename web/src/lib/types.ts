@@ -102,3 +102,41 @@ export interface HistoricalTournament {
   groups: HistoricalGroup[];
   matches: HistoricalMatch[];
 }
+
+// StatsBomb data types
+export interface StatsBombCompetition {
+  competition_id: number;
+  season_id: number;
+  competition_name: string;
+  season_name: string;
+}
+
+export interface StatsBombTimelineEvent {
+  minute: number;
+  type: "goal" | "card" | "substitution";
+  team: string;
+  player: string;
+  cardType?: "yellow" | "red";
+  substitution?: {
+    playerOff: string;
+    playerOn: string;
+  };
+}
+
+export interface StatsBombShot {
+  x: number;
+  y: number;
+  outcome: "goal" | "saved" | "blocked" | "off_target" | "wayward";
+}
+
+export interface StatsBombLineupPlayer {
+  player: string;
+  jerseyNumber: number;
+  position?: string;
+}
+
+export interface StatsBombLineup {
+  team: string;
+  startingXI: StatsBombLineupPlayer[];
+  substitutes: StatsBombLineupPlayer[];
+}
