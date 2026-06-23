@@ -1,5 +1,7 @@
 # Copa 2026 — World Cup Companion
 
+🔗 [worldcup-2026.rami992009.workers.dev](https://worldcup-2026.rami992009.workers.dev)
+
 Seguí el Mundial 2026: grupos, fixture, cuadro eliminatorio, mapa de sedes, canales de TV y contexto histórico de cada selección.
 
 ## Funcionalidades

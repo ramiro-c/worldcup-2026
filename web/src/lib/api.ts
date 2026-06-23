@@ -1,4 +1,4 @@
-import type { Group, Team, Venue, Match, TvChannel, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch, StatsBombCompetition } from "./types";
+import type { Group, Team, Venue, Match, TvChannel, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch, TournamentStats, StatsBombCompetition } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/tournament`
@@ -131,4 +131,9 @@ export async function getHistoricalMatchLineups(
   matchId: number,
 ): Promise<Record<string, unknown>[]> {
   return fetchHistorical<Record<string, unknown>[]>(`/matches/${matchId}/lineups`);
+}
+
+export async function getTournamentStats(): Promise<TournamentStats> {
+  return fetchHistorical<TournamentStats>("/tournament-stats");
+}
 }

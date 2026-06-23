@@ -97,3 +97,16 @@ class IEventDataProvider(ABC):
     async def get_three_sixty(self, match_id: int) -> list[dict]:
         """Retorna datos 360 del partido"""
         pass
+
+
+class ITournamentStatsProvider(ABC):
+    """Interfaz para estadísticas agregadas históricas"""
+
+    @abstractmethod
+    async def get_tournament_stats(self) -> dict:
+        """Retorna estadísticas agregadas de todos los mundiales.
+        
+        Returns:
+            dict con champion_counts, biggest_wins, total_goals, host_records, top_scorers
+        """
+        pass

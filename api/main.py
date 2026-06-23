@@ -8,6 +8,7 @@ from providers.interfaces import (
     ITournamentDataProvider,
     IHistoricalDataProvider,
     IHeadToHeadProvider,
+    ITournamentStatsProvider,
     IEventDataProvider,
 )
 from providers.wheniskickoff import WheniskickoffProvider
@@ -15,7 +16,7 @@ from providers.openfootball import OpenfootballProvider
 from providers.statsbomb import StatsBombProvider
 
 tournament_provider: ITournamentDataProvider = WheniskickoffProvider()
-historical_provider: IHistoricalDataProvider & IHeadToHeadProvider = OpenfootballProvider()
+historical_provider: IHistoricalDataProvider & IHeadToHeadProvider & ITournamentStatsProvider = OpenfootballProvider()
 event_provider: IEventDataProvider = StatsBombProvider()
 
 app = FastAPI(
