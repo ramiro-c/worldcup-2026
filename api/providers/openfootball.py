@@ -468,6 +468,17 @@ class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider, ITeamDa
         if is_fresh:
             return cached
 
+        try:
+            result = await self._compute_tournament_stats()
+        except Exception:
+            if cached is not None:
+                return cached
+            raise
+
+        self._parsed_cache.set(cache_key, result)
+        return result
+
+    async def _compute_tournament_stats(self) -> dict:
         champion_counts: dict[str, int] = {}
         biggest_wins: list[dict] = []
         total_goals = 0
@@ -578,7 +589,6 @@ class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider, ITeamDa
         if skipped_years:
             result["skipped_tournaments"] = skipped_years
 
-        self._parsed_cache.set(cache_key, result)
         return result
 
     def _detect_champion(self, tournament: dict) -> str | None:
