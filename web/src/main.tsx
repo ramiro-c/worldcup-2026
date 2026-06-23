@@ -17,6 +17,7 @@ import HistoricalTournament from "./routes/HistoricalTournament"
 import HistoricalMatchDetail from "./routes/HistoricalMatchDetail"
 import Team from "./routes/Team"
 import HeadToHead from "./routes/HeadToHead"
+import Stats from "./routes/Stats"
 import NotFound from "./routes/NotFound"
 
 function wrapBoundary(element: ReactNode) {
@@ -41,6 +42,7 @@ const router = createBrowserRouter([
       { path: "historical/:year/:matchId", element: wrapBoundary(<HistoricalMatchDetail />) },
       { path: "team/:teamName", element: wrapBoundary(<Team />) },
       { path: "head-to-head/:team1/:team2", element: wrapBoundary(<HeadToHead />) },
+      { path: "stats", element: wrapBoundary(<Stats />) },
       { path: "*", element: wrapBoundary(<NotFound />) },
     ],
   },

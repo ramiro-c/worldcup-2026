@@ -6,6 +6,7 @@ import { STAGE_LABELS } from "../lib/constants";
 import { trackPageView } from "../lib/analytics";
 import { useNavigateBack } from "../lib/navigation";
 import { Skeleton } from "../components/Skeleton";
+import { StatsBombTimeline } from "../components/statsbomb/StatsBombTimeline";
 
 export default function HistoricalMatchDetail() {
   const { year, matchId } = useParams<{ year: string; matchId: string }>();
@@ -157,6 +158,13 @@ export default function HistoricalMatchDetail() {
           </div>
         </div>
       )}
+
+      <StatsBombTimeline
+        year={Number(year)}
+        team1={match.team1.name}
+        team2={match.team2.name}
+        date={match.date}
+      />
     </div>
   );
 }
