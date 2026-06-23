@@ -24,8 +24,8 @@ Chain strategy: size-exception
 
 ## Phase 1: Alias Registration
 
-- [ ] 1.1 Add `"cape verde islands": "Cape Verde"` and variants to `TEAM_ALIASES` in `api/providers/aliases.py`
-- [ ] 1.2 Add `"curacao": "Curaçao"` and variants to `TEAM_ALIASES` in `api/providers/aliases.py`
+- [x] 1.1 Add `"cape verde islands": "Cape Verde"` and variants to `TEAM_ALIASES` in `api/providers/aliases.py`
+- [x] 1.2 Add `"curacao": "Curaçao"` and variants to `TEAM_ALIASES` in `api/providers/aliases.py`
 
 ## Phase 2: API Endpoint
 
