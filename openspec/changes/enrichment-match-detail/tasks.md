@@ -46,9 +46,9 @@ Chain strategy: size-exception
 
 ## Phase 5: Match.tsx Integration
 
-- [ ] 5.1 Import `fetchMatchEnriched` and `useAsync` in `web/src/routes/Match.tsx`; add parallel one-shot fetch for enriched data
-- [ ] 5.2 Replace existing "Historial" link with `HeadToHeadCard` rendered below score section
-- [ ] 5.3 Ensure H2H fetch is non-blocking (no spinner, card appears once data arrives; error → no H2H card)
+- [x] 5.1 Import `fetchMatchEnriched` and `useAsync` in `web/src/routes/Match.tsx`; add parallel one-shot fetch for enriched data
+- [x] 5.2 Replace existing "Historial" link with `HeadToHeadCard` rendered below score section
+- [x] 5.3 Ensure H2H fetch is non-blocking (no spinner, card appears once data arrives; error → no H2H card)
 
 ## Phase 6: Tests
 
