@@ -49,6 +49,10 @@ TEAM_ALIASES: dict[str, str] = {
     "ir iran": "Iran",
     # Netherlands — informal variant
     "holland": "Netherlands",
+    # Cape Verde — "Cape Verde Islands" is the official name; "Cape Verde" used in openfootball
+    "cape verde islands": "Cape Verde",
+    # Curaçao — "Curaçao" used in openfootball; "Curacao" (without diacritic) is a common variant
+    "curacao": "Curaçao",
 }
 
 

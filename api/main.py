@@ -37,7 +37,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-tournament_module.init_router(tournament_provider)
+tournament_module.init_router(tournament_provider, historical_provider)
 historical_module.init_router(historical_provider, event_provider)
 
 app.include_router(tournament_module.router)

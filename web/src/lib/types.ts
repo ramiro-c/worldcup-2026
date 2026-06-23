@@ -103,6 +103,30 @@ export interface HistoricalTournament {
   matches: HistoricalMatch[];
 }
 
+export interface HeadToHeadMeeting {
+  year: number | null;
+  date: string | null;
+  stage: string;
+  score: string;
+  winner: string | null;
+}
+
+export interface HeadToHeadSummary {
+  total_matches: number;
+  team1_wins: number;
+  team2_wins: number;
+  draws: number;
+  team1_goals: number;
+  team2_goals: number;
+  last_meetings: HeadToHeadMeeting[];
+  last_meeting: HeadToHeadMeeting | null;
+}
+
+export interface EnrichedMatchResponse {
+  match: Match;
+  head_to_head: HeadToHeadSummary | null;
+}
+
 // StatsBomb data types
 export interface StatsBombCompetition {
   competition_id: number;
