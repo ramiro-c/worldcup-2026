@@ -2,7 +2,7 @@ import re
 from typing import Any
 import httpx
 from providers.aliases import resolve_team_name
-from providers.interfaces import IHistoricalDataProvider, IHeadToHeadProvider, ITeamDataProvider
+from providers.interfaces import IHistoricalDataProvider, IHeadToHeadProvider, ITeamDataProvider, ITournamentStatsProvider
 from providers.cache import MemoryCache
 
 # Limpiar comentarios de YAML/txt (# al final)
@@ -361,7 +361,7 @@ class OpenfootballParser:
         return result
 
 
-class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider, ITeamDataProvider):
+class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider, ITeamDataProvider, ITournamentStatsProvider):
     def __init__(self):
         self._fetch_cache = MemoryCache(default_ttl=300)
         self._parsed_cache = MemoryCache(default_ttl=300)
@@ -459,3 +459,145 @@ class OpenfootballProvider(IHistoricalDataProvider, IHeadToHeadProvider, ITeamDa
             except Exception:
                 continue
         return matches
+
+    async def get_tournament_stats(self) -> dict:
+        """Aggregate stats across all tournaments: champion counts, biggest wins,
+        total goals, host records, top scorers. Cached with 5-min TTL."""
+        cache_key = "tournament_stats"
+        is_fresh, cached = self._parsed_cache.get(cache_key)
+        if is_fresh:
+            return cached
+
+        champion_counts: dict[str, int] = {}
+        biggest_wins: list[dict] = []
+        total_goals = 0
+        host_records: list[dict] = []
+        scorer_totals: dict[str, dict] = {}
+        tournament_count = 0
+        skipped_years: list[int] = []
+
+        for year in sorted(YEAR_DIR_MAP):
+            # Skip future/incomplete tournaments
+            if year >= 2026:
+                continue
+            try:
+                tournament = await self.get_tournament(year)
+                if not tournament.get("matches"):
+                    skipped_years.append(year)
+                    continue
+
+                tournament_count += 1
+
+                # Champion detection
+                champion = self._detect_champion(tournament)
+                if champion:
+                    canon = resolve_team_name(champion)
+                    champion_counts[canon] = champion_counts.get(canon, 0) + 1
+
+                # Host record
+                host = tournament.get("host", "Unknown")
+                host_records.append({
+                    "year": year,
+                    "host": host,
+                    "champion": champion or "—",
+                })
+
+                # Biggest wins + total goals + top scorers
+                for match in tournament.get("matches", []):
+                    t1g, t2g = self._parse_score(match.get("score", "0-0"))
+                    total_goals += t1g + t2g
+                    margin = abs(t1g - t2g)
+
+                    if margin >= 4:
+                        biggest_wins.append({
+                            "year": year,
+                            "team1": match["team1"]["name"],
+                            "team2": match["team2"]["name"],
+                            "score": match["score"],
+                            "margin": margin,
+                            "stage": match.get("stage", "unknown"),
+                        })
+
+                    # Scorers aggregation
+                    for scorer in match.get("scorers", []):
+                        player = scorer.get("player", "").strip()
+                        if not player:
+                            continue
+                        if player not in scorer_totals:
+                            scorer_totals[player] = {"goals": 0, "tournaments": set()}
+                        scorer_totals[player]["goals"] += 1
+                        scorer_totals[player]["tournaments"].add(year)
+
+            except Exception:
+                skipped_years.append(year)
+                continue
+
+        # Sort champion counts descending
+        sorted_champions = sorted(
+            [{"country": c, "count": n} for c, n in champion_counts.items()],
+            key=lambda x: (-x["count"], x["country"]),
+        )
+
+        # Sort biggest wins by margin desc, then year desc
+        biggest_wins.sort(key=lambda x: (-x["margin"], -x["year"]))
+        top_biggest = biggest_wins[:10]
+
+        # Sort top scorers by goals desc, then name asc
+        top_scorers_list = sorted(
+            [
+                {
+                    "player": p,
+                    "goals": d["goals"],
+                    "tournaments": sorted(list(d["tournaments"])),
+                }
+                for p, d in scorer_totals.items()
+            ],
+            key=lambda x: (-x["goals"], x["player"]),
+        )[:30]
+
+        result = {
+            "champion_counts": sorted_champions,
+            "biggest_wins": top_biggest,
+            "total_goals": {
+                "overall": total_goals,
+                "avg_per_tournament": round(total_goals / tournament_count, 1) if tournament_count else 0,
+            },
+            "host_records": host_records,
+            "top_scorers": top_scorers_list,
+        }
+
+        if skipped_years:
+            result["skipped_tournaments"] = skipped_years
+
+        self._parsed_cache.set(cache_key, result)
+        return result
+
+    def _detect_champion(self, tournament: dict) -> str | None:
+        """Detect the tournament champion. Tries match with stage 'final',
+        falls back to special cases like 1950."""
+        matches = tournament.get("matches", [])
+        year = tournament.get("year", 0)
+
+        # Try official final match
+        for match in matches:
+            if match.get("stage") == "final":
+                if match["team1"]["is_winner"]:
+                    return match["team1"]["name"]
+                elif match["team2"]["is_winner"]:
+                    return match["team2"]["name"]
+
+        # 1950: no final match — final round-robin, Uruguay champion
+        if year == 1950:
+            return "Uruguay"
+
+        return None
+
+    def _parse_score(self, score: str) -> tuple[int, int]:
+        """Parse a score string like '3-1' into (3, 1)."""
+        parts = score.split("-")
+        if len(parts) == 2:
+            try:
+                return int(parts[0]), int(parts[1])
+            except ValueError:
+                pass
+        return 0, 0

@@ -102,3 +102,41 @@ export interface HistoricalTournament {
   groups: HistoricalGroup[];
   matches: HistoricalMatch[];
 }
+
+export interface ChampionCount {
+  country: string;
+  count: number;
+}
+
+export interface BiggestWin {
+  year: number;
+  team1: string;
+  team2: string;
+  score: string;
+  margin: number;
+  stage: string;
+}
+
+export interface HostRecord {
+  year: number;
+  host: string;
+  champion: string;
+}
+
+export interface TopScorer {
+  player: string;
+  goals: number;
+  tournaments: number[];
+}
+
+export interface TournamentStats {
+  champion_counts: ChampionCount[];
+  biggest_wins: BiggestWin[];
+  total_goals: {
+    overall: number;
+    avg_per_tournament: number;
+  };
+  host_records: HostRecord[];
+  top_scorers: TopScorer[];
+  skipped_tournaments?: number[];
+}
