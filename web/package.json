@@ -4,7 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "workerd"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "workerd"
+    ]
   },
   "scripts": {
     "dev": "vite",
@@ -19,6 +22,7 @@
     "deploy": "pnpm run build && wrangler deploy"
   },
   "dependencies": {
+    "d3": "^7.9.0",
     "leaflet": "^1.9.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
@@ -33,6 +37,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+    "@types/d3": "^7.4.3",
     "@types/leaflet": "^1.9.17",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",

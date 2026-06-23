@@ -95,6 +95,28 @@ export interface HistoricalTeamMatch extends HistoricalMatch {
   tournament_name: string;
 }
 
+export interface BracketMatch {
+  id: string;
+  round: string;
+  slot: number;
+  home_team: string | null;
+  away_team: string | null;
+  home_team_name: string | null;
+  away_team_name: string | null;
+  home_crest: string | null;
+  away_crest: string | null;
+  home_score: number | null;
+  away_score: number | null;
+  status: string;
+  next_match_id: string | null;
+}
+
+export interface BracketRound {
+  name: string;
+  label: string;
+  matches: BracketMatch[];
+}
+
 export interface HistoricalTournament {
   year: number;
   host: string;

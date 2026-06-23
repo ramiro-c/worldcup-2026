@@ -26,31 +26,31 @@ Chain strategy: pending
 
 ## Phase 1: API Backend
 
-- [ ] 1.1 Add `build_bracket_tree()` in `api/routers/tournament.py` mapping wheniskickoff matches #73–#104 into `BracketRound[]` with `winner_next` pointers
-- [ ] 1.2 Add `GET /bracket` endpoint returning structured tree; handle wheniskickoff errors → 503
-- [ ] 1.3 Optionally expose `get_bracket` in `api/providers/interfaces.py` if pattern requires
+- [x] 1.1 Add `build_bracket_tree()` in `api/routers/tournament.py` mapping wheniskickoff matches #73–#104 into `BracketRound[]` with `winner_next` pointers
+- [x] 1.2 Add `GET /bracket` endpoint returning structured tree; handle wheniskickoff errors → 503
+- [x] 1.3 Optionally expose `get_bracket` in `api/providers/interfaces.py` if pattern requires
 
 ## Phase 2: Frontend Foundation
 
-- [ ] 2.1 Install `d3` in `web/package.json`
-- [ ] 2.2 Add `BracketRound`, `BracketMatch`, `BracketSlot` types to `web/src/lib/types.ts`
-- [ ] 2.3 Add `getBracket(): Promise<BracketRound[]>` to `web/src/lib/api.ts`
+- [x] 2.1 Install `d3` in `web/package.json`
+- [x] 2.2 Add `BracketRound`, `BracketMatch`, `BracketSlot` types to `web/src/lib/types.ts`
+- [x] 2.3 Add `getBracket(): Promise<BracketRound[]>` to `web/src/lib/api.ts`
 
 ## Phase 3: D3 BracketTree Component
 
-- [ ] 3.1 Create `BracketTree.tsx` with D3 `tree().nodeSize()` layout, SVG viewBox, left-to-right transform
-- [ ] 3.2 Render round labels (R32, R16, QF, SF, Final) as column headers
-- [ ] 3.3 Render match slots with crest (24px), 3-letter code, score (or dash for null)
-- [ ] 3.4 Draw bezier connector lines between match → `next_match_id` slot
-- [ ] 3.5 Pre-knockout state: dashed border + "TBD" for null teams, dash for scores
-- [ ] 3.6 Hover handler: walk next-match chain → toggle `.highlight` / `opacity:0.3` via CSS data-attributes
+- [x] 3.1 Create `BracketTree.tsx` with D3 `tree().nodeSize()` layout, SVG viewBox, left-to-right transform
+- [x] 3.2 Render round labels (R32, R16, QF, SF, Final) as column headers
+- [x] 3.3 Render match slots with crest (24px), 3-letter code, score (or dash for null)
+- [x] 3.4 Draw bezier connector lines between match → `next_match_id` slot
+- [x] 3.5 Pre-knockout state: dashed border + "TBD" for null teams, dash for scores
+- [x] 3.6 Hover handler: walk next-match chain → toggle `.highlight` / `opacity:0.3` via CSS data-attributes
 
 ## Phase 4: Integration
 
-- [ ] 4.1 Rewrite `Bracket.tsx`: fetch hook → loading skeleton → error+retry → `BracketTree`
+- [x] 4.1 Rewrite `Bracket.tsx`: fetch hook → loading skeleton → error+retry → `BracketTree`
 
 ## Phase 5: Tests
 
-- [ ] 5.1 Unit tests: `build_bracket_tree()` with all-TBD, partial teams, live scores, final scores
-- [ ] 5.2 Unit tests: D3 hierarchy from bracket response produces correct 32-node count
-- [ ] 5.3 E2E: SVG snapshot, hover team → verify `.highlight` class, loading skeleton visible, error+retry flow
+- [x] 5.1 Unit tests: `build_bracket_tree()` with all-TBD, partial teams, live scores, final scores
+- [x] 5.2 Unit tests: D3 hierarchy from bracket response produces correct 32-node count
+- [ ] 5.3 E2E: SVG snapshot, hover team → verify `.highlight` class, loading skeleton visible, error+retry flow (Playwright — requires running app)
