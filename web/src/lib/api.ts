@@ -1,4 +1,4 @@
-import type { Group, Team, Venue, Match, TvChannel, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch, TournamentStats, StatsBombCompetition, EnrichedMatchResponse } from "./types";
+import type { Group, Team, Venue, Match, TvChannel, BracketRound, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch, TournamentStats, StatsBombCompetition, EnrichedMatchResponse } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/tournament`
@@ -60,6 +60,10 @@ export async function fetchMatchEnriched(id: string): Promise<EnrichedMatchRespo
 
 export async function getTv(): Promise<TvChannel[]> {
   return fetchApi<TvChannel[]>("/tv");
+}
+
+export async function getBracket(signal?: AbortSignal): Promise<BracketRound[]> {
+  return fetchApi<BracketRound[]>("/bracket", signal);
 }
 
 export async function getUpcomingMatches(limit = 5): Promise<Match[]> {
