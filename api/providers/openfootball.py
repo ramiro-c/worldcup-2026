@@ -41,15 +41,115 @@ YEAR_DIR_MAP: dict[int, str] = {
 }
 
 # Scorer data for tournaments where openfootball source lacks goal annotations.
-# Source: FIFA official records.
+# Source: FIFA / RSSSF official records. Covers 1954–2010 (14 tournaments).
+# Team names use historical forms — resolve_team_name() normalizes them at runtime
+# (e.g. "West Germany" → "Germany", "Soviet Union" → "Russia").
 STATIC_SCORER_PATCHES: dict[int, list[dict]] = {
-    # 2006: openfootball has results only, no goalscorer annotations
+    1954: [
+        {"player": "Sándor Kocsis",    "team": "Hungary",      "goals": 11},
+        {"player": "Erich Probst",     "team": "Austria",      "goals": 6},
+        {"player": "Max Morlock",      "team": "West Germany", "goals": 6},
+        {"player": "Josef Hugi",       "team": "Switzerland",  "goals": 6},
+        {"player": "Nándor Hidegkuti", "team": "Hungary",      "goals": 4},
+        {"player": "Ferenc Puskás",    "team": "Hungary",      "goals": 4},
+        {"player": "Helmut Rahn",      "team": "West Germany", "goals": 4},
+    ],
+    1958: [
+        {"player": "Just Fontaine",   "team": "France",           "goals": 13},
+        {"player": "Pelé",            "team": "Brazil",           "goals": 6},
+        {"player": "Helmut Rahn",     "team": "West Germany",     "goals": 6},
+        {"player": "Vavá",            "team": "Brazil",           "goals": 5},
+        {"player": "Peter McParland", "team": "Northern Ireland", "goals": 5},
+    ],
+    1962: [
+        {"player": "Garrincha",       "team": "Brazil",       "goals": 4},
+        {"player": "Vavá",            "team": "Brazil",       "goals": 4},
+        {"player": "Leonel Sánchez",  "team": "Chile",        "goals": 4},
+        {"player": "Flórián Albert",  "team": "Hungary",      "goals": 4},
+        {"player": "Valentin Ivanov", "team": "Soviet Union", "goals": 4},
+        {"player": "Dražan Jerković", "team": "Yugoslavia",   "goals": 4},
+    ],
+    1966: [
+        {"player": "Eusébio",           "team": "Portugal",     "goals": 9},
+        {"player": "Helmut Haller",     "team": "West Germany", "goals": 6},
+        {"player": "Geoff Hurst",       "team": "England",      "goals": 4},
+        {"player": "Franz Beckenbauer", "team": "West Germany", "goals": 4},
+        {"player": "Ferenc Bene",       "team": "Hungary",      "goals": 4},
+        {"player": "Valery Porkujan",   "team": "Soviet Union", "goals": 4},
+    ],
+    1970: [
+        {"player": "Gerd Müller",       "team": "West Germany", "goals": 10},
+        {"player": "Jairzinho",         "team": "Brazil",       "goals": 7},
+        {"player": "Teófilo Cubillas",  "team": "Peru",         "goals": 5},
+        {"player": "Pelé",              "team": "Brazil",       "goals": 4},
+        {"player": "Anatoly Byshovets", "team": "Soviet Union", "goals": 4},
+    ],
+    1974: [
+        {"player": "Grzegorz Lato",    "team": "Poland",       "goals": 7},
+        {"player": "Johan Neeskens",   "team": "Netherlands",  "goals": 5},
+        {"player": "Andrzej Szarmach", "team": "Poland",       "goals": 5},
+        {"player": "Gerd Müller",      "team": "West Germany", "goals": 4},
+        {"player": "Ralf Edström",     "team": "Sweden",       "goals": 4},
+        {"player": "Johnny Rep",       "team": "Netherlands",  "goals": 4},
+    ],
+    1978: [
+        {"player": "Mario Kempes",    "team": "Argentina",  "goals": 6},
+        {"player": "Teófilo Cubillas","team": "Peru",        "goals": 5},
+        {"player": "Rob Rensenbrink", "team": "Netherlands", "goals": 5},
+        {"player": "Hans Krankl",     "team": "Austria",     "goals": 4},
+        {"player": "Leopoldo Luque",  "team": "Argentina",   "goals": 4},
+    ],
+    1982: [
+        {"player": "Paolo Rossi",              "team": "Italy",        "goals": 6},
+        {"player": "Karl-Heinz Rummenigge",    "team": "West Germany", "goals": 5},
+        {"player": "Zbigniew Bońek",           "team": "Poland",       "goals": 4},
+        {"player": "Zico",                     "team": "Brazil",       "goals": 4},
+    ],
+    1986: [
+        {"player": "Gary Lineker",         "team": "England",   "goals": 6},
+        {"player": "Emilio Butragueño",    "team": "Spain",     "goals": 5},
+        {"player": "Careca",               "team": "Brazil",    "goals": 5},
+        {"player": "Diego Maradona",       "team": "Argentina", "goals": 5},
+        {"player": "Alessandro Altobelli", "team": "Italy",     "goals": 4},
+        {"player": "Jorge Valdano",        "team": "Argentina", "goals": 4},
+    ],
+    1990: [
+        {"player": "Salvatore Schillaci", "team": "Italy",          "goals": 6},
+        {"player": "Tomáš Skuhravý",      "team": "Czechoslovakia", "goals": 5},
+        {"player": "Gary Lineker",        "team": "England",        "goals": 4},
+        {"player": "Lothar Matthäus",     "team": "West Germany",   "goals": 4},
+        {"player": "Míchel",              "team": "Spain",          "goals": 4},
+        {"player": "Roger Milla",         "team": "Cameroon",       "goals": 4},
+    ],
+    1994: [
+        {"player": "Hristo Stoichkov",  "team": "Bulgaria",  "goals": 6},
+        {"player": "Oleg Salenko",      "team": "Russia",    "goals": 6},
+        {"player": "Romário",           "team": "Brazil",    "goals": 5},
+        {"player": "Jürgen Klinsmann", "team": "Germany",   "goals": 5},
+        {"player": "Roberto Baggio",    "team": "Italy",     "goals": 5},
+        {"player": "Kennet Andersson",  "team": "Sweden",    "goals": 5},
+        {"player": "Gabriel Batistuta", "team": "Argentina", "goals": 4},
+    ],
+    1998: [
+        {"player": "Davor Šuker",       "team": "Croatia",   "goals": 6},
+        {"player": "Gabriel Batistuta", "team": "Argentina", "goals": 5},
+        {"player": "Christian Vieri",   "team": "Italy",     "goals": 5},
+        {"player": "Luis Hernández",    "team": "Mexico",    "goals": 4},
+        {"player": "Ronaldo",           "team": "Brazil",    "goals": 4},
+        {"player": "Marcelo Salas",     "team": "Chile",     "goals": 4},
+    ],
+    2002: [
+        {"player": "Ronaldo",             "team": "Brazil",  "goals": 8},
+        {"player": "Miroslav Klose",      "team": "Germany", "goals": 5},
+        {"player": "Rivaldo",             "team": "Brazil",  "goals": 5},
+        {"player": "Jon Dahl Tomasson",   "team": "Denmark", "goals": 4},
+        {"player": "Christian Vieri",     "team": "Italy",   "goals": 4},
+    ],
     2006: [
         {"player": "Miroslav Klose", "team": "Germany",   "goals": 5},
         {"player": "Ronaldo",        "team": "Brazil",    "goals": 3},
         {"player": "Lionel Messi",   "team": "Argentina", "goals": 1},  # 74' vs SRB-MNE
     ],
-    # 2010: openfootball has results only, no goalscorer annotations
     2010: [
         {"player": "Thomas Müller",   "team": "Germany",     "goals": 5},
         {"player": "David Villa",     "team": "Spain",       "goals": 5},
