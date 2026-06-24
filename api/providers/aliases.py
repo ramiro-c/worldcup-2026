@@ -74,3 +74,26 @@ def resolve_team_name(name: str) -> str:
     stripped = name.strip()
     normalized = stripped.lower()
     return TEAM_ALIASES.get(normalized, stripped)
+
+
+# Maps (lowercase_player_name, lowercase_canonical_team) → canonical player name.
+# Only non-canonical variants go here (variants openfootball uses across editions).
+PLAYER_ALIASES: dict[tuple[str, str], str] = {
+    # Messi: "Messi" (2018) vs "Lionel Messi" (2014, 2022)
+    ("messi", "argentina"): "Lionel Messi",
+    ("lionel messi", "argentina"): "Lionel Messi",
+    # Cristiano Ronaldo: "Ronaldo" / "C. Ronaldo" in older editions
+    ("c. ronaldo", "portugal"): "Cristiano Ronaldo",
+    ("ronaldo", "portugal"): "Cristiano Ronaldo",
+    ("cristiano ronaldo", "portugal"): "Cristiano Ronaldo",
+}
+
+
+def resolve_player_name(player: str, team: str) -> str:
+    """Resolve a player name to its canonical form.
+
+    Case-insensitive on both player and team. Safe pass-through when no alias found.
+    Pass team already resolved via resolve_team_name.
+    """
+    key = (player.strip().lower(), team.strip().lower())
+    return PLAYER_ALIASES.get(key, player.strip())
