@@ -68,6 +68,7 @@ STATIC_SCORER_PATCHES: dict[int, list[dict]] = {
         {"player": "Flórián Albert",  "team": "Hungary",      "goals": 4},
         {"player": "Valentin Ivanov", "team": "Soviet Union", "goals": 4},
         {"player": "Dražan Jerković", "team": "Yugoslavia",   "goals": 4},
+        {"player": "Pelé",            "team": "Brazil",       "goals": 1},  # lesionado, jugó 2 partidos
     ],
     1966: [
         {"player": "Eusébio",           "team": "Portugal",     "goals": 9},
@@ -76,6 +77,7 @@ STATIC_SCORER_PATCHES: dict[int, list[dict]] = {
         {"player": "Franz Beckenbauer", "team": "West Germany", "goals": 4},
         {"player": "Ferenc Bene",       "team": "Hungary",      "goals": 4},
         {"player": "Valery Porkujan",   "team": "Soviet Union", "goals": 4},
+        {"player": "Pelé",              "team": "Brazil",       "goals": 1},  # vs Bulgaria
     ],
     1970: [
         {"player": "Gerd Müller",       "team": "West Germany", "goals": 10},
