@@ -43,10 +43,21 @@ YEAR_DIR_MAP: dict[int, str] = {
 # Scorer data for tournaments where openfootball source lacks goal annotations.
 # Source: FIFA official records.
 STATIC_SCORER_PATCHES: dict[int, list[dict]] = {
+    # 2006: openfootball has results only, no goalscorer annotations
     2006: [
         {"player": "Miroslav Klose", "team": "Germany",   "goals": 5},
         {"player": "Ronaldo",        "team": "Brazil",    "goals": 3},
         {"player": "Lionel Messi",   "team": "Argentina", "goals": 1},  # 74' vs SRB-MNE
+    ],
+    # 2010: openfootball has results only, no goalscorer annotations
+    2010: [
+        {"player": "Thomas Müller",   "team": "Germany",     "goals": 5},
+        {"player": "David Villa",     "team": "Spain",       "goals": 5},
+        {"player": "Wesley Sneijder", "team": "Netherlands", "goals": 5},
+        {"player": "Diego Forlán",    "team": "Uruguay",     "goals": 5},
+        {"player": "Miroslav Klose",  "team": "Germany",     "goals": 4},
+        {"player": "Asamoah Gyan",    "team": "Ghana",       "goals": 3},
+        {"player": "Gonzalo Higuaín", "team": "Argentina",   "goals": 3},
     ],
 }
 
