@@ -1,4 +1,4 @@
-# Copa 2026 — API
+# Mundial 2026 — API
 
 FastAPI backend que sirve datos del Mundial 2026.
 

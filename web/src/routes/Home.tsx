@@ -195,7 +195,7 @@ export default function Home() {
     <div className="space-y-8">
       <section className="text-center space-y-4">
         <h2 className="text-4xl font-bold tracking-tight">
-          Copa Mundial de la FIFA 2026
+          Mundial de la FIFA 2026
         </h2>
         <p className="text-zinc-400 text-lg">
           México • Estados Unidos • Canadá

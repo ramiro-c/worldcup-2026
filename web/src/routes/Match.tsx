@@ -124,7 +124,7 @@ export default function Match() {
   const handleShare = async () => {
     const url = window.location.href;
     const title = enrichedMatch
-      ? `${enrichedMatch.home_team_name} vs ${enrichedMatch.away_team_name} - Copa Mundial 2026`
+      ? `${enrichedMatch.home_team_name} vs ${enrichedMatch.away_team_name} - Mundial 2026`
       : document.title;
 
     if (navigator.share) {
@@ -167,7 +167,7 @@ export default function Match() {
       "BEGIN:VEVENT",
       `DTSTART:${fmt(matchDate)}`,
       `DTEND:${fmt(endDate)}`,
-      `SUMMARY:${enrichedMatch.home_team_name} vs ${enrichedMatch.away_team_name} - Copa Mundial 2026`,
+      `SUMMARY:${enrichedMatch.home_team_name} vs ${enrichedMatch.away_team_name} - Mundial 2026`,
     ];
 
     if (enrichedMatch.venue_name) {

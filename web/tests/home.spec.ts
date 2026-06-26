@@ -16,7 +16,7 @@ test.describe('Home page sections', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify page loaded — title and main heading
-    await expect(page).toHaveTitle(/Copa Mundial 2026/);
+    await expect(page).toHaveTitle(/Mundial 2026/);
     await expect(page.locator('h2').first()).toBeVisible();
 
     // No console errors
@@ -81,7 +81,7 @@ test.describe('Home page sections', () => {
     await page.waitForLoadState('networkidle');
 
     // Hero area: main heading and description
-    await expect(page.locator('h2:has-text("Copa Mundial de la FIFA 2026")')).toBeVisible();
+    await expect(page.locator('h2:has-text("Mundial de la FIFA 2026")')).toBeVisible();
     await expect(page.locator('p:has-text("México")')).toBeVisible();
     await expect(page.locator('p:has-text("11 de junio")')).toBeVisible();
   });

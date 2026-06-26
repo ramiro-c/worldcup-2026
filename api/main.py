@@ -20,7 +20,7 @@ historical_provider: IHistoricalDataProvider & IHeadToHeadProvider & ITournament
 event_provider: IEventDataProvider = StatsBombProvider()
 
 app = FastAPI(
-    title="Copa 2026 API",
+    title="Mundial 2026 API",
     description="World Cup 2026 companion API",
     version="0.1.0",
 )

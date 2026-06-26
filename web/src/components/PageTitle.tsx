@@ -18,14 +18,14 @@ export default function PageTitle() {
       location.pathname.startsWith(path)
     );
 
-    const title = pathMatch ? pageTitles[pathMatch] : "Copa 2026";
-    document.title = `${title} | Copa Mundial 2026`;
+    const title = pathMatch ? pageTitles[pathMatch] : "Mundial 2026";
+    document.title = `${title} | Mundial 2026`;
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute(
         "content",
-        `Explora ${title.toLowerCase()} de la Copa Mundial 2026`
+        `Explora ${title.toLowerCase()} de la Mundial 2026`
       );
     }
   }, [location.pathname]);

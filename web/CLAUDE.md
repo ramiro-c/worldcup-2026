@@ -1,4 +1,4 @@
-# Copa 2026 Web — Conventions
+# Mundial 2026 Web — Conventions
 
 React + TypeScript + Vite + Tailwind CSS v4.
 

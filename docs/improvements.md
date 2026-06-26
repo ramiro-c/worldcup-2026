@@ -1,4 +1,4 @@
-# Mejoras — Copa 2026
+# Mejoras — Mundial 2026
 
 > Cada mejora tiene su ticket individual en `docs/tickets/` con archivos mapeados y tracking de estado. Usar `docs/tickets/INDEX.md` como tablero.
 

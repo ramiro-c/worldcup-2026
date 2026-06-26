@@ -1,4 +1,4 @@
-# Copa 2026 — Web
+# Mundial 2026 — Web
 
 Frontend React + TypeScript + Vite para explorar el Mundial 2026.
 

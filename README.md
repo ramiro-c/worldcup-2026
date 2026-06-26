@@ -1,4 +1,4 @@
-# Copa 2026 — World Cup Companion
+# Mundial 2026 — World Cup Companion
 
 🔗 [worldcup-2026.rami992009.workers.dev](https://worldcup-2026.rami992009.workers.dev)
 

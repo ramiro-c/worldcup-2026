@@ -29,7 +29,7 @@ export default function Navigation() {
           onClick={() => setOpen(false)}
           className="text-xl font-bold tracking-tight hover:text-emerald-400 transition-colors"
         >
-          Copa 2026
+          Mundial 2026
         </NavLink>
 
         <button

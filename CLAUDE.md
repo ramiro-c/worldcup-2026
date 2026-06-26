@@ -1,4 +1,4 @@
-# Copa 2026 — World Cup Companion
+# Mundial 2026 — World Cup Companion
 
 Web app para explorar el Mundial 2026 con fixture, grupos, cuadro eliminatorio, sedes y contexto histórico.
 

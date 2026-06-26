@@ -1,4 +1,4 @@
-# Progreso — Copa 2026
+# Progreso — Mundial 2026
 
 ## Phase 1 — Setup ✅
 

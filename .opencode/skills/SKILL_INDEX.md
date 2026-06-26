@@ -1,6 +1,6 @@
-# Copa 2026 — Skills Locales
+# Mundial 2026 — Skills Locales
 
-Skills específicos para el desarrollo de Copa 2026.
+Skills específicos para el desarrollo de Mundial 2026.
 
 ## Skills disponibles
 

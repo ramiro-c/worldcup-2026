@@ -1,4 +1,4 @@
-# Copa 2026 API — Architecture Specification
+# Mundial 2026 API — Architecture Specification
 
 ## Overview
 

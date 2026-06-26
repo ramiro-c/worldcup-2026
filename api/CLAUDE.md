@@ -1,4 +1,4 @@
-# Copa 2026 API — Conventions
+# Mundial 2026 API — Conventions
 
 FastAPI app proxy que cachea datos de fuentes externas y los sirve al frontend.
 

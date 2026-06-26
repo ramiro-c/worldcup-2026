@@ -1,4 +1,4 @@
-# Tickets — Copa 2026
+# Tickets — Mundial 2026
 
 Tablero de seguimiento para mejoras. Cada ticket es independiente por archivo, diseñado para agentes en paralelo sin colisiones.
 
