@@ -86,6 +86,9 @@ PLAYER_ALIASES: dict[tuple[str, str], str] = {
     ("c. ronaldo", "portugal"): "Cristiano Ronaldo",
     ("ronaldo", "portugal"): "Cristiano Ronaldo",
     ("cristiano ronaldo", "portugal"): "Cristiano Ronaldo",
+    # Mbappé: "Mbappé" (2018 groups, 2022 R16) vs "Kylian Mbappé" (2018 R16, 2022 groups/final, 2026)
+    ("mbappé", "france"): "Kylian Mbappé",
+    ("kylian mbappé", "france"): "Kylian Mbappé",
 }
 
 
