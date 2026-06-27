@@ -216,6 +216,50 @@ export interface TopScorer {
   tournaments: number[];
 }
 
+// Group standings with qualification (World Cup 2026)
+export type QualificationStatus =
+  | "qualified"
+  | "best_third"
+  | "eliminated"
+  | "pending";
+
+export interface GroupStanding {
+  team: Team;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  gf: number;
+  ga: number;
+  gd: number;
+  points: number;
+  position: number;
+  qualification: QualificationStatus;
+  tiebreaker_exhausted?: boolean;
+}
+
+export interface GroupWithStandings {
+  group: Group;
+  standings: GroupStanding[];
+  complete: boolean;
+}
+
+export interface BestThirdRanking {
+  team: Team;
+  group: string;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  gf: number;
+  ga: number;
+  gd: number;
+  points: number;
+  position: number;
+  qualified: boolean;
+  tiebreaker_exhausted?: boolean;
+}
+
 export interface TournamentStats {
   champion_counts: ChampionCount[];
   biggest_wins: BiggestWin[];
