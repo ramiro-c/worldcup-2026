@@ -194,6 +194,8 @@ def build_bracket_tree(raw_matches: list[dict]) -> list[dict]:
                 "away_score": _safe_int(m.get("score_away")),
                 "status": (m.get("status") or "scheduled").lower(),
                 "next_match_id": next_match_id,
+                "datetime_utc": m.get("datetime_utc") or None,
+                "date": m.get("date") or None,
             })
 
         if round_matches:

@@ -229,3 +229,28 @@ class TestBracketEndpoint:
                 assert "away_score" in m
                 assert "status" in m
                 assert "next_match_id" in m
+                assert "datetime_utc" in m
+                assert "date" in m
+
+    def test_datetime_utc_pass_through(self):
+        """datetime_utc and date values pass through from raw matches."""
+        matches = _all_tbd_matches()
+        # Set explicit date/datetime_utc on match 73
+        matches[0] = {
+            "slug": "match-73",
+            "num": 73,
+            "home": "",
+            "away": "",
+            "status": "scheduled",
+            "datetime_utc": "2026-06-28T15:00:00Z",
+            "date": "Sat Jun 28",
+        }
+        result = build_bracket_tree(matches)
+        r32 = result[0]
+        m73 = r32["matches"][0]
+        assert m73["datetime_utc"] == "2026-06-28T15:00:00Z"
+        assert m73["date"] == "Sat Jun 28"
+        # Other matches without the field should get None
+        m74 = r32["matches"][1]
+        assert m74["datetime_utc"] is None
+        assert m74["date"] is None

@@ -109,6 +109,8 @@ export interface BracketMatch {
   away_score: number | null;
   status: string;
   next_match_id: string | null;
+  datetime_utc?: string;
+  date?: string;
 }
 
 export interface BracketRound {
