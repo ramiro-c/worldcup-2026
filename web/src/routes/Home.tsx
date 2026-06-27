@@ -197,11 +197,13 @@ export default function Home() {
     matchesLoading || venuesLoading;
 
   const navItems: NavGridItem[] = [
-    { label: "Grupos", to: "/groups", description: "Tabla de posiciones y fixtures de cada grupo" },
+    { label: "Grupos", to: "/groups", description: "Tabla de posiciones y clasificación a 16avos" },
     { label: "Fixture", to: "/fixtures", description: "Todos los partidos del torneo" },
-    { label: "Eliminatorias", to: "/bracket", description: "Cuadro desde octavos hasta la final" },
+    { label: "Eliminatorias", to: "/bracket", description: "Cuadro de 16avos hasta la final" },
     { label: "Sedes", to: "/venues", description: "Los 16 estadios en 3 países" },
     { label: "Historial", to: "/historical", description: "Todos los mundiales desde 1930" },
+    { label: "Estadísticas", to: "/stats", description: "Goleadores, asistencias y más" },
+    { label: "TV", to: "/tv", description: "Canales de TV por país" },
   ];
 
   return (
