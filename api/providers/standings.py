@@ -37,7 +37,7 @@ def _extract_team_codes(matches: list[dict], group_id: str) -> set[str]:
     """Extract all unique team codes from group-stage matches."""
     teams: set[str] = set()
     for m in matches:
-        if m.get("group", "").lower() != group_id.lower():
+        if (m.get("group") or "").lower() != group_id.lower():
             continue
         if m.get("phase") not in (None, "group", ""):
             continue
@@ -57,7 +57,7 @@ def _compute_base_stats(matches: list[dict], group_id: str) -> dict[str, dict]:
     }
 
     for m in matches:
-        if m.get("group", "").lower() != group_id.lower():
+        if (m.get("group") or "").lower() != group_id.lower():
             continue
         if m.get("status", "").lower() != "finished":
             continue
@@ -118,7 +118,7 @@ def _compute_h2h_stats(cluster_codes: set[str], matches: list[dict], group_id: s
     }
 
     for m in matches:
-        if m.get("group", "").lower() != group_id.lower():
+        if (m.get("group") or "").lower() != group_id.lower():
             continue
         if m.get("status", "").lower() != "finished":
             continue
