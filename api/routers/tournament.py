@@ -510,8 +510,10 @@ async def get_groups():
 
     # Compute standings per group
     result = []
+    all_group_standings: dict[str, list] = {}
     for group in mapped_groups:
         standings = compute_group_standings(raw_matches, group["id"])
+        all_group_standings[group["id"]] = standings
         standings_serializable = []
         for s in standings:
             team = team_by_code.get(s.team_code.lower(), {
@@ -540,6 +542,17 @@ async def get_groups():
             "standings": standings_serializable,
             "complete": all(s.played == 3 for s in standings) if standings else False,
         })
+
+    # Rank best third-place teams: only top 8 qualify
+    best_thirds = compute_best_third_ranking(all_group_standings)
+    qualified_thirds = {bt["team_code"].lower() for bt in best_thirds if bt["qualified"]}
+
+    # Fix qualification: bottom 4 third-place teams → eliminated
+    for group_data in result:
+        for standing in group_data["standings"]:
+            if standing["position"] == 3 and standing["qualification"] == "best_third":
+                if standing["team"]["code"].lower() not in qualified_thirds:
+                    standing["qualification"] = "eliminated"
 
     return {"data": result}
 
