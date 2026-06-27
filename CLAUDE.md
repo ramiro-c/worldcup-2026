@@ -10,7 +10,7 @@ Web app para explorar el Mundial 2026 con fixture, grupos, cuadro eliminatorio, 
 | Frontend | React 19 + TypeScript + Vite |
 | CSS | Tailwind CSS v4 |
 | Mapas | Leaflet |
-| Bracket | D3 |
+| Bracket | React + Tailwind |
 
 ## Estructura
 

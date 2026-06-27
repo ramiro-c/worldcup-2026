@@ -22,7 +22,7 @@ Seguí el Mundial 2026: grupos, fixture, cuadro eliminatorio, mapa de sedes, can
 | Frontend | React 19 + TypeScript + Vite |
 | CSS | Tailwind CSS v4 |
 | Mapas | Leaflet |
-| Bracket | D3 |
+| Bracket | React + Tailwind |
 | Tests | Playwright (E2E) + Vitest (unit) |
 
 ## Atribuciones
@@ -40,32 +40,31 @@ Crestas de selecciones servidas por wheniskickoff, banderas por flagcdn.com.
 
 ## Desarrollo
 
+Guía completa en [`docs/setup.md`](docs/setup.md).
+
 ```
 /
 ├── api/    → FastAPI (puerto 8000)
 └── web/    → React + Vite (puerto 5173)
 ```
 
-**API:**
+**Rápido:**
+
 ```bash
-cd api
-uv run fastapi dev main.py --port 8000
-```
+# Instalar
+cd api && uv sync && cd ../web && pnpm install && cd ..
 
-**Web:**
-```bash
-cd web
-pnpm dev
-```
+# API (terminal 1)
+cd api && uv run fastapi dev main.py --port 8000
 
-**Tests:**
-```bash
-# E2E
-cd web && pnpm test
+# Web (terminal 2)
+cd web && pnpm dev
 
-# Unit
-cd web && pnpm test:unit
+# Docker (alternativa)
+docker compose up --build
 
-# API
+# Tests
 cd api && uv run pytest
+cd web && pnpm test:unit
+cd web && pnpm test
 ```

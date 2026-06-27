@@ -9,7 +9,7 @@ Frontend React + TypeScript + Vite para explorar el Mundial 2026.
 - Tailwind CSS v4
 - React Router
 - Leaflet (mapa sedes)
-- D3 (cuadro eliminatorio)
+- React + Tailwind (cuadro eliminatorio)
 - Vitest + Testing Library (unit tests)
 - Playwright (E2E tests)
 
