@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useAsync } from "../lib/useAsync";
 import { getBracket } from "../lib/api";
 import { trackPageView } from "../lib/analytics";
-import BracketTree from "../components/BracketTree";
+import BracketRoundView from "../components/BracketRoundView";
 import { Skeleton, SkeletonCard } from "../components/Skeleton";
 import ErrorState from "../components/ErrorState";
 
@@ -72,7 +72,7 @@ export default function Bracket() {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Eliminatorias</h2>
-      <BracketTree rounds={rounds} />
+      <BracketRoundView rounds={rounds} />
     </div>
   );
 }
