@@ -166,6 +166,49 @@ class _MockOkProvider:
     async def get_tv(self) -> list[dict]: return []
 
 
+class _MockGroupStageProvider:
+    """Provider returning group-stage match data for standings AND bracket."""
+
+    async def get_matches(self) -> list[dict]:
+        return _all_tbd_matches()
+
+    async def get_groups(self) -> list[dict]:
+        """Return 12 groups as wheniskickoff would."""
+        groups = []
+        for letter in "ABCDEFGHIJKL":
+            groups.append({
+                "group": letter,
+                "teams": [f"{letter}1", f"{letter}2", f"{letter}3", f"{letter}4"],
+            })
+        return groups
+
+    async def get_teams(self) -> list[dict]:
+        teams = []
+        for gl in "ABCDEFGHIJKL":
+            for i in range(1, 5):
+                teams.append({"code": f"{gl}{i}", "name": f"Team {gl}{i}", "group": gl})
+        return teams
+
+    async def get_venues(self) -> list[dict]: return []
+    async def get_match(self, _: str) -> dict | None: return None
+    async def get_tv(self) -> list[dict]: return []
+
+    async def get_teams(self) -> list[dict]:
+        teams = []
+        for gl in "ABCDEFGHIJKL":
+            for i in range(1, 5):
+                teams.append({
+                    "code": f"{gl}{i}",
+                    "name": f"Team {gl}{i}",
+                    "group": gl,
+                })
+        return teams
+
+    async def get_venues(self) -> list[dict]: return []
+    async def get_match(self, _: str) -> dict | None: return None
+    async def get_tv(self) -> list[dict]: return []
+
+
 class _MockErrorProvider:
     """Provider that raises on get_matches."""
 
@@ -254,3 +297,62 @@ class TestBracketEndpoint:
         m74 = r32["matches"][1]
         assert m74["datetime_utc"] is None
         assert m74["date"] is None
+
+
+class TestGroupsEndpoint:
+    """Integration tests for GET /groups with standings."""
+
+    def test_returns_standings_per_group(self):
+        """Extended /groups returns standings + qualification per group."""
+        client = _build_client(_MockGroupStageProvider())
+        response = client.get("/tournament/groups")
+        assert response.status_code == 200
+        body = response.json()
+        assert "data" in body
+        groups = body["data"]
+        assert len(groups) == 12
+
+        for g in groups:
+            assert "group" in g, f"Group missing 'group' key"
+            assert "standings" in g, f"Group {g['group']['id']} missing standings"
+            assert "complete" in g, f"Group {g['group']['id']} missing 'complete'"
+            assert isinstance(g["standings"], list)
+
+    def test_standings_structure(self):
+        """Standings list contains standings with expected fields."""
+        client = _build_client(_MockGroupStageProvider())
+        response = client.get("/tournament/groups")
+        groups = response.json()["data"]
+
+        for g in groups:
+            for s in g["standings"]:
+                assert "team_code" in s
+                assert "position" in s
+                assert "qualification" in s
+                assert "points" in s
+                assert "gd" in s
+
+
+class TestBracketWithStandings:
+    """Integration tests for GET /bracket with standings-based R32 resolution."""
+
+    def test_bracket_resolves_r32_from_standings(self):
+        """When standings data exists, /bracket resolves R32 teams from standings."""
+        client = _build_client(_MockGroupStageProvider())
+        response = client.get("/tournament/bracket")
+        assert response.status_code == 200
+        rounds = response.json()["data"]
+
+        r32 = rounds[0]
+        assert r32["name"] == "round_of_32"
+        # R32 matches should exist
+        assert len(r32["matches"]) == 16
+
+    def test_bracket_preserves_rounds(self):
+        """Even with standings, bracket returns 5 rounds."""
+        client = _build_client(_MockGroupStageProvider())
+        response = client.get("/tournament/bracket")
+        rounds = response.json()["data"]
+        assert len(rounds) == 5
+        names = [r["name"] for r in rounds]
+        assert names == ["round_of_32", "round_of_16", "quarter_final", "semi_final", "final"]
