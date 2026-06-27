@@ -22,7 +22,7 @@ services:
       dockerfile_inline: |
         FROM node:24-alpine
         WORKDIR /app
-        COPY package.json pnpm-lock.yaml ./
+        COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
         RUN corepack enable && CI=true pnpm install --frozen-lockfile --config.confirmModulesPurge=false
         COPY . .
         CMD ["pnpm", "dev", "--host", "0.0.0.0"]

@@ -117,6 +117,7 @@ export interface BracketRound {
   name: string;
   label: string;
   matches: BracketMatch[];
+  provisional?: boolean;
 }
 
 export interface HistoricalTournament {

@@ -3,12 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "workerd"
-    ]
-  },
+  "packageManager": "pnpm@11.9.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

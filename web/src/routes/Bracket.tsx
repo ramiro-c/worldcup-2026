@@ -20,7 +20,7 @@ export default function Bracket() {
         <h2 className="text-2xl font-bold">Eliminatorias</h2>
         <SkeletonCard className="p-8">
           <div className="flex justify-around mb-6">
-            {["R32", "R16", "QF", "SF", "Final"].map((label) => (
+            {["16avos", "Octavos", "Cuartos", "Semifinal", "Final"].map((label) => (
               <Skeleton key={label} className="h-4 w-10" />
             ))}
           </div>
@@ -73,6 +73,11 @@ export default function Bracket() {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Eliminatorias</h2>
       <BracketRoundView rounds={rounds} />
+      {rounds.some((r) => r.provisional) && (
+        <p className="text-xs text-amber-400/80 mt-2">
+          * Los cruces de 16avos son provisorios. Se confirmarán al finalizar la fase de grupos.
+        </p>
+      )}
     </div>
   );
 }

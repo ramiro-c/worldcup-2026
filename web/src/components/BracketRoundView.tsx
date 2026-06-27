@@ -60,7 +60,7 @@ export default function BracketRoundView({ rounds }: BracketRoundViewProps) {
                   : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
               }`}
             >
-              {round.label}
+              {round.label}{round.provisional ? "*" : ""}
             </button>
           ))}
         </div>

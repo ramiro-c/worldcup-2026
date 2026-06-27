@@ -90,10 +90,10 @@ def get_flag_url(fifa_code: str) -> str:
 
 
 BRACKET_ROUND_RANGES: dict[str, tuple[int, int, str]] = {
-    "round_of_32": (73, 88, "R32"),
-    "round_of_16": (89, 96, "R16"),
-    "quarter_final": (97, 100, "QF"),
-    "semi_final": (101, 102, "SF"),
+    "round_of_32": (73, 88, "16avos"),
+    "round_of_16": (89, 96, "Octavos"),
+    "quarter_final": (97, 100, "Cuartos"),
+    "semi_final": (101, 102, "Semifinal"),
     "final": (104, 104, "Final"),
 }
 
@@ -202,11 +202,14 @@ def build_bracket_tree(raw_matches: list[dict]) -> list[dict]:
             })
 
         if round_matches:
-            rounds.append({
+            round_data: dict = {
                 "name": round_name,
                 "label": label,
                 "matches": round_matches,
-            })
+            }
+            if round_name == "round_of_32":
+                round_data["provisional"] = True
+            rounds.append(round_data)
 
     return rounds
 
@@ -491,6 +494,14 @@ async def get_groups():
     raw_groups = await provider.get_groups()
     mapped_groups = map_groups(raw_groups)
 
+    # Fetch teams for enrichment (name, crest, code)
+    try:
+        raw_teams = await provider.get_teams()
+        mapped_teams = map_teams(raw_teams)
+    except Exception:
+        mapped_teams = []
+    team_by_code: dict[str, dict] = {t["code"].lower(): t for t in mapped_teams}
+
     # Fetch matches for standings computation
     try:
         raw_matches = await provider.get_matches()
@@ -503,8 +514,15 @@ async def get_groups():
         standings = compute_group_standings(raw_matches, group["id"])
         standings_serializable = []
         for s in standings:
+            team = team_by_code.get(s.team_code.lower(), {
+                "id": s.team_code,
+                "name": s.team_code.upper(),
+                "code": s.team_code,
+                "crest": get_flag_url(s.team_code),
+                "group": group["id"],
+            })
             standings_serializable.append({
-                "team_code": s.team_code,
+                "team": team,
                 "played": s.played,
                 "won": s.won,
                 "drawn": s.drawn,
