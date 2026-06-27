@@ -3,6 +3,9 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from providers.interfaces import ITournamentDataProvider, IHeadToHeadProvider
 from providers.aliases import resolve_team_name
+from providers.standings import compute_group_standings, compute_best_third_ranking
+from providers.r32_resolver import resolve_r32_matches
+from providers.r32_combinations import ANNEX_C
 from typing import Any
 
 router = APIRouter(prefix="/tournament", tags=["tournament"])
@@ -485,8 +488,42 @@ def summarize_h2h(matches: list[dict], team1: str, team2: str) -> dict:
 
 @router.get("/groups")
 async def get_groups():
-    raw = await provider.get_groups()
-    return {"data": map_groups(raw)}
+    raw_groups = await provider.get_groups()
+    mapped_groups = map_groups(raw_groups)
+
+    # Fetch matches for standings computation
+    try:
+        raw_matches = await provider.get_matches()
+    except Exception:
+        raw_matches = []
+
+    # Compute standings per group
+    result = []
+    for group in mapped_groups:
+        standings = compute_group_standings(raw_matches, group["id"])
+        standings_serializable = []
+        for s in standings:
+            standings_serializable.append({
+                "team_code": s.team_code,
+                "played": s.played,
+                "won": s.won,
+                "drawn": s.drawn,
+                "lost": s.lost,
+                "gf": s.gf,
+                "ga": s.ga,
+                "gd": s.gd,
+                "points": s.points,
+                "position": s.position,
+                "qualification": s.qualification,
+                "tiebreaker_exhausted": s.tiebreaker_exhausted,
+            })
+        result.append({
+            "group": group,
+            "standings": standings_serializable,
+            "complete": all(s.played == 3 for s in standings) if standings else False,
+        })
+
+    return {"data": result}
 
 
 @router.get("/teams")
@@ -527,6 +564,56 @@ async def get_bracket():
             status_code=503,
             content={"error": "provider_unavailable"},
         )
+
+    # Attempt to resolve R32 teams from group standings
+    try:
+        raw_groups = await provider.get_groups()
+        raw_teams = await provider.get_teams()
+
+        # Build group_id → teams mapping for standings
+        group_map = map_groups(raw_groups)
+
+        # Compute standings for all groups
+        all_standings: dict[str, list] = {}
+        for g in group_map:
+            standings = compute_group_standings(raw, g["id"])
+            all_standings[g["id"]] = standings
+
+        # Compute best-third ranking
+        best_thirds = compute_best_third_ranking(all_standings)
+
+        # Resolve R32 matches
+        resolved_r32 = resolve_r32_matches(all_standings, best_thirds, ANNEX_C)
+
+        # Build map: slot → (home_code, away_code)
+        r32_map: dict[int, tuple[str | None, str | None]] = {}
+        for m in resolved_r32:
+            slot = m["slot"]
+            r32_map[slot] = (m.get("home_team"), m.get("away_team"))
+
+        # Inject resolved teams into raw match dicts (matches 73–88)
+        for m in raw:
+            num = m.get("num")
+            if num is None:
+                continue
+            try:
+                n = int(num)
+            except (ValueError, TypeError):
+                continue
+            if 73 <= n <= 88:
+                slot = n - 73
+                if slot in r32_map:
+                    home_code, away_code = r32_map[slot]
+                    if home_code and not m.get("home"):
+                        m["home"] = home_code
+                        m["home_name"] = home_code.upper()
+                    if away_code and not m.get("away"):
+                        m["away"] = away_code
+                        m["away_name"] = away_code.upper()
+    except Exception:
+        # If standings computation fails, fall back to raw bracket
+        pass
+
     return {"data": build_bracket_tree(raw)}
 
 

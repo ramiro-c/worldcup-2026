@@ -1,4 +1,4 @@
-import type { Group, Team, Venue, Match, TvChannel, BracketRound, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch, TournamentStats, StatsBombCompetition, EnrichedMatchResponse } from "./types";
+import type { Group, Team, Venue, Match, TvChannel, BracketRound, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch, TournamentStats, StatsBombCompetition, EnrichedMatchResponse, GroupWithStandings } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/tournament`
@@ -21,8 +21,8 @@ async function fetchApi<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
   return data.data;
 }
 
-export async function getGroups(): Promise<Group[]> {
-  return fetchApi<Group[]>("/groups");
+export async function getGroups(): Promise<GroupWithStandings[]> {
+  return fetchApi<GroupWithStandings[]>("/groups");
 }
 
 export async function getTeams(): Promise<Team[]> {
