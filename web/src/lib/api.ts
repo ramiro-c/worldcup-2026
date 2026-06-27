@@ -71,8 +71,11 @@ export async function getUpcomingMatches(limit = 5): Promise<Match[]> {
   const now = new Date();
   return matches
     .filter((m) => {
+      // Exclude finished and live matches (live ones go to LiveWidget)
+      if (m.status === "finished" || m.status === "live") return false;
+      // Only show matches whose date is still in the future
       const matchDate = new Date(`${m.date}T${m.time || "00:00"}`);
-      return matchDate > now || m.status === "scheduled";
+      return matchDate > now;
     })
     .sort((a, b) => {
       const dateA = new Date(`${a.date}T${a.time || "00:00"}`);

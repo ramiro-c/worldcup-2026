@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "../lib/useAsync";
+import { usePolling } from "../lib/usePolling";
 import { getUpcomingMatches, getFeaturedVenues } from "../lib/api";
 import type { Match, Venue } from "../lib/types";
 import { trackPageView } from "../lib/analytics";
@@ -165,12 +166,24 @@ export default function Home() {
     trackPageView("/");
   }, []);
 
+  const [shouldPollMatches, setShouldPollMatches] = useState(true);
+  const [retryKey, setRetryKey] = useState(0);
+
   const {
     data: matches,
     loading: matchesLoading,
     error: matchesError,
-    refetch: refetchMatches,
-  } = useAsync(() => getUpcomingMatches(3), []);
+  } = usePolling(
+    () => getUpcomingMatches(3),
+    30000,
+    shouldPollMatches,
+    [retryKey]
+  );
+
+  const refetchMatches = () => {
+    setShouldPollMatches(true);
+    setRetryKey((k) => k + 1);
+  };
 
   const {
     data: venues,
