@@ -1,4 +1,4 @@
-import type { Group, Team, Venue, Match, TvChannel, BracketRound, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch, TournamentStats, StatsBombCompetition, EnrichedMatchResponse, GroupWithStandings } from "./types";
+import type { Team, Venue, Match, TvChannel, BracketRound, HistoricalTournamentSummary, HistoricalTournament, HistoricalMatch, HistoricalTeamMatch, TournamentStats, StatsBombCompetition, EnrichedMatchResponse, GroupWithStandings } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/tournament`

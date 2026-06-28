@@ -178,7 +178,7 @@ describe("BracketRoundView", () => {
     it("renders finished match with scores and team codes (REQ-3)", () => {
       renderInRouter(<BracketRoundView rounds={twoRounds} />);
       // Find the finished match card by team code (component renders codes, not full names)
-      const card = screen.getByText("ARG").closest("[data-card-state]");
+      const card = screen.getByText("ARG").closest<HTMLElement>("[data-card-state]");
       expect(card).toHaveAttribute("data-card-state", "finished");
 
       // Scores should be visible
@@ -192,7 +192,7 @@ describe("BracketRoundView", () => {
     it("renders scheduled match with date and dash scores (REQ-3)", () => {
       renderInRouter(<BracketRoundView rounds={twoRounds} />);
       // Find the scheduled match that has a date (pick the first card with "Sun Jun 29")
-      const card = screen.getByText("Sun Jun 29").closest("[data-card-state]");
+      const card = screen.getByText("Sun Jun 29").closest<HTMLElement>("[data-card-state]");
       expect(card).toHaveAttribute("data-card-state", "scheduled");
 
       // Dash for scores
@@ -214,7 +214,7 @@ describe("BracketRoundView", () => {
 
     it("renders TBD match with dashed appearance and TBD placeholders (REQ-3)", () => {
       renderInRouter(<BracketRoundView rounds={twoRounds} />);
-      const card = screen.getAllByText("TBD")[0].closest("[data-card-state]");
+      const card = screen.getAllByText("TBD")[0].closest<HTMLElement>("[data-card-state]");
       expect(card).toHaveAttribute("data-card-state", "tbd");
       // Should have 4 TBD entries (2 team placeholders + 2 score placeholders)
       const tbdElements = within(card!).getAllByText("TBD");
@@ -228,7 +228,7 @@ describe("BracketRoundView", () => {
       renderInRouter(<BracketRoundView rounds={twoRounds} />);
       // Argentina (home/ARG) has score 2, Brasil (away/BRA) has score 1
       // Brasil is the loser → its crest should be marked eliminated
-      const card = screen.getByText("ARG").closest("[data-card-state]")!;
+      const card = screen.getByText("ARG").closest<HTMLElement>("[data-card-state]")!;
 
       // Loser crest (Brasil) should have data-eliminated
       const loserCrest = within(card).getByRole("img", { name: /Brasil/i });
