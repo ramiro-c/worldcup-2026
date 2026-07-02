@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useAsync } from "../lib/useAsync";
+import { useEffect, useState } from "react";
+import { usePolling } from "../lib/usePolling";
 import { getBracket } from "../lib/api";
 import { trackPageView } from "../lib/analytics";
 import BracketRoundView from "../components/BracketRoundView";
@@ -11,7 +11,28 @@ export default function Bracket() {
     trackPageView("/bracket");
   }, []);
 
-  const { data: rounds, loading, error, refetch } = useAsync(getBracket, []);
+  const [shouldPoll, setShouldPoll] = useState(true);
+
+  const { data: rounds, loading, error } = usePolling(
+    getBracket,
+    60000,
+    shouldPoll,
+    []
+  );
+
+  // Derive polling gate from live-match presence.
+  // setState-in-effect is intentional here: shouldPoll depends on the polling
+  // hook's own output (rounds), creating a legitimate feedback loop that
+  // cannot be expressed purely in render without a stale closure.
+  useEffect(() => {
+    if (rounds) {
+      const hasLive = rounds.some((round) =>
+        round.matches.some((m) => m.status === "live")
+      );
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShouldPoll(hasLive);
+    }
+  }, [rounds]);
 
   // ── Loading skeleton ─────────────────────────────────
   if (loading) {
@@ -45,8 +66,8 @@ export default function Bracket() {
         <h2 className="text-2xl font-bold">Eliminatorias</h2>
         <ErrorState
           message="No se pudo cargar el cuadro eliminatorio"
-          onRetry={refetch}
         />
+        {/* El polling (cada 60s) es el mecanismo primario de recuperación */}
       </div>
     );
   }

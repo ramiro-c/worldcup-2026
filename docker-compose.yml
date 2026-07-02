@@ -20,12 +20,12 @@ services:
     build:
       context: web
       dockerfile_inline: |
-        FROM node:24-alpine
+        FROM node:24-slim
         WORKDIR /app
         COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
         RUN corepack enable && CI=true pnpm install --frozen-lockfile --config.confirmModulesPurge=false
         COPY . .
-        CMD ["pnpm", "dev", "--host", "0.0.0.0"]
+        CMD ["sh", "-c", "pnpm install --frozen-lockfile --config.confirmModulesPurge=false && exec pnpm dev --host 0.0.0.0"]
     ports:
       - "5173:5173"
     volumes:

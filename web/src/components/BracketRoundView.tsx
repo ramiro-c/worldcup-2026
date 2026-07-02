@@ -1,15 +1,16 @@
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import type { BracketRound } from "../lib/types";
+import type { BracketRound, BracketMatch } from "../lib/types";
 
 interface BracketRoundViewProps {
   rounds: BracketRound[];
 }
 
-function cardState(match: { home_score: number | null; away_score: number | null; home_team_name: string | null; away_team_name: string | null }): "finished" | "scheduled" | "tbd" {
-  if (match.home_team_name === null && match.away_team_name === null) return "tbd";
+function cardState(match: BracketMatch): "finished" | "live" | "scheduled" | "tbd" {
+  if (match.status === "live") return "live";
   if (match.home_score !== null && match.away_score !== null) return "finished";
-  return "scheduled";
+  if (match.home_team || match.away_team) return "scheduled";
+  return "tbd";
 }
 
 function gridCols(matchCount: number): string {
@@ -91,6 +92,7 @@ function MatchCard({ match }: { match: import("../lib/types").BracketMatch }) {
   const isFinished = state === "finished";
   const isTbd = state === "tbd";
   const isScheduled = state === "scheduled";
+  const isLive = state === "live";
 
   const homeScore = match.home_score ?? 0;
   const awayScore = match.away_score ?? 0;
@@ -179,6 +181,15 @@ function MatchCard({ match }: { match: import("../lib/types").BracketMatch }) {
       {isScheduled && match.date && (
         <div className="text-center mt-2 text-xs text-zinc-500">
           {match.date}
+        </div>
+      )}
+
+      {/* Live badge */}
+      {isLive && (
+        <div className="text-center mt-2">
+          <span className="text-xs font-medium px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 animate-pulse">
+            EN VIVO
+          </span>
         </div>
       )}
     </div>
